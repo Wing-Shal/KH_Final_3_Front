@@ -3,9 +3,29 @@
 //import
 import './Header.css'
 import { NavLink } from "react-router-dom";
+import { useRecoilState, useRecoilValue } from "recoil";
+import { isLoginState, loginIdState, loginLevelState } from "./utils/RecoilData";
+import { useCallback } from "react";
+import axios from "./utils/CustomAxios";
 
 //function
 function Header() {
+
+        //recoil state
+        const [loginId, setLoginId] = useRecoilState(loginIdState);
+        const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+    
+        //recoil value
+        const isLogin = useRecoilValue(isLoginState);
+    
+        //callback
+        const logout = useCallback(() => {
+            //recoil 저장소에 대한 정리 + axios의 헤더 제거 + localStorage 청소
+            setLoginId('');
+            setLoginLevel('');
+            delete axios.defaults.headers.common['Authorization'];
+            window.localStorage.removeItem("refreshToken");
+        }, [loginId, loginLevel]);
 
     return (
         <>
@@ -21,8 +41,24 @@ function Header() {
                         <div className="col-6">
                             채팅
                         </div>
+                        <div className='col-6'>
+                        {isLogin ? (
+                                        <NavLink className="dropdown-item" to="#"
+                                            onClick={e => logout()}>진짜로그아웃</NavLink>
+                                    ) : (
+                                        <NavLink className="dropdown-item" to="/emp/login">진짜로그인</NavLink>
+                                    )}
+                        </div>
                         <div className="col-6">
-                            마이
+                        {isLogin ? (
+                                <>
+                                    현재 로그인 중
+                                </>
+                            ) : (
+                                <>
+                                    현재 로그아웃 중
+                                </>
+                            )}
                         </div>
                     </div>
                 </div>
