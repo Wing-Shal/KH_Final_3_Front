@@ -29,7 +29,7 @@ const isLoginState = selector({
         //미리 만든 state 중에 loginLevelState에 해당하는 값을 주세요!
         const loginLevel = state.get(loginLevelState);
         
-        return loginId && loginId.length > 0 
+        return loginId && loginId > 0 
                     && loginLevel && loginLevel.length > 0;
     }
 });
