@@ -46,7 +46,7 @@ function Header() {
                                         <NavLink className="dropdown-item" to="#"
                                             onClick={e => logout()}>진짜로그아웃</NavLink>
                                     ) : (
-                                        <NavLink className="dropdown-item" to="/login">진짜로그인</NavLink>
+                                        <NavLink className="dropdown-item" to="/emp/login">진짜로그인</NavLink>
                                     )}
                         </div>
                         <div className="col-6">
