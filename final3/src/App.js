@@ -9,7 +9,7 @@ import SideBar from './components/Sidebar';
 //lazy import
 const Header = lazy(()=>import("./components/Header"));
 const Home = lazy(()=>import("./components/Home"));
-const Chat = lazy(()=>import("./components/inetergrated/Chat"));
+const Chat = lazy(()=>import("./components/intergrated/Chat"));
 const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
 const DocumentList = lazy(()=>import("./components/intergrated/Document/DocumentList"));
 
