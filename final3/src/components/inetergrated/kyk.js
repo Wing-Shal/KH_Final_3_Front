@@ -1,3 +1,0 @@
-kyk
-shw
-shwww
