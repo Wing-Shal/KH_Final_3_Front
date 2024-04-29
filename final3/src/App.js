@@ -14,7 +14,7 @@ import SideBar from './components/Sidebar';
 const Header = lazy(()=>import("./components/Header"));
 const Home = lazy(()=>import("./components/Home"));
 const Chat = lazy(()=>import("./components/intergrated/Chat"));
-// const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
+const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
 const DocumentList = lazy(()=>import("./components/intergrated/Document/DocumentList"));
 const EmpLogin = lazy(()=>import("./components/EmpLogin"));
 
@@ -67,7 +67,7 @@ const App = ()=> {
                   <Routes>
                     <Route path="/" element={<Home/>}/>
                     <Route path="/chat" element={<Chat />}/>
-                    {/* <Route path="/boardBlind" element={<BoardBlind />}/> */}
+                    <Route path="/boardBlind" element={<BoardBlind />}/>
                     <Route path="/documentList" element={<DocumentList />}/>
                     <Route path="/emp/login" element={<EmpLogin/>}/>
                   </Routes>
