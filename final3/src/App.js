@@ -10,7 +10,7 @@ import SideBar from './components/Sidebar';
 const Header = lazy(()=>import("./components/Header"));
 const Home = lazy(()=>import("./components/Home"));
 
-function App() {
+const App = ()=> {
   return (
     <>
       {/* 메뉴 */}
