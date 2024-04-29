@@ -31,12 +31,12 @@ const EmpLogin = ()=>{
     const navigator = useNavigate();
 
     const login = useCallback(async ()=>{
-        if(emp.empNo === 0) return;
+        if(emp.empNo.length === 0) return;
         if(emp.empPw.length === 0) return;
 
         const resp = await axios.post("/emp/login", emp);
         console.log(resp.data);//empNo, empType이 있음
-        setLoginId(resp.data.empNo);
+        setLoginId(parseInt(resp.data.empNo));
         setLoginLevel(resp.data.empType);
         //accessToken은 이후의 axios 요청에 포함시켜서 서버로 가져가야 한다
         //-> 이 순간 이후로 모든 요청의 header에 Authorization이라는 이름으로 토큰을 첨부하겠다
