@@ -20,12 +20,14 @@ const basicTheme = {
         menuContent: "#FFFFFF",
         hover: {
             backgroundColor: "#F8F9FA",
+            color: "#1E90FF"
         },
     },
     subMenu: {
         menuContent: "#FFFFFF",
         hover: {
-            backgroundColor: "#F8F9FA"
+            backgroundColor: "#F8F9FA",
+            color: "#1E90FF"
         },
     }
 }
@@ -43,7 +45,8 @@ const SideBar = () => {
         },
         button: {
             '&:hover': {
-                backgroundColor: basicTheme.menu.hover.backgroundColor
+                backgroundColor: basicTheme.menu.hover.backgroundColor,
+                color : basicTheme.menu.hover.color
             }
         }
     }
@@ -54,7 +57,8 @@ const SideBar = () => {
         },
         button: {
             '&:hover': {
-                backgroundColor: basicTheme.subMenu.hover.backgroundColor
+                backgroundColor: basicTheme.subMenu.hover.backgroundColor,
+                color : basicTheme.menu.hover.color
             }
         }
     }
@@ -81,7 +85,8 @@ const SideBar = () => {
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
                 <MenuItem component={<Link to="/" />}> 캘린더 </MenuItem>
-                <MenuItem  component={<Link to="/" />}> 블라인드 </MenuItem>
+                <MenuItem  component={<Link to="/boardBlind" />}> 블라인드 </MenuItem>
+                <MenuItem  component={<Link to="/chat" />}> 채팅 </MenuItem>
             </Menu>
         </Sidebar >
       </>

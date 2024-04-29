@@ -1,11 +1,11 @@
 // import
 import { useState, useCallback, useRef } from "react";
-import Jumbotron from "../Jumbotron";
+import Jumbotron from "../../Jumbotron";
 import { startTransition } from 'react';
 import { Link } from "react-router-dom";
 //
 import { Modal } from 'bootstrap';
-import axios from "../utils/CustomAxios";
+import axios from "../../utils/CustomAxios";
 import { MdDelete } from "react-icons/md";
 import { IoIosSave } from "react-icons/io";
 import { GiCancel } from "react-icons/gi";
