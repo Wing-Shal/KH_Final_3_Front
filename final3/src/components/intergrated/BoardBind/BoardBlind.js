@@ -10,6 +10,8 @@ import { MdDelete } from "react-icons/md";
 import { IoIosSave } from "react-icons/io";
 import { GiCancel } from "react-icons/gi";
 import { FaPlus } from "react-icons/fa";
+import NewBoardBlind from './NewBoardBlind';
+// import { FaPlus } from "react-icons/fa"; // 폰트어썸 아이콘 라이브러리에서 Plus 아이콘을 import 합니다.
 
 
 // funtion
@@ -38,26 +40,55 @@ function BoardBlind() {
         { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
     ]);
 
-    // blindNo 상태 정의 (글 수정 관련)
+    // blindNo 상태 정의
     const [blindNo, setBlindNo] = useState({
         edit: false // 기본값 설정
     });
 
-    //ref(참조)
-    //- 리액트에서 태그를 선택하는 대신 사용하는 도구(그 외의 용도도 가능)
-    //- 변수명.current 를 이용하여 현재 참조하고 있는 대상 태그를 호출할 수 있음
-    const bsModal = useRef();//리모컨
-    const openModal = useCallback(() => {
-        const modal = new Modal(bsModal.current);
-        modal.show();
-    }, [bsModal]);
-    const closeModal = useCallback(() => {
-        const modal = Modal.getInstance(bsModal.current);
-        modal.hide();
-    }, [bsModal]);
+    // 모달 열기 상태
+    const [showModal, setShowModal] = useState(false);
 
+    // 모달 열기 함수
+    const openModal = () => {
+        setShowModal(true);
+    };
 
+    // 검색어 상태 변수
+    const [searchTerm, setSearchTerm] = useState("");
+    // 검색 결과 상태 변수
+    const [searchResults, setSearchResults] = useState([]);
 
+    // 검색어 변경 시 처리 함수
+    const handleSearch = (event) => {
+        const term = event.target.value;
+        setSearchTerm(term);
+        // 검색어가 비어있으면 전체 문서 목록을 보여줍니다.
+        if (!term.trim()) {
+            setSearchResults([]);
+            return;
+        }
+        // 검색어가 포함된 문서를 필터링하여 결과에 저장합니다.
+        const results = blindContents.filter(blindContent =>
+            blindContent.blindTitle.includes(term)
+        );
+        setSearchResults(results);
+
+        // 검색어가 비어있으면 전체 문서 목록을 보여주고, 그렇지 않으면 검색 결과를 보여줍니다.
+        const displayedBlindContentsList = searchTerm.trim() ? searchResults : blindContents;
+
+        // DB에서 문서 목록을 가져오는 비동기 함수
+        // const fetchBlindContents = async () => {
+        //     // 여기서는 단순히 mock 데이터를 사용하겠습니다.
+        //     const mockData = [
+        //         {documentNo:1, documentTitle:"프로젝트시작", documentStatus:"승인", documentWriter:"김윤경", documentApprover:"강지원", documentWriteTime:"2024-04-29", documentLimitTime:"2024-05-01", documentContent: "이 문서는 프로젝트를 시작하기 위한 것입니다.", documentReferrer: "박성진", documentApprover: "김지연"},
+        //         {documentNo:2, documentTitle:"CRUD작성", documentStatus:"요청", documentWriter:"김윤경", documentApprover:"강지원", documentWriteTime:"2024-04-30", documentLimitTime:"2024-05-02", documentContent: "이 문서는 CRUD 작성을 요청하는 문서입니다.", documentReferrer: "이철수", documentApprover: "이영희"},
+        //         // 나머지 문서 데이터도 추가해주세요.
+        //     ];
+        //     // 데이터를 설정합니다.
+        //     setDocuments(mockData);
+        // };
+
+    };
 
     return (
         <>
@@ -80,15 +111,14 @@ function BoardBlind() {
                 </div>
             ))} */}
 
-            {/* 글쓰기 버튼 */}
+
             <div className="row mt-4">
-                <div className="col">
-                    {/* 버튼 클릭 시 모달 열기 */}
-                    {/* <button className="btn" onClick={}>글쓰기</button> */}
+                <div className="col-auto">
+                    <button onClick={openModal} className="btn btn-primary">글쓰기</button>
                 </div>
             </div>
-
-
+            {/* 모달 */}
+            {showModal && <NewBoardBlind closeModal={() => setShowModal(false)} />}
 
             <div className="row mt-4">
                 <div className="col">
@@ -107,9 +137,12 @@ function BoardBlind() {
                                 <tr key={blindContent.blindNo}>
                                     {blindNo.edit === true ? (
                                         <>
-                                            
+                                            <td>
                                                 <input type="text" value={blindContent.blindNo} />
-                                            
+                                            </td>
+                                            <td>입력창</td>
+                                            <td>입력창</td>
+                                            <td>버튼</td>
                                         </>
                                     ) : (
                                         <>
@@ -124,65 +157,22 @@ function BoardBlind() {
                             ))}
                         </tbody>
                     </table>
-                </div>
-            </div>
-             {/* Modal */}
-             <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                    <div className="modal-header">
-                        <h1 className="modal-title fs-5" id="staticBackdropLabel">신규 몬스터 등록</h1>
-                        <button type="button" className="btn-close" aria-label="Close" onClick={e=>cancelInput()}></button>
-                    </div>
-                    <div className="modal-body">
-                        {/* 등록 화면 */}
-                        <div className='row mt-4'>
-                            <div className='col'>
-                                <label>번호</label>  
-                                <input type="text" name="pocketmonNo" 
-                                        value={input.pocketmonNo} 
-                                        onChange={e=>changeInput(e)}
-                                        className='form-control'/>
-                            </div>
-                        </div>
 
-                        <div className='row mt-4'>
-                            <div className='col'>
-                                <label>이름</label>  
-                                <input type="text" name="pocketmonName" 
-                                        value={input.pocketmonName} 
-                                        onChange={e=>changeInput(e)}
-                                        className='form-control'/>
-                            </div>
+                    <div className="row mt-4 justify-content-center"> {/* 가운데 정렬 */}
+                        <div className="col">
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="검색어를 입력하세요"
+                                value={searchTerm}
+                                onChange={handleSearch}
+                            />
                         </div>
+                        
+                    </div>
 
-                        <div className='row mt-4'>
-                            <div className='col'>
-                                <label>속성</label>  
-                                <input type="text" name="pocketmonType" 
-                                        value={input.pocketmonType} 
-                                        onChange={e=>changeInput(e)}
-                                        className='form-control'/>
-                            </div>
-                        </div>
-                    
-                    </div>
-                    <div className="modal-footer">
-                        <button className='btn btn-success me-2'
-                                    onClick={e=>saveInput()}>
-                            <IoIosSave />
-                            &nbsp;
-                            등록
-                        </button>
-                        <button className='btn btn-danger'
-                                    onClick={e=>cancelInput()}>
-                            <GiCancel />
-                            &nbsp;
-                            취소
-                        </button>
-                    </div>
-                    </div>
                 </div>
+
             </div>
 
         </>
