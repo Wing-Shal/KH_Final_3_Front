@@ -1,11 +1,11 @@
 //실제 로그인을 처리하기 위한 정보 입력 페이지
 
 import { useCallback, useState } from "react";
-import Jumbotron from "./Jumbotron";
+import Jumbotron from "../Jumbotron";
 import { useRecoilState } from "recoil";
-import { loginIdState, loginLevelState } from "./utils/RecoilData";
+import { loginIdState, loginLevelState } from "../utils/RecoilData";
 //import axios from "axios";//기본 라이브러리
-import axios from "./utils/CustomAxios";//개조 라이브러리
+import axios from "../utils/CustomAxios";//개조 라이브러리
 import { useNavigate } from "react-router";
 
 const EmpLogin = ()=>{
@@ -51,7 +51,7 @@ const EmpLogin = ()=>{
 
     return (
         <>
-            <Jumbotron title="진짜 로그인"/>
+            <Jumbotron title="사원 로그인"/>
 
             <div className="row mt-4">
                 <div className="col">
