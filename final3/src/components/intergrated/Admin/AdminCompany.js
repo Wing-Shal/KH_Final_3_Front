@@ -4,8 +4,8 @@ import { IoIosSave } from "react-icons/io";
 import { GiCancel } from "react-icons/gi";
 import { Modal } from 'bootstrap';
 import { format, parseISO } from 'date-fns';
-import Jumbotron from "../../Jumbotron.js";
-import axios from "../../utils/CustomAxios.js";
+import Jumbotron from "../../Jumbotron";
+import axios from "../../utils/CustomAxios";
 import './AdminCompany.css';
 
 const AdminCompany = () => {
@@ -15,9 +15,6 @@ const AdminCompany = () => {
     const [searchKeyword, setSearchKeyword] = useState("");
     const [input, setInput] = useState({});
 
-    // //수정 시 복원을 위한 백업
-    // const [backup, setBackup] = useState(null);
-
     useEffect(() => {
         loadData();
     }, []);
@@ -25,8 +22,8 @@ const AdminCompany = () => {
     //callback
     const changeInput = useCallback((e) => {
         setInput({
-            ...input,//원래input을 유지시키되
-            [e.target.name]: e.target.value//name에 해당하는 값만 value로 바꿔라!
+            ...input,
+            [e.target.name]: e.target.value
         });
     }, [input]);
 
@@ -46,7 +43,6 @@ const AdminCompany = () => {
     }, [input]);
 
     const saveInput = useCallback(async () => {
-        console.log(input);
         const resp = await axios.patch("/admin/company/", input);
 
         //정보 다시 로딩
@@ -56,7 +52,7 @@ const AdminCompany = () => {
         clearInput();
 
         // 모달 닫기
-        closeModal();
+        closeEditModal();
     }, [input]);
     
     const cancelInput = useCallback(() => {
@@ -65,7 +61,7 @@ const AdminCompany = () => {
 
         clearInput();
 
-        closeModal();
+        closeEditModal();
     }, [input]);
 
     //목록 불러오기
@@ -102,16 +98,33 @@ const AdminCompany = () => {
         return true; // 필터링하지 않음
     });
 
-    const bsModal = useRef();//리모컨
-    const openModal = useCallback((company) => {
-        const modal = new Modal(bsModal.current);
+    //정보 수정 모달
+    const editModal = useRef();
+    const openEditModal = useCallback((company) => {
+        const modal = new Modal(editModal.current);
         setInput(company)
         modal.show();
-    }, [bsModal]);
-    const closeModal = useCallback(() => {
-        const modal = Modal.getInstance(bsModal.current);
+    }, [editModal]);
+    const closeEditModal = useCallback(() => {
+        const modal = Modal.getInstance(editModal.current);
         modal.hide();
-    }, [bsModal]);
+    }, [editModal]);
+
+    //가입 승인
+    const approveCompany = useCallback(async (company)=>{
+        const check = window.confirm("사업자등록증을 확인하셨나요?");
+        if(!check) {
+            return;
+        } else {
+            const doubleCheck = window.confirm("회사의 가입을 승인하겠습니까?")
+            if(!doubleCheck) return;
+        }
+        const resp = await axios.patch("/admin/company/approve/" + company.companyNo);
+        console.log("Approve response:", resp); // 응답 확인
+
+        loadData(); // 데이터 로딩
+        console.log("Data reloaded after approval"); // 로딩 확인
+    });
 
     return (
         <>
@@ -169,13 +182,22 @@ const AdminCompany = () => {
                                         <td>{company.companyName}</td>
                                         <td>{company.companyContact}</td>
                                         <td>{company.companyEmail}</td>
-                                        <td style={{color: company.companyChecked ? '' : 'red'}}>
-                                            {company.companyChecked ? 
-                                            format(parseISO(company.companyChecked), 'yyyy-MM-dd') : 'N'}
-                                        </td>
+                                        {company.companyChecked ? (
+                                            <>
+                                                <td>
+                                                    {format(parseISO(company.companyChecked), 'yyyy-MM-dd')}
+                                                </td>
+                                            </>
+                                        ) : (
+                                            <>
+                                            <td style={{color: 'red'}}>
+                                                <p className='pointer' onClick={(e)=> approveCompany(company)}>N</p>
+                                            </td>
+                                            </>
+                                        )}
                                         <td>
                                             <FaPenToSquare className='text-warning me-2 pointer'
-                                                onClick={(e) => openModal(company)} />
+                                                onClick={(e) => openEditModal(company)} />
                                         </td>                                    
                                 </tr>
                             ))}
@@ -185,7 +207,7 @@ const AdminCompany = () => {
             </div>
 
              {/* Modal */}
-             <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+             <div ref={editModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
@@ -256,7 +278,85 @@ const AdminCompany = () => {
                                 onClick={e => saveInput()}>
                                 <IoIosSave />
                                 &nbsp;
-                                등록
+                                저장
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+             {/* Modal */}
+             <div ref={editModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">회사 정보 수정</h1>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={e => cancelInput()}></button>
+                        </div>
+                        <div className="modal-body">
+                            {/* 등록 화면 */}
+                            <div className='row mt-4'>
+                                <div className='col'>
+                                    <label>사번</label>
+                                    <input type="text" name="companyNo"
+                                        value={input.companyNo}
+                                        readOnly
+                                        className='form-control' />
+                                </div>
+                            </div>
+
+                            <div className='row mt-4'>
+                                <div className='col'>
+                                    <label>사명</label>
+                                    <input type="text" name="companyName"
+                                        value={input.companyName}
+                                        onChange={e => changeInput(e)}
+                                        className='form-control' />
+                                </div>
+                            </div>
+
+                            <div className='row mt-4'>
+                                <div className='col'>
+                                    <label>사업자등록번호</label>
+                                    <input type="text" name="companyBn"
+                                        value={input.companyBn}
+                                        onChange={e => changeInput(e)}
+                                        className='form-control' />
+                                </div>
+                            </div>
+
+                            <div className='row mt-4'>
+                                <div className='col'>
+                                    <label>전화번호</label>
+                                    <input type="text" name="companyContact"
+                                        value={input.companyContact}
+                                        onChange={e => changeInput(e)}
+                                        className='form-control' />
+                                </div>
+                            </div>
+
+                            <div className='row mt-4'>
+                                <div className='col'>
+                                    <label>이메일</label>
+                                    <input type="text" name="companyEmail"
+                                        value={input.companyEmail}
+                                        onChange={e => changeInput(e)}
+                                        className='form-control' />
+                                </div>
+                            </div>
+
+                        </div>
+                        <div className="modal-footer">
+                            <button className='btn btn-danger'
+                                onClick={e => cancelInput()}>
+                                <GiCancel />
+                                &nbsp;
+                                취소
+                            </button>
+                            <button className='btn btn-success me-2'
+                                onClick={e => saveInput()}>
+                                <IoIosSave />
+                                &nbsp;
+                                저장
                             </button>
                         </div>
                     </div>
