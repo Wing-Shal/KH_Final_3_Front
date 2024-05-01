@@ -19,9 +19,9 @@ const ChatRoom = () => {
 
         //토큰 없어서 오류자꾸 뜨는데 어떻게 해야할 지 모르겠음
         //다른페이지 갔다가 토큰 받아오면 되는듯..?ㅠㅠ 모르겠음..
-        const response = await axios.post("/emp/refresh");
+        const response = await axios.post("/refresh/");
 
-        const empNo = response.data.empNo;
+        const empNo = response.data.loginId;
 
 
         //empNo로 목록가져오기
