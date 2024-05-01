@@ -17,13 +17,8 @@ const loginIdState = atom({
 const loginLevelState = atom({
     key : 'loginLevelState',
     default : ''
-});//아톰에서 회사꺼를 새로 만들고 아래에서 또는으로 가능!?
+});
 
-//Company로그인 관련 저장소 설정
-const loginIdcState = atom({
-    key : 'loginIdcState',
-    default : ''
-})
 
 //atom으로 생성한 데이터를 조합하여 무언가를 계산할 수 있다(selector)
 // -> 외부에서는 useRecoilValue로 부른다
@@ -35,10 +30,8 @@ const isLoginState = selector({
         //미리 만든 state 중에 loginLevelState에 해당하는 값을 주세요!
         const loginLevel = state.get(loginLevelState);
         
-        const loginIdc = state.get(loginIdcState);
-
-        return (loginId && loginId > 0 
-                    && loginLevel && loginLevel.length > 0) || loginIdc && loginIdc > 0;
+        return loginId && loginId > 0 
+                    && loginLevel && loginLevel.length > 0;
 
         
     }
@@ -48,4 +41,4 @@ const isLoginState = selector({
 //export default countState;
 
 //naming export는 여러 개 할 수 있다.
-export {countState, loginIdState, loginLevelState, isLoginState, loginIdcState};
+export {countState, loginIdState, loginLevelState, isLoginState};
