@@ -46,7 +46,7 @@ const SideBar = () => {
         button: {
             '&:hover': {
                 backgroundColor: basicTheme.menu.hover.backgroundColor,
-                color : basicTheme.menu.hover.color
+                color: basicTheme.menu.hover.color
             }
         }
     }
@@ -58,7 +58,7 @@ const SideBar = () => {
         button: {
             '&:hover': {
                 backgroundColor: basicTheme.subMenu.hover.backgroundColor,
-                color : basicTheme.menu.hover.color
+                color: basicTheme.menu.hover.color
             }
         }
     }
@@ -74,23 +74,24 @@ const SideBar = () => {
                     <MenuItem component={<Link to="/" />}> 대시보드 </MenuItem>
                     <MenuItem component={<Link to="/" />}> 회사정보 </MenuItem>
                 </Menu>
-                    <div className="logo-outline" />
+                <div className="logo-outline" />
                 <Menu>
                     <SubMenu label="프로젝트" defaultOpen>
                         <Menu menuItemStyles={subItemStyles}>
-                            <MenuItem component={<Link to="/" />}> 내 프로젝트 목록 </MenuItem>
+                            <MenuItem component={<Link to="/project" />}> 내 프로젝트 목록 </MenuItem>
+                            <MenuItem component={<Link to="/document" />}> 내 문서 목록 </MenuItem>
                         </Menu>
                     </SubMenu>
                 </Menu>
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
-                <MenuItem component={<Link to="/" />}> 캘린더 </MenuItem>
-                <MenuItem  component={<Link to="/boardBlind" />}> 블라인드 </MenuItem>
-                <MenuItem  component={<Link to="/chat" />}> 채팅 </MenuItem>
-            </Menu>
-        </Sidebar >
-      </>
+                    <MenuItem component={<Link to="/" />}> 캘린더 </MenuItem>
+                    <MenuItem component={<Link to="/boardBlind" />}> 블라인드 </MenuItem>
+                    <MenuItem component={<Link to="/chatroom" />}> 채팅 </MenuItem>
+                </Menu>
+            </Sidebar >
+        </>
     );
-  }
+}
 
 export default SideBar;
