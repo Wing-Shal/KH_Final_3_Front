@@ -12,8 +12,7 @@ const ChatRoom = () => {
     const [messageInput, setMessageInput] = useState("");
     const bsModal = useRef();
     const scrollRef = useRef();
-    // const [page, setPage] = useState(); //불러올 현재 페이지 번호
-    // const [size, setSize] = useState(30); //가져올 데이터 개수
+
 
     useEffect(() => {
         loadData();
