@@ -3,7 +3,7 @@
 import { Route, Routes } from 'react-router';
 import './App.css';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { isLoginState, loginIdState, loginLevelState, loginIdcState } from './components/utils/RecoilData';
+import { isLoginState, loginIdState, loginLevelState} from './components/utils/RecoilData';
 import { Suspense, lazy, useCallback, useEffect } from 'react';
 import axios from "./components/utils/CustomAxios";
 import LoadingScreen from './components/LoadingScreen';
