@@ -19,7 +19,8 @@ const Project = () => {
         projectLimitTime:"",
         projectNo: "",
         companyNo: "",
-        empNo: ""
+        empNo: "",
+        empName:""
 
     });
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
@@ -34,13 +35,15 @@ const Project = () => {
         setProjects(resp.data);
         // 데이터에서 프로젝트 정보를 가져와서 초기 input 상태에 설정
         const projectInfo = resp.data[0]; // 예를 들어 첫 번째 프로젝트의 정보를 가져옴
+        
         setInput({
             projectName: "",
             projectWriter: "",
             projectStartTime: "",
             projectLimitTime: "",
             companyNo: projectInfo.companyNo,
-            empNo: projectInfo.empNo
+            empNo: projectInfo.empNo,
+            empName: projectInfo.empName
         });
     }, []);
 
@@ -293,11 +296,7 @@ const Project = () => {
 
                         <div className="row">
                             <div className="col">
-                                <label>작성자</label>
-                                <input type="text" name="projectWriter" 
-                                    value={input.projectWriter} 
-                                    onChange={e=>changeInput(e)}
-                                    className="form-control"/>
+                            <p>작성자: {input.empName}</p>
                             </div>
                         </div>
 
