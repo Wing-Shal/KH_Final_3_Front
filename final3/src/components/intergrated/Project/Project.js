@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { loginIdState, loginLevelState } from '../../../components/utils/RecoilData';
+import { useRecoilState } from 'recoil';
 import Jumbotron from "../../Jumbotron";
 import { FaSquareXmark } from "react-icons/fa6";
 import { FaEdit } from "react-icons/fa";
@@ -7,21 +9,19 @@ import { IoMdAdd } from "react-icons/io";
 import { TbPencilCancel } from "react-icons/tb";
 import axios from "../../utils/CustomAxios";
 import { Modal } from "bootstrap";
+import { Link } from 'react-router-dom';
 
 const Project = () => {
 
     //state
+    const [loginId, setLoginId] = useRecoilState(loginIdState);
+    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [projects, setProjects] = useState([]);
     const [input, setInput] = useState({
-        projectName:"",
-        projectWriter:"",
-        projectStartTime:"",
-        projectLimitTime:"",
-        projectNo: "",
-        companyNo: "",
-        empNo: "",
-        empName:""
-
+        projectName: "",
+        projectStartTime: "",
+        projectLimitTime: "",
+        empNo: ""
     });
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
 
@@ -31,67 +31,58 @@ const Project = () => {
     }, []);
 
     const loadData = useCallback(async () => {
-        const resp = await axios.get("/project/");
+        const empNo = loginId;
+        const resp = await axios.get("/project/" + empNo);
         setProjects(resp.data);
-        // 데이터에서 프로젝트 정보를 가져와서 초기 input 상태에 설정
-        const projectInfo = resp.data[0]; // 예를 들어 첫 번째 프로젝트의 정보를 가져옴
-        
-        setInput({
-            projectName: "",
-            projectWriter: "",
-            projectStartTime: "",
-            projectLimitTime: "",
-            companyNo: projectInfo.companyNo,
-            empNo: projectInfo.empNo,
-            empName: projectInfo.empName
-        });
     }, []);
 
-    const deleteProject = useCallback(async (target)=>{
+    //삭제
+    const deleteProject = useCallback(async (target) => {
         const choice = window.confirm("정말 삭제하시겠습니까?");
-        if(choice === false) return;
+        if (choice === false) return;
 
         //target에 있는 내용을 서버에 지워달라고 요청하고 목록을 다시 불러온다
-        const resp = await axios.delete("/project/"+target.projectId);
+        const resp = await axios.delete("/project/" + target.projectNo);
         loadData();
     }, [projects]);
 
     //신규 등록 화면 입력값 변경
-    const changeInput = useCallback((e)=>{
+    const changeInput = useCallback((e) => {
         setInput({
             ...input,
-            [e.target.name] : e.target.value
+            [e.target.name]: e.target.value
         });
     }, [input]);
-    //등록
-    const saveInput = useCallback(async ()=>{
-        //입력값에 대한 검사 코드가 필요하다면 이자리에 추가하고 차단!
-        //if(검사결과 이상한 데이터가 입력되어 있다면) return;
 
-        //input에 들어있는 내용을 서버로 전송하여 등록한 뒤 목록 갱신 + 모달 닫기
+    //등록
+    const saveInput = useCallback(async () => {
         const resp = await axios.post("/project/", input);
         loadData();
         clearInput();
         closeModal();
     }, [input]);
+
     //등록 취소
-    const cancelInput = useCallback(()=>{
+    const cancelInput = useCallback(() => {
         const choice = window.confirm("작성을 취소하시겠습니까?");
-        if(choice === false) return;
+        if (choice === false) return;
         clearInput();
         closeModal();
     }, [input]);
+
     //입력값 초기화
-    const clearInput = useCallback(()=>{
+    const clearInput = useCallback(() => {
         setInput({
-            projectName:"", projectWriter:"", projectStartTime: "", projectLimitTime:""
+            projectName: "",
+            projectStartTime: "",
+            projectLimitTime: "",
+            empNo: ""
         });
     }, [input]);
 
-    //해당 줄을 수정상태(edit===true)로 만드는 함수
-    //target은 수정을 누른 줄의 학생 정보
+    //수정
     const editProject = useCallback((target)=>{
-        //1. Projects를 복제한다
+        //복제
         const copy = [...projects];
 
         //(+추가) 이미 수정중인 항목이 있을 수 있으므로 해당 항목은 취소 처리가 필요
@@ -103,12 +94,9 @@ const Project = () => {
                 return {...project};//그대로
             }
         });
-
-        setBackup({...target});
-
+        setBackup({...target}); //백업
 
         const copy2 = recover.map(project=>{
-            //target : 수정버튼을 누른 학생정보, Project : 현재 회차의 학생정보
             if(target.projectNo === project.projectNo) {//원하는 정보일 경우
                 return {
                     ...project,//나머지 정보는 유지하되
@@ -121,18 +109,16 @@ const Project = () => {
         });
 
 
+      
         setProjects(copy2);
     }, [projects]);
 
     const cancelEditProject = useCallback((target)=>{
-        //1. Projects를 복제한다
+        //1. 복제한다
         const copy = [...projects];
 
-        //2. copy를 고친다
-        //- copy 중에서 target과 동일한 정보를 가진 항목을 찾아서 edit : true로 만든다
-        //- 배열을 변환시켜야 하므로 map 함수를 사용한다
         const copy2 = copy.map(project=>{
-            //target : 수정버튼을 누른 학생정보, Project : 현재 회차의 학생정보
+          
             if(target.projectNo === project.projectNo) {//원하는 정보일 경우
                 return {
                     ...backup,//백업 정보를 전달
@@ -144,14 +130,10 @@ const Project = () => {
             }
         });
 
-        //3. copy2를 Projects에 덮어쓰기한다
+      //덮어씌우기
         setProjects(copy2);
     }, [projects]);
 
-    //수정 입력창에서 입력이 발생할 경우 실행할 함수
-    //- Projects 중에서 대상을 찾아 해당 필드를 교체하여 재설정
-    //- e는 입력이 발생한 창의 이벤트 정보
-    //- target은 입력이 발생한 창이 있는 줄의 학생정보
     const changeProject = useCallback((e, target)=>{
         const copy = [...projects];
         const copy2 = copy.map(project=>{
@@ -178,11 +160,15 @@ const Project = () => {
 
     //ref + modal
     const bsModal = useRef();
-    const openModal = useCallback(()=>{
+    const openModal = useCallback(() => {
         const modal = new Modal(bsModal.current);
+        setInput({
+            ...input,
+            empNo: loginId
+        });
         modal.show();
     }, [bsModal]);
-    const closeModal = useCallback(()=>{
+    const closeModal = useCallback(() => {
         const modal = Modal.getInstance(bsModal.current);
         modal.hide();
     }, [bsModal]);
@@ -191,14 +177,14 @@ const Project = () => {
     return (
         <>
             {/* 제목 */}
-            <Jumbotron title="내 프로젝트"/>
+            <Jumbotron title="내 프로젝트" />
 
             {/* 추가 버튼 */}
             <div className="row mt-4">
                 <div className="col text-end">
-                    <button className="btn btn-primary" 
-                            onClick={e=>openModal()}>
-                        <IoMdAdd/>
+                    <button className="btn btn-primary"
+                        onClick={e => openModal()}>
+                        <IoMdAdd />
                         새 프로젝트
                     </button>
                 </div>
@@ -210,57 +196,65 @@ const Project = () => {
                     <table className="table table-striped">
                         <thead className="text-center">
                             <tr>
-                                <th width="100"></th>
+                                <th>프로젝트번호</th>
                                 <th>프로젝트명</th>
                                 <th>작성자</th>
                                 <th>시작일</th>
                                 <th>마감일</th>
+                                <th>관리</th>
                             </tr>
                         </thead>
                         <tbody className="text-center">
                             {projects.map(project => (
                                 <tr key={project.projectNo}>
-                                    { project.edit === true ? (
+                             {project.edit === true ? (
                                         <>
-                                            <td>{project.projectNo}</td>
+                                 <td>{project.projectNo}</td>
+
                                             <td>
+                                          
                                                 <input type="text" className="form-control"
                                                     value={project.projectName} name="projectName"
                                                     onChange={e=>changeProject(e, project)}/>
                                             </td>
                                             <td>
-                                                <input type="text" className="form-control"
-                                                    value={project.projectWriter} name="projectWriter"
-                                                    onChange={e=>changeProject(e, project)}/>
+                                                {project.projectWriter}
                                             </td>
                                             <td>
-                                                <input type="text" className="form-control"
+                                                <input type="date" className="form-control"
                                                     value={project.projectStartTime} name="projectStartTime"
                                                     onChange={e=>changeProject(e, project)}/>
                                             </td>
                                             <td>
-                                                <input type="text" className="form-control"
+                                                <input type="date" className="form-control"
                                                     value={project.projectLimitTime} name="projectLimitTime"
                                                     onChange={e=>changeProject(e, project)}/>
                                             </td>
-                                            
+
+                                            <td>
+                                                <FaCheck className="text-success me-2"
+                                                        onClick={e=>saveEditProject(project)}/>
+                                                <TbPencilCancel className="text-danger"
+                                                        onClick={e=>cancelEditProject(project)}/>
+                                            </td>
                                         </>
                                     ) : (
                                         <>
-                                            <td>{project.ProjectNo}</td>
-                                            <td>{project.projectName}</td>
-                                            <td>{project.projectWriter}</td>
-                                            <td>{project.projectStartTime}</td>
-                                            <td>{project.projectLimitTime}</td>
-                                            <td>
-                                                <FaEdit className="text-warning me-2"
-                                                    onClick={e=>editProject(project)}/>
-                                                <FaSquareXmark className="text-danger" 
-                                                    onClick={e=>deleteProject(project)}/>
-                                            </td>
-                                        </>
-                                    ) }
-                                </tr>
+                                    <td>{project.projectNo}</td>
+                                    <td><Link to={`/projects/${project.projectNo}`} style={{ textDecoration: 'none' }}>{project.projectName}</Link></td>
+                                    <td>{project.projectWriter}</td>
+                                    <td>{project.projectStartTime}</td>
+                                    <td>{project.projectLimitTime}</td>
+                                    <td>
+                                        <FaEdit className="text-warning me-2"
+                                            onClick={e=>editProject(project)} />
+                                        <FaSquareXmark className="text-danger"
+                                            onClick={e=>deleteProject(project)}/>
+                                    </td>
+                                    </>
+                               
+                            )}
+                             </tr>
                             ))}
                         </tbody>
                     </table>
@@ -271,64 +265,56 @@ const Project = () => {
             <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
-                    <div className="modal-header">
-                        <h1 className="modal-title fs-5" id="staticBackdropLabel">새 프로젝트</h1>
-                        <button type="button" className="btn-close" aria-label="Close"
-                                onClick={e=>cancelInput()}></button>
-                    </div>
-                    <div className="modal-body">
-                        {/* 등록 화면 */}
-                         {/* 프로젝트 정보 표시 */}
-                     <div>
-                         <p>프로젝트 번호: {input.projectNo}</p>
-                        <p>회사 번호: {input.companyNo}</p>
-                         <p>사원 번호: {input.empNo}</p>
-                      </div>
-                        <div className="row">
-                            <div className="col">
-                                <label>프로젝트 명</label>
-                                <input type="text" name="projectName" 
-                                    value={input.projectName} 
-                                    onChange={e=>changeInput(e)}
-                                    className="form-control"/>
-                            </div>
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">새 프로젝트</h1>
+                            <button type="button" className="btn-close" aria-label="Close"
+                                onClick={e => cancelInput()}></button>
                         </div>
-
-                        <div className="row">
-                            <div className="col">
-                            <p>작성자: {input.empName}</p>
+                        <div className="modal-body">
+                            {/* 등록 화면 */}
+                            {/* 프로젝트 정보 표시 */}
+                            <div>
+                                <p>사원 번호: {input.empNo}</p>
                             </div>
-                        </div>
-
-                        <div className="row">
-                            <div className="col">
-                                <label>시작일</label>
-                                <input type="date" name="projectStartTime" 
-                                    value={input.projectStartTime} 
-                                    onChange={e=>changeInput(e)}
-                                    className="form-control"/>
+                            <div className="row">
+                                <div className="col">
+                                    <label>프로젝트 명</label>
+                                    <input type="text" name="projectName"
+                                        value={input.projectName}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
                             </div>
-                        </div>
 
-                        <div className="row">
-                            <div className="col">
-                                <label>마감일</label>
-                                <input type="date" name="projectLimitTime" 
-                                    value={input.projectLimitTime} 
-                                    onChange={e=>changeInput(e)}
-                                    className="form-control"/>
+                            <div className="row">
+                                <div className="col">
+                                    <label>시작일</label>
+                                    <input type="date" name="projectStartTime"
+                                        value={input.projectStartTime}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
                             </div>
-                        </div>
 
-                    </div>
-                    <div className="modal-footer">
-                        <button className='btn btn-success me-2' onClick={e=>saveInput()}>
-                            등록
-                        </button>
-                        <button className='btn btn-danger' onClick={e=>cancelInput()}>
-                            취소
-                        </button>
-                    </div>
+                            <div className="row">
+                                <div className="col">
+                                    <label>마감일</label>
+                                    <input type="date" name="projectLimitTime"
+                                        value={input.projectLimitTime}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                        </div>
+                        <div className="modal-footer">
+                            <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                                등록
+                            </button>
+                            <button className='btn btn-danger' onClick={e => cancelInput()}>
+                                취소
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
