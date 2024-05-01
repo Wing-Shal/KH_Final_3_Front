@@ -13,11 +13,13 @@ import SideBar from './components/Sidebar';
 //lazy import
 const Header = lazy(()=>import("./components/Header"));
 const Home = lazy(()=>import("./components/Home"));
-const Chat = lazy(()=>import("./components/intergrated/Chat"));
-const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
-const DocumentList = lazy(()=>import("./components/intergrated/Document/DocumentList"));
+// const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
 const Login = lazy(()=>import("./components/intergrated/Login"));
 const CompanyJoin = lazy(()=>import("./components/intergrated/CompanyJoin"));
+const Chat = lazy(()=>import("./components/intergrated/Chat/Chat"));
+const ChatRoom = lazy(()=>import("./components/intergrated/Chat/Chatroom"));
+const Document = lazy(()=>import("./components/intergrated/Document/Document"));
+const Project = lazy(()=>import("./components/intergrated/Project/Project"));
 
 
 const App = () => {
@@ -32,7 +34,6 @@ const App = () => {
   //effect
   useEffect(() => {
     refreshLogin();
-    refreshLoginc();
   }, []);//최초 1회
 
   //callback
@@ -48,25 +49,6 @@ const App = () => {
       //결과를 적절한 위치에 설정한다
       setLoginId(resp.data.loginId);
       setLoginLevel(resp.data.loginLevel);
-      axios.defaults.headers.common["Authorization"] = resp.data.accessToken;
-      window.localStorage.setItem("refreshToken", resp.data.refreshToken);
-    }
-  }, []);
-  
-  
-
-  //callback
-  const refreshLoginc = useCallback(async () => {
-    //localStorage에 있는 refreshToken의 유무에 따라 로그인 처리를 수행
-    const refreshToken = window.localStorage.getItem("refreshToken");
-    //console.log(refreshToken);
-    if (refreshToken !== null) {//refreshToken 항목이 존재한다면
-      //리프레시 토큰으로 Authorization을 변경하고
-      axios.defaults.headers.common["Authorization"] = refreshToken;
-      //재로그인 요청을 보낸다
-      const resp = await axios.post("/company/refresh");
-      //결과를 적절한 위치에 설정한다
-      setLoginIdc(resp.data.companyNo);
       axios.defaults.headers.common["Authorization"] = resp.data.accessToken;
       window.localStorage.setItem("refreshToken", resp.data.refreshToken);
     }
@@ -87,9 +69,11 @@ const App = () => {
                 <Suspense fallback={<LoadingScreen/>}>
                   <Routes>
                     <Route path="/" element={<Home/>}/>
-                    <Route path="/chat" element={<Chat />}/>
-                    <Route path="/boardBlind" element={<BoardBlind />}/>
-                    <Route path="/documentList" element={<DocumentList />}/>
+                    <Route path="/chat/:chatroomNo" element={<Chat />}/>
+                    <Route path="/chatroom" element={<ChatRoom />}/>
+                    {/* <Route path="/boardBlind" element={<BoardBlind />}/> */}
+                    <Route path="/project" element={<Project />}/>
+                    <Route path="/document" element={<Document />}/>
                     <Route path='/login' element={<Login />}/>
                     <Route path="/company/join" element={<CompanyJoin/>}/>
                   </Routes>
