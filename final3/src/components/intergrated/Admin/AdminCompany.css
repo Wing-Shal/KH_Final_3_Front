@@ -1,0 +1,7 @@
+/* table width */
+.tw-1 {width: 10%}
+.tw-2 {width: 20%}
+.tw-3 {width: 30%}
+.pointer {
+    cursor: pointer;
+}
