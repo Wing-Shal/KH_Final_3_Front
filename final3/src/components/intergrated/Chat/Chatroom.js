@@ -134,6 +134,11 @@ const ChatRoom = () => {
                                         className="form-control"
                                         value={messageInput}
                                         onChange={(e) => setMessageInput(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') {
+                                                sendMessage();
+                                            }
+                                        }}
                                     />
                                 </div>
                                 <div className="col text-end">
