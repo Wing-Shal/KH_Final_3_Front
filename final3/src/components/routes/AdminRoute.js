@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React, { lazy } from 'react';
 import { Route, Navigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isLoginState, loginIdState, loginLevelState } from '../utils/RecoilData';
-import AdminCompany from '../intergrated/Admin/AdminCompany';
+const AdminCompany = lazy(()=> import("../intergrated/Admin/AdminCompany"));
 
 const AdminRoute = ({element}) => {
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
