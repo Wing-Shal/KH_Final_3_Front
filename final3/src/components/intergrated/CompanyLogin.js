@@ -1,43 +1,41 @@
 //실제 로그인을 처리하기 위한 정보 입력 페이지
 
 import { useCallback, useState } from "react";
-import Jumbotron from "./Jumbotron";
+import Jumbotron from "../Jumbotron";
 import { useRecoilState } from "recoil";
-import { loginIdState, loginLevelState } from "./utils/RecoilData";
+import { loginIdcState } from "../utils/RecoilData";
 //import axios from "axios";//기본 라이브러리
-import axios from "./utils/CustomAxios";//개조 라이브러리
+import axios from "../utils/CustomAxios";//개조 라이브러리
 import { useNavigate } from "react-router";
 
-const EmpLogin = ()=>{
+const CompanyLogin = ()=>{
 
     //state
-    const [emp, setEmp] = useState({
-        empNo : "" , empPw : ""
+    const [company, setCompany] = useState({
+        companyNo : "" , companyPw : ""
     });
-
+    
     //recoil
-    const [loginId, setLoginId] = useRecoilState(loginIdState);
-    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+    const [loginIdc, setLoginIdc] = useRecoilState(loginIdcState);
 
     //callback
-    const changeEmp = useCallback(e=>{
-        setEmp({
-            ...emp,
+    const changeCompany = useCallback(e=>{
+        setCompany({
+            ...company,
             [e.target.name] : e.target.value
         });
-    }, [emp]);
+    }, [company]);
 
     //navigator
     const navigator = useNavigate();
 
     const login = useCallback(async ()=>{
-        if(emp.empNo.length === 0) return;
-        if(emp.empPw.length === 0) return;
+        if(company.companyNo.length === 0) return;
+        if(company.companyPw.length === 0) return;
 
-        const resp = await axios.post("/emp/login", emp);
-        console.log(resp.data);//empNo, empType이 있음
-        setLoginId(parseInt(resp.data.empNo));
-        setLoginLevel(resp.data.empType);
+        const resp = await axios.post("/company/login", company);
+        console.log(resp.data);
+        setLoginIdc(parseInt(resp.data.companyNo));
         //accessToken은 이후의 axios 요청에 포함시켜서 서버로 가져가야 한다
         //-> 이 순간 이후로 모든 요청의 header에 Authorization이라는 이름으로 토큰을 첨부하겠다
         axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
@@ -47,24 +45,24 @@ const EmpLogin = ()=>{
 
         //강제 페이지 이동 - useNavigate()
         navigator("/");
-    }, [emp]);
+    }, [company]);
 
     return (
         <>
-            <Jumbotron title="진짜 로그인"/>
+            <Jumbotron title="회사 로그인"/>
 
             <div className="row mt-4">
                 <div className="col">
                     <label>아이디</label>
-                    <input type="text" name="empNo" className="form-control"
-                            value={emp.empNo} onChange={e=>changeEmp(e)}/>
+                    <input type="text" name="companyNo" className="form-control"
+                            value={company.companyNo} onChange={e=>changeCompany(e)}/>
                 </div>
             </div>
             <div className="row mt-4">
                 <div className="col">
                     <label>비밀번호</label>
-                    <input type="password" name="empPw" className="form-control"
-                            value={emp.empPw} onChange={e=>changeEmp(e)}/>
+                    <input type="password" name="companyPw" className="form-control"
+                            value={company.companyPw} onChange={e=>changeCompany(e)}/>
                 </div>
             </div>
             <div className="row mt-4">
@@ -77,4 +75,4 @@ const EmpLogin = ()=>{
     );
 };
 
-export default EmpLogin;
+export default CompanyLogin;
