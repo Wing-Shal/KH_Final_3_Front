@@ -16,14 +16,17 @@ const Home = lazy(()=>import("./components/Home"));
 const Chat = lazy(()=>import("./components/intergrated/Chat"));
 const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
 const DocumentList = lazy(()=>import("./components/intergrated/Document/DocumentList"));
-const EmpLogin = lazy(()=>import("./components/EmpLogin"));
+// const EmpLogin = lazy(()=>import("./components/intergrated/EmpLogin"));
+// const CompanyLogin = lazy(()=>import("./components/intergrated/CompanyLogin"));
+const Login = lazy(()=>import("./components/intergrated/Login"));
+const CompanyJoin = lazy(()=>import("./components/intergrated/CompanyJoin"));
 
 const App = ()=> {
 
   //recoil state
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
-  
+
   //recoil value
   const isLogin = useRecoilValue(isLoginState);
 
@@ -41,14 +44,16 @@ const App = ()=> {
       //리프레시 토큰으로 Authorization을 변경하고
       axios.defaults.headers.common["Authorization"] = refreshToken;
       //재로그인 요청을 보낸다
-      const resp = await axios.post("/emp/refresh");
+      const resp = await axios.post("/refresh/");
       //결과를 적절한 위치에 설정한다
-      setLoginId(resp.data.empNo);
-      setLoginLevel(resp.data.empType);
+      setLoginId(resp.data.loginId);
+      setLoginLevel(resp.data.loginLevel);
       axios.defaults.headers.common["Authorization"] = resp.data.accessToken;
       window.localStorage.setItem("refreshToken", resp.data.refreshToken);
     }
   }, []);
+  
+  
 
   return (
     <>
@@ -69,7 +74,10 @@ const App = ()=> {
                     <Route path="/chat" element={<Chat />}/>
                     <Route path="/boardBlind" element={<BoardBlind />}/>
                     <Route path="/documentList" element={<DocumentList />}/>
-                    <Route path="/emp/login" element={<EmpLogin/>}/>
+                    {/* <Route path="/emp/login" element={<EmpLogin/>}/>
+                    <Route path="/company/login" element={<CompanyLogin/>}/> */}
+                    <Route path='/login' element={<Login />}/>
+                    <Route path="/company/join" element={<CompanyJoin/>}/>
                   </Routes>
                 </Suspense>
 
