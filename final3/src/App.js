@@ -8,6 +8,9 @@ import { Suspense, lazy, useCallback, useEffect } from 'react';
 import axios from "./components/utils/CustomAxios";
 import LoadingScreen from './components/LoadingScreen';
 import SideBar from './components/Sidebar';
+import AdminCompany from './components/intergrated/Admin/AdminCompany';
+import AdminLogin from './components/intergrated/Admin/AdminLogin';
+import AdminRoute from './components/routes/AdminRoute';
 
 
 //lazy import
@@ -76,6 +79,8 @@ const App = () => {
                     <Route path="/document" element={<Document />}/>
                     <Route path='/login' element={<Login />}/>
                     <Route path="/company/join" element={<CompanyJoin/>}/>
+                    <Route path="/admin/company" element={<AdminRoute />}/>
+                    <Route path="/admin/login" element={<AdminLogin />}/>
                   </Routes>
                 </Suspense>
 
