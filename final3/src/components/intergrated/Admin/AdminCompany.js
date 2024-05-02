@@ -68,7 +68,6 @@ const AdminCompany = () => {
     const loadData = useCallback(async () => {
         const resp = await axios.get("/admin/company/");
         setCompanies(resp.data);
-        console.log(resp.data);
     }, []);
 
     const handleCheckboxChange = (e) => {
@@ -120,10 +119,8 @@ const AdminCompany = () => {
             if(!doubleCheck) return;
         }
         const resp = await axios.patch("/admin/company/approve/" + company.companyNo);
-        console.log("Approve response:", resp); // 응답 확인
 
         loadData(); // 데이터 로딩
-        console.log("Data reloaded after approval"); // 로딩 확인
     });
 
     return (

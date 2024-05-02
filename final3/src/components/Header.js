@@ -2,7 +2,7 @@
 
 //import
 import './Header.css'
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useRecoilState, useRecoilValue } from "recoil";
 import { isLoginState, loginIdState, loginLevelState } from "./utils/RecoilData";
 import { useCallback } from "react";
@@ -26,15 +26,22 @@ function Header() {
             delete axios.defaults.headers.common['Authorization'];
             window.localStorage.removeItem("refreshToken");
         }, [loginId, loginLevel]);
-
+        
+        //현재 주소
+        const location = useLocation();
+        //운영자 주소인지 확인
+        const isAdminPath = location.pathname.startsWith('/admin');
+        //동적 할당
+        const targetPath = isAdminPath ? '/' : '/admin/home';
+        const linkText = loginLevel === '운영자' && ( isAdminPath ? '메인으로' : '운영자 홈으로' );
 
     return (
         <>
             <div className="row header">
-                <div className="col-1">
-
+                <div className="col-2 text-end">
+                    <NavLink className="dropdown-item" to={targetPath}>{linkText}</NavLink>
                 </div>
-                <div className="col-9 text-center">
+                <div className="col-8 text-center">
                     회사 로고 자리
                 </div>
                 <div className="col-2 text-center">

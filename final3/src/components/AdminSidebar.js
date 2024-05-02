@@ -2,9 +2,7 @@ import {
     Menu,
     MenuItem,
     Sidebar,
-    SubMenu,
-    sidebarClasses,
-    menuClasses,
+    SubMenu
 } from "react-pro-sidebar";
 
 import { Link } from 'react-router-dom';
@@ -67,29 +65,13 @@ const SideBar = () => {
         <>
             <Sidebar rootStyles={sidebarStyles}>
                 <div className="text-center py-4">
-                    <Link to="/">
-                        <img src="https://flow.team/flow-renewal/assets/images/logo/logo-flow.svg" />
-                    </Link>
+                    <img src="https://flow.team/flow-renewal/assets/images/logo/logo-flow.svg" />
                 </div>
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
-                    <MenuItem component={<Link to="/" />}> 대시보드 </MenuItem>
-                    <MenuItem component={<Link to="/" />}> 회사정보 </MenuItem>
-                </Menu>
-                <div className="logo-outline" />
-                <Menu>
-                    <SubMenu label="프로젝트" defaultOpen>
-                        <Menu menuItemStyles={subItemStyles}>
-                            <MenuItem component={<Link to="/project" />}> 내 프로젝트 목록 </MenuItem>
-                            <MenuItem component={<Link to="/document" />}> 내 문서 목록 </MenuItem>
-                        </Menu>
-                    </SubMenu>
-                </Menu>
-                <div className="logo-outline" />
-                <Menu menuItemStyles={menuItemStyles}>
-                    <MenuItem component={<Link to="/" />}> 캘린더 </MenuItem>
-                    <MenuItem component={<Link to="/boardBlind" />}> 블라인드 </MenuItem>
-                    <MenuItem component={<Link to="/chatroom" />}> 채팅 </MenuItem>
+                    <MenuItem component={<Link to="/admin/home" />}> 홈으로 </MenuItem>
+                    <div className="logo-outline" />
+                    <MenuItem component={<Link to="/admin/company" />}> 회사 관리 </MenuItem>
                 </Menu>
             </Sidebar >
         </>
