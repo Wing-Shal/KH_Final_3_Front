@@ -1,13 +1,16 @@
-import { Navigate, Outlet } from 'react-router-dom';
+import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isLoginState, loginLevelState } from '../utils/RecoilData';
 import { useEffect, useMemo, useState } from 'react';
 
-const AdminRoute = ({refreshLogin}) => {
-    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
-    const [isLoading, setIsLoading] = useState(true);
-    const isLogin = useRecoilValue(isLoginState);
+const LoginRoute = ({refreshLogin}) => {
+    const location = useLocation();
+    const isAdminPath = location.pathname.includes("admin");
+    const isLoginPath = location.pathname.includes("login");
 
+    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+    const isLogin = useRecoilValue(isLoginState);
+    const [isLoading, setIsLoading] = useState(true);
     useEffect(()=> {
         const load = async ()=> {
             await refreshLogin();
@@ -15,22 +18,18 @@ const AdminRoute = ({refreshLogin}) => {
         };
         load();
     }, [refreshLogin]);
-
-    const isAdmin = useMemo(()=> {
-        return loginLevel === '운영자'
-    }, [loginLevel]);
-
+    
     return (
         isLoading ? (
             <div>Loading...</div>
         ) : (
-            isAdmin ? (
+            (isLogin || isLoginPath) ? (
                 <Outlet />
             ) : (
-                isLogin ? (
-                    <Navigate to="/NEL" />
-                ) : (
+                isAdminPath ? (
                     <Navigate to="/admin/login" />
+                ) : (
+                    <Navigate to="/login" />
                 )
             )
         )
@@ -38,4 +37,4 @@ const AdminRoute = ({refreshLogin}) => {
 };
 
 
-export default AdminRoute;
+export default LoginRoute;

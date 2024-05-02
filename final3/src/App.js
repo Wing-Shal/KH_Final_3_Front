@@ -1,15 +1,16 @@
 //import
 
-import { Route, Routes, useLocation } from 'react-router';
+import { Route, Routes, useLocation, useNavigate } from 'react-router';
 import './App.css';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isLoginState, loginIdState, loginLevelState } from './components/utils/RecoilData';
-import { Suspense, lazy, useCallback, useEffect, useTransition } from 'react';
+import { Suspense, lazy, useCallback, useEffect } from 'react';
 import axios from "./components/utils/CustomAxios";
 import LoadingScreen from './components/LoadingScreen';
 import SideBar from './components/Sidebar';
 import AdminSideBar from './components/AdminSidebar';
 import AdminRoute from './components/routes/AdminRoute';
+import LoginRoute from './components/routes/LoginRoute';
 
 
 //lazy import
@@ -25,14 +26,14 @@ const Project = lazy(() => import("./components/intergrated/Project/Project"));
 const AdminHome = lazy(() => import("./components/intergrated/Admin/AdminHome"));
 const AdminCompany = lazy(() => import("./components/intergrated/Admin/AdminCompany"));
 const AdminLogin = lazy(() =>import("./components/intergrated/Admin/AdminLogin"));
+const NEL = lazy(()=>import("./components/NEL"));
 
 const App = () => {
-  const [isPending, startTransition] = useTransition();
-  const location = useLocation();
-  const isAdminPath = location.pathname.startsWith("/admin");
-
-
   //recoil state
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isAdminPath = location.pathname.includes("admin");
+  const isLoginPath = location.pathname.includes("login");
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
 
@@ -70,34 +71,36 @@ const App = () => {
 
       <div className='container-fluid d-flex'>
         <div className='sideber'>
-          {isAdminPath ? (
+          {isLoginPath ? (<></>) : (
+            isAdminPath ? (
             <AdminSideBar />
           ) : (
             <SideBar />
-          )}
+          ))}
         </div>
         <div className='container'>
           <div className='row mt-4'>
             <div className='col-10 offset-sm-1'>
               <Suspense fallback={<LoadingScreen />}>
                 <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/chat/:chatroomNo" element={<Chat />} />
-                  <Route path="/chatroom" element={<ChatRoom />} />
-                  {/* <Route path="/boardBlind" element={<BoardBlind />}/> */}
-                  <Route path="/project" element={<Project />} />
-                  <Route path="/document" element={<Document />} />
-                  <Route path='/login' element={<Login />} />
-                  <Route path="/company/join" element={<CompanyJoin />} />
-                  <Route path="/admin/login" element={<AdminLogin />} />
-                  <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
-                    <Route path="company" element={<AdminCompany />} />
-                    <Route path='home' element={<AdminHome />} />
+                  <Route element={<LoginRoute refreshLogin={refreshLogin} />}>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/NEL" element={<NEL />} />
+                    <Route path="/chat/:chatroomNo" element={<Chat />} />
+                    <Route path="/chatroom" element={<ChatRoom />} />
+                    {/* <Route path="/boardBlind" element={<BoardBlind />}/> */}
+                    <Route path="/project" element={<Project />} />
+                    <Route path="/document" element={<Document />} />
+                    <Route path='/login' element={<Login />} />
+                    <Route path="/company/join" element={<CompanyJoin />} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
+                      <Route path="company" element={<AdminCompany />} />
+                      <Route path='home' element={<AdminHome />} />
+                    </Route>
                   </Route>
                 </Routes>
               </Suspense>
-
-
             </div>
           </div>
         </div>
