@@ -1,15 +1,34 @@
-import React, { lazy } from 'react';
-import { Route, Navigate } from 'react-router-dom';
-import { useRecoilState, useRecoilValue } from 'recoil';
-import { isLoginState, loginIdState, loginLevelState } from '../utils/RecoilData';
-const AdminCompany = lazy(()=> import("../intergrated/Admin/AdminCompany"));
+import { Navigate, Outlet } from 'react-router-dom';
+import { useRecoilState } from 'recoil';
+import { loginLevelState } from '../utils/RecoilData';
+import { useEffect, useMemo, useState } from 'react';
 
-const AdminRoute = ({element}) => {
+const AdminRoute = ({refreshLogin}) => {
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
-    const isLogin = useRecoilValue(isLoginState);
-    const isAdmin = isLogin && loginLevel === '운영자';
+    const [isLoading, setIsLoading] = useState(true);
+    useEffect(()=> {
+        const load = async ()=> {
+            await refreshLogin();
+            setIsLoading(false);
+        };
+        load();
+    }, [refreshLogin]);
 
-    return isAdmin ? <AdminCompany /> : <Navigate to="/admin/login" />;
+    const isAdmin = useMemo(()=> {
+        return loginLevel === '운영자'
+    }, [loginLevel]);
+
+    return (
+        isLoading ? (
+            <div>Loading...</div>
+        ) : (
+            isAdmin ? (
+                <Outlet />
+            ) : (
+                <Navigate to="/admin/login" />
+            )
+        )
+    );
 };
 
 

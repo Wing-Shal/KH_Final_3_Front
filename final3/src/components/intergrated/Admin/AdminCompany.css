@@ -4,4 +4,5 @@
 .tw-3 {width: 30%}
 .pointer {
     cursor: pointer;
+    margin: 0;
 }

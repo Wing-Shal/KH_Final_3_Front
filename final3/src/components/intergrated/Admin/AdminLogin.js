@@ -42,7 +42,7 @@ const AdminLogin = ()=>{
         window.localStorage.setItem("refreshToken", resp.data.refreshToken);
 
 
-        navigator("/");
+        navigator("/admin/home");
     }, [input]);
 
     return (
