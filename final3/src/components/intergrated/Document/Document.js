@@ -25,7 +25,8 @@ const Document = () => {
         documentName: "",
         documentWriteTime: "",
         documentLimitTime: "",
-        empNo: ""
+        documentContent: "",
+       
     });
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
 
@@ -77,10 +78,12 @@ const Document = () => {
     //입력값 초기화
     const clearInput = useCallback(() => {
         setInput({
-            documentName: "",
-            documentWriteTime: "",
-            documentLimitTime: "",
-            empNo: ""
+        documentName: "",
+        documentWriteTime: "",
+        documentLimitTime: "",
+        documentContent: "",
+        projectNo:"",
+        projectName:""
         });
     }, [input]);
 
@@ -212,26 +215,18 @@ const Document = () => {
                     <div className="card-title">
                         <FcOpenedFolder style={{ color: '#007bff', fontSize: '1.5em', marginRight: '0.5em' }} />
                         {/* 수정된 부분: documentName을 링크로 표시하는 부분과 input으로 변경하는 부분을 분리 */}
-                        {document.edit ? (
-                            <div>
-                                <input
-                                    type="text"
-                                    value={document.documentName}
-                                    name="documentName"onChange={(e) => changeDocument(e, document)}
-                                    className="form-control"
-                                />
-                            </div>
-                        ) : (
-                            <Link to={`/document/${document.documentNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                {document.documentName}
-                            </Link>
-                        )}
+            
                     </div>
                     <div>
+                    <div className="card-text">플젝 번호: {document.projectNo}</div>
                         <div className="card-text">문서 번호: {document.documentNo}</div>
+                        <div className="card-text">제목: {document.documentTitle}</div>
+                        <div className="card-text">내용: {document.documentContent}</div>
                         <div className="card-text">작성자: {document.documentWriter}</div>
                         <div className="card-date-picker">시작일: {document.edit ? <input type="date" name="documentWriteTime" value={document.documentWriteTime} onChange={(e) => changeDocument(e, document)} /> : document.documentWriteTime}</div>
                         <div className="card-date-picker">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
+                        <div className="card-text">참조자: {document.empName}</div>
+                        <div className="card-text">결재자: {document.documentApprover}</div>
                     </div>
                     <div className="text-end">
                         {document.edit ? (
@@ -267,14 +262,27 @@ const Document = () => {
                         <div className="modal-body">
                             {/* 등록 화면 */}
                             {/* 프로젝트 정보 표시 */}
-                            <div>
-                                <p>사원 번호: {input.empNo}</p>
+                         
+                                 <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                                 일반
+                             </button>
+                             <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                                 결재
+                             </button>
+                            <div className="row">
+                                <div className="col">
+                                    <label>해당플젝번호</label>
+                                    <input type="text" name="projectNo"
+                                        value={input.projectNo}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
                             </div>
                             <div className="row">
                                 <div className="col">
                                     <label>문서 제목</label>
-                                    <input type="text" name="documentName"
-                                        value={input.documentName}
+                                    <input type="text" name="documentTitle"
+                                        value={input.documentTitle}
                                         onChange={e => changeInput(e)}
                                         className="form-control" />
                                 </div>
@@ -309,7 +317,8 @@ const Document = () => {
                                         className="form-control" />
                                 </div>
                             </div>
-                                {/* <div className="row">
+
+                        <div className="row">
                                 <div className="col">
                                     <label>참조자</label>
                                     <input type="text" name="documentApprover"
@@ -326,8 +335,8 @@ const Document = () => {
                                         onChange={e => changeInput(e)}
                                         className="form-control" />
                                 </div>
-                                </div> */}
-                                {/* <div className="row">
+                                </div> 
+                                 {/* <div className="row">
                                 <div className="col">
                                     <label>첨부파일</label>
                                     <input type="file" name="attachment"
@@ -336,7 +345,7 @@ const Document = () => {
                                         className="form-control" />
                                 
                             </div>
-                            </div> */}
+                            </div>  */}
                         </div>
                         <div className="modal-footer">
                             <button className='btn btn-success me-2' onClick={e => saveInput()}>

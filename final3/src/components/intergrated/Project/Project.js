@@ -218,7 +218,7 @@ const Project = () => {
                                 />
                             </div>
                         ) : (
-                            <Link to={`/document/${project.projectNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                            <Link to={`/document?projectNo=${project.projectNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                 {project.projectName}
                             </Link>
                         )}
