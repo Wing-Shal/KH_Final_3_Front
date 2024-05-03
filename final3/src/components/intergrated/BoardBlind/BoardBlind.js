@@ -10,7 +10,7 @@ function BoardBlind() {
 
     // state
     const [boardBlinds, setBoardBlinds] = useState([]);
-    // const [empNo, setEmpNo] = useRecoilState(loginIdState); // 사용자의 empNo를 저장합니다.
+    // const [blindEmpNo, setblindEmpNo] = useRecoilState(loginIdState); // 사용자의 blindEmpNo를 저장합니다.
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [input, setInput] = useState({
         blindTitle: "",
@@ -20,7 +20,7 @@ function BoardBlind() {
         blindWtime: "",
         blindEtime: "",
         blindPassword: "",
-        empNo: "",
+        blindEmpNo: "",
         companyName:""
     });
 
@@ -30,10 +30,11 @@ function BoardBlind() {
     }, []);
 
     const loadData = useCallback(async () => {
-        const empNo = loginId;
-        const resp = await axios.get("/boardBlind/");
+        // const blindEmpNo = loginId;
+        const resp = await axios.get("/boardBlind/"); // 이 엔드포인트가 companyName을 포함한 블라인드 게시글을 반환한다고 가정합니다.
         setBoardBlinds(resp.data);
-    }, [loginId]);
+    }, []);
+    
 
     //신규 등록 화면 입력값 변경
     const changeInput = useCallback((e) => {
@@ -63,7 +64,7 @@ function BoardBlind() {
             blindWtime: "",
             blindEtime: "",
             blindPassword: "",
-            empNo: "",
+            blindEmpNo: "",
             blindView:"",
             companyName:""
         });
@@ -76,7 +77,7 @@ function BoardBlind() {
         const modal = new Modal(bsModal.current);
         setInput({
             ...input,
-            empNo: loginId
+            blindEmpNo: loginId
         });
         modal.show();
     }, [bsModal, input, loginId]);
@@ -118,7 +119,7 @@ function BoardBlind() {
                                 <th>글번호</th>
                                 <th>제목</th>
                                 <th>작성자</th>
-                                <th>회사</th>
+                                <th>사원번호</th>
                                 <th>조회수</th>
                             </tr>
                         </thead>
@@ -130,6 +131,7 @@ function BoardBlind() {
                                     <td>{boardBlind.blindWriterNick}</td>
                                     <td>{boardBlind.blindWriterCompany}</td>
                                     <td>{boardBlind.blindView}</td>
+
                                 </tr>
                             ))}
                         </tbody>
