@@ -5,7 +5,7 @@ import SockJS from 'sockjs-client';
 import Draggable from 'react-draggable';
 import throttle from "lodash/throttle";
 import axios from "../../utils/CustomAxios";
-import { useRecoilState } from 'recoil';
+import { constSelector, useRecoilState } from 'recoil';
 import { loginIdState } from "../../utils/RecoilData";
 import './Chatroom.css';
 
@@ -38,8 +38,8 @@ const ChatRoom = () => {
     }, []);
 
     const loadChatroomData = useCallback(async () => {
-        const empNo = loginId;
-        const resp = await axios.get(`/chat/list/${empNo}`);
+        const token = axios.defaults.headers.common['Authorization']
+        const resp = await axios.get(`/chat/list/${token}`);
         setChatrooms(resp.data);
     }, []);
 
@@ -49,21 +49,22 @@ const ChatRoom = () => {
     }, [])
 
     const loadCompanyEmpData = useCallback(async () => {
-        const empNo = loginId;
-        const resp = await axios.get(`emp/list/${empNo}`);
+        const token = axios.defaults.headers.common['Authorization']
+        const resp = await axios.get(`emp/list/${token}`);
         setEmps(resp.data);
     }, []);
 
     //사원 정보 불러오는 함수임
     useEffect(() => {
         loadEmpData();
-    }, [loginId])
+    }, [])
 
     const loadEmpData = useCallback(async () => {
-        const empNo = loginId;
-        const resp = await axios.get(`emp/${empNo}`);
+        const token = axios.defaults.headers.common['Authorization']
+        // console.log(token);
+        const resp = await axios.get(`emp/${token}`);
         setEmpInfos([resp.data]);
-    }, [loginId]);
+    }, []);
 
 
     //메세지 불러오는 함수
@@ -135,7 +136,7 @@ const ChatRoom = () => {
             textAreaRef.current.style.height = '65px';
         }
 
-
+        //스크롤 맨 밑으로 내리는거
         setTimeout(() => {
             if (scrollRef.current) {
                 scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -156,9 +157,9 @@ const ChatRoom = () => {
             if (modal) {
                 modal.hide();
             }
+            setChatroomNo("");
+            setMessages([]);
         }
-        setChatroomNo("");
-        setMessages([]);
     }, []);
 
     const modalScrollListener = useCallback(throttle(() => {
@@ -186,7 +187,7 @@ const ChatRoom = () => {
 
         loadMessageData();
 
-        console.log(chatroomName);
+        // console.log(chatroomName);
 
         const modalContent = bsModal.current.querySelector('.modal-body');
         if (modalContent) {
@@ -203,7 +204,7 @@ const ChatRoom = () => {
                 if (scrollRef.current) {
                     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
                 }
-            }, 400);
+            }, 500);
 
             const handleEscKeyPress = (event) => {
                 if (event.key === 'Escape') {
@@ -241,7 +242,7 @@ const ChatRoom = () => {
             setEmpInfos([selectedEmpInfo]);
         }
         else {
-            setEmpInfos([]); //찾지 못했을 때 빈 배열로 설정
+            setEmpInfos([]);
         }
         const modal = new Modal(bsEmpModal.current);
         modal.show();
@@ -251,6 +252,24 @@ const ChatRoom = () => {
         const modal = Modal.getInstance(bsEmpModal.current)
         modal.hide();
     }, [bsEmpModal]);
+
+    const startChatWithEmp = async (selectedEmpNo) => {
+        const token = axios.defaults.headers.common['Authorization'];
+        try {
+            const resp = await axios.post(`chat/findOrCreate/${token}/${selectedEmpNo}`)
+            if (resp.data) {
+                closeEmpModal();
+                openChatModal(resp.data.chatroomNo);
+                loadChatroomData();
+                // console.log("chatroomNo :", resp.data.chatroomNo);
+            }
+        }
+        catch (error) {
+            // console.error('채팅방 생성 또는 조회 실패:', error);
+            // console.log("토큰 :", token);
+            // console.log("선택된 empNo :", selectedEmpNo);
+        }
+    };
 
 
 
@@ -294,7 +313,7 @@ const ChatRoom = () => {
             </div>
 
 
-            <div ref={bsModal} className="modal fade" id="staticBackdrop" tabIndex="-1"
+            <div ref={bsModal} className="modal fade chat-modal" id="staticBackdrop" tabIndex="-1"
                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <Draggable>
                     <div className="modal-dialog modal-dialog-scrollable modal-xl">
@@ -381,7 +400,9 @@ const ChatRoom = () => {
                                 </table>
                             </div>
                             <div className="modal-footer">
-                                <button className="btn btn-primary">채팅하기</button>
+                                {empInfos.map(empInfo => (
+                                    <button key={empInfo.empNo} className="btn btn-primary" onClick={() => startChatWithEmp(empInfo.empNo)}>채팅하기</button>
+                                ))}
                             </div>
                         </div>
                     </div>
