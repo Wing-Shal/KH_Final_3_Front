@@ -1,26 +1,37 @@
 /* 모달 내의 스크롤바 전체 스타일 설정 */
 .modal-body::-webkit-scrollbar {
-    width: 10px; /* 스크롤바의 너비를 더 얇게*/
-    border-radius: 10px; /* 스크롤바의 모서리를 둥글게 */
+    width: 10px;
+    /* 스크롤바의 너비를 더 얇게*/
+    border-radius: 10px;
+    /* 스크롤바의 모서리를 둥글게 */
 }
 
 /* 스크롤바 배경 */
 .modal-body::-webkit-scrollbar-track {
-    background: #f3dbdf; /* 밝은 회색으로 트랙의 배경 색상 설정 */
-    border-radius: 10px; /* 트랙의 모서리도 둥글게 */
+    background: #f3dbdf;
+    /* 밝은 회색으로 트랙의 배경 색상 설정 */
+    border-radius: 10px;
+    /* 트랙의 모서리도 둥글게 */
 }
 
 /* 스크롤바 색상 */
 .modal-body::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #FFC0CB, #f5abb7) !important; 
-    border-radius: 10px; /* 핸들의 모서리 둥글게 */
+    background: linear-gradient(180deg, #FFC0CB, #f5abb7) !important;
+    border-radius: 10px;
+    /* 핸들의 모서리 둥글게 */
 }
 
 /* 호버했을 때 */
 .modal-body::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #f594a4, #ff657f) !important; 
+    background: linear-gradient(180deg, #f594a4, #ff657f) !important;
 }
 
 .modal-backdrop {
     background-color: rgba(50, 50, 50, 0.15);
+}
+
+/* 텍스트입력창 */
+textarea {
+    resize: none;
+    overflow: hidden;
 }

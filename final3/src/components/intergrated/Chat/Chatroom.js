@@ -1,20 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Modal } from "bootstrap";
 import { LuSendHorizontal } from "react-icons/lu";
 import SockJS from 'sockjs-client';
 import Draggable from 'react-draggable';
 import throttle from "lodash/throttle";
 import axios from "../../utils/CustomAxios";
+import { useRecoilState } from 'recoil';
+import { loginIdState } from "../../utils/RecoilData";
 import './Chatroom.css';
 
 const ChatRoom = () => {
     const [chatrooms, setChatrooms] = useState([]);
     const [chatroomNo, setChatroomNo] = useState("");
+    const [emps, setEmps] = useState([]);
+    const [empInfos, setEmpInfos] = useState([]);
     const [messages, setMessages] = useState([]);
     const [messageInput, setMessageInput] = useState("");
     const [chatroomName, setChatroomName] = useState("");
     const bsModal = useRef();
+    const bsEmpModal = useRef();
     const scrollRef = useRef();
+    const textAreaRef = useRef(null);
+
+    //recoil
+    const [loginId, setLoginId] = useRecoilState(loginIdState);
+
 
     const [page, setPage] = useState(1);
     const [size] = useState(40);
@@ -24,17 +34,38 @@ const ChatRoom = () => {
 
     //채팅룸 불러오는 함수
     useEffect(() => {
-        loadData();
+        loadChatroomData();
     }, []);
 
-    const loadData = useCallback(async () => {
-        const response = await axios.post("/refresh/");
-        const empNo = response.data.loginId;
+    const loadChatroomData = useCallback(async () => {
+        const empNo = loginId;
         const resp = await axios.get(`/chat/list/${empNo}`);
         setChatrooms(resp.data);
     }, []);
 
-    
+    //회사 사원 불러오는 함수임
+    useEffect(() => {
+        loadCompanyEmpData();
+    }, [])
+
+    const loadCompanyEmpData = useCallback(async () => {
+        const empNo = loginId;
+        const resp = await axios.get(`emp/list/${empNo}`);
+        setEmps(resp.data);
+    }, []);
+
+    //사원 정보 불러오는 함수임
+    useEffect(() => {
+        loadEmpData();
+    }, [loginId])
+
+    const loadEmpData = useCallback(async () => {
+        const empNo = loginId;
+        const resp = await axios.get(`emp/${empNo}`);
+        setEmpInfos([resp.data]);
+    }, [loginId]);
+
+
     //메세지 불러오는 함수
     const loadMessageData = useCallback(async () => {
         try {
@@ -44,7 +75,7 @@ const ChatRoom = () => {
             const response = await axios.get(`/chat/${chatroomNo}/page/${page}/size/${size}`);
             setMessages(prevMessages => [...response.data.list, ...prevMessages]);
             setLast(response.data.last);
-    
+
             setTimeout(() => {
                 const newScrollHeight = modalContent.scrollHeight; // 데이터 로드 후 스크롤 높이 측정
                 modalContent.scrollTop = newScrollHeight - oldScrollHeight; // 이전 스크롤 위치 복원
@@ -81,7 +112,14 @@ const ChatRoom = () => {
         }
     }, [chatroomNo, loadMessageData]);
 
-    //메세지 보내는 함수
+    //textarea 높이 입력 내용에 맞게 조정
+    const handleInputChange = (e) => {
+        setMessageInput(e.target.value);
+        e.target.style.height = '65px';  //높이를 초기화
+        e.target.style.height = `${e.target.scrollHeight}px`;  //스크롤 크기만큼 높이 설정
+    };
+
+    //메세지 보내는 부분
     const sendMessage = () => {
         if (!messageInput.trim() || !socketRef.current) return;
         const message = {
@@ -91,7 +129,13 @@ const ChatRoom = () => {
         };
         const json = JSON.stringify(message);
         socketRef.current.send(json);
-        setMessageInput("");
+
+        setMessageInput(""); //입력한 부분 초기화
+        if (textAreaRef.current) {
+            textAreaRef.current.style.height = '65px';
+        }
+
+
         setTimeout(() => {
             if (scrollRef.current) {
                 scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -99,7 +143,14 @@ const ChatRoom = () => {
         }, 0);
     };
 
-    const closeModal = useCallback(() => {
+    const handleKeyDown = (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {  //Shift 키와 함께 Enter 키를 누르면 줄바꿈
+            e.preventDefault();  //기본 Enter 이벤트(새 줄 추가) 방지
+            sendMessage();
+        }
+    };
+
+    const closeChatModal = useCallback(() => {
         if (bsModal.current) {
             const modal = Modal.getInstance(bsModal.current);
             if (modal) {
@@ -126,7 +177,7 @@ const ChatRoom = () => {
 
 
     //모달오픈
-    const openModal = useCallback((chatroomNo) => {
+    const openChatModal = useCallback((chatroomNo) => {
         const modal = new Modal(bsModal.current);
         modal.show();
         setChatroomNo(chatroomNo);
@@ -134,7 +185,7 @@ const ChatRoom = () => {
         setPage(1);
 
         loadMessageData();
-        
+
         console.log(chatroomName);
 
         const modalContent = bsModal.current.querySelector('.modal-body');
@@ -143,7 +194,7 @@ const ChatRoom = () => {
 
             const handleOutsideModalClick = (event) => {
                 if (!bsModal.current.contains(event.target)) {
-                    closeModal();
+                    closeChatModal();
                 }
             };
 
@@ -156,7 +207,7 @@ const ChatRoom = () => {
 
             const handleEscKeyPress = (event) => {
                 if (event.key === 'Escape') {
-                    closeModal();
+                    closeChatModal();
                 }
             };
 
@@ -168,26 +219,45 @@ const ChatRoom = () => {
                 document.removeEventListener('keydown', handleEscKeyPress);
             };
         }
-    }, [bsModal, closeModal, loadMessageData, modalScrollListener]);
+    }, [bsModal, closeChatModal, loadMessageData, modalScrollListener]);
 
     //모달 스크롤 이벤트제어
     useEffect(() => {
         const modalContent = bsModal.current.querySelector('.modal-body');
         if (modalContent) {
             modalContent.addEventListener("scroll", modalScrollListener);
-    
+
             return () => {
                 modalContent.removeEventListener("scroll", modalScrollListener);
             };
         }
     }, [modalScrollListener]);
 
-    
+
+    //사원 모달
+    const openEmpModal = useCallback((empNo) => {
+        const selectedEmpInfo = emps.find(emp => emp.empNo === empNo);
+        if (selectedEmpInfo) {
+            setEmpInfos([selectedEmpInfo]);
+        }
+        else {
+            setEmpInfos([]); //찾지 못했을 때 빈 배열로 설정
+        }
+        const modal = new Modal(bsEmpModal.current);
+        modal.show();
+    }, [emps, bsEmpModal]);
+
+    const closeEmpModal = useCallback(() => {
+        const modal = Modal.getInstance(bsEmpModal.current)
+        modal.hide();
+    }, [bsEmpModal]);
+
+
 
     return (
         <>
-            <div className="row mt-4 chatroom-wrapper">
-                <div className="col">
+            <div className="row mt-4">
+                <div className="col-md-6">
                     <table className="table">
                         <thead className="text-center">
                             <tr>
@@ -197,7 +267,7 @@ const ChatRoom = () => {
                         </thead>
                         <tbody className="text-center">
                             {chatrooms.map(chatroom => (
-                                <tr key={chatroom.chatroomNo} onClick={() => openModal(chatroom.chatroomNo)}>
+                                <tr key={chatroom.chatroomNo} onClick={() => openChatModal(chatroom.chatroomNo)}>
                                     <td>{chatroom.chatroomNo}</td>
                                     <td>{chatroom.chatroomName}</td>
                                 </tr>
@@ -205,8 +275,24 @@ const ChatRoom = () => {
                         </tbody>
                     </table>
                 </div>
+                <div className="col-md-6">
+                    <table className="table">
+                        <thead className="text-center">
+                            <tr>
+                                <th>우리회사 사원</th>
+                            </tr>
+                        </thead>
+                        <tbody className="text-center">
+                            {emps.map(emp => (
+                                <tr key={emp.empNo} onClick={() => openEmpModal(emp.empNo)}>
+                                    <td>{emp.empName} ({emp.empGrade})</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-            
+
 
             <div ref={bsModal} className="modal fade" id="staticBackdrop" tabIndex="-1"
                 aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -215,7 +301,7 @@ const ChatRoom = () => {
                         <div className="modal-content">
                             <div className="modal-header">
                                 <h1 className="modal-title fs-5" id="staticBackdropLabel">{chatroomName}</h1>
-                                <button type="button" className="btn-close" aria-label="Close" onClick={closeModal}></button>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={closeChatModal}></button>
                             </div>
                             <div className="modal-body" ref={scrollRef}>
                                 <table className="table">
@@ -232,16 +318,13 @@ const ChatRoom = () => {
                             </div>
                             <div className="modal-footer">
                                 <div className="col-9">
-                                    <input
-                                        type="text"
+                                    <textarea
                                         className="form-control"
+                                        placeholder="할 말 입력하센"
+                                        ref={textAreaRef}
                                         value={messageInput}
-                                        onChange={(e) => setMessageInput(e.target.value)}
-                                        onKeyDown={(e) => {
-                                            if (e.key === 'Enter') {
-                                                sendMessage();
-                                            }
-                                        }}
+                                        onChange={handleInputChange}
+                                        onKeyDown={handleKeyDown}
                                     />
                                 </div>
                                 <div className="col text-end">
@@ -249,6 +332,56 @@ const ChatRoom = () => {
                                         전송
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </Draggable>
+            </div>
+
+            <div ref={bsEmpModal} className="modal fade" id="staticBackdrop" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <Draggable>
+                    <div className="modal-dialog modal-dialog-scrollable">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <h1 className="modal-title fs-5" id="staticBackdropLabel">사원사원</h1>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={closeEmpModal}></button>
+                            </div>
+                            <div className="modal-body" ref={scrollRef}>
+                                <table className="table text-center">
+                                    <tbody>
+                                        {empInfos.map(empInfo => (
+                                            <React.Fragment key={empInfo.empNo}>
+                                                <tr>
+                                                    <td>사원명</td>
+                                                    <td>{empInfo.empName}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>사원번호</td>
+                                                    <td>{empInfo.empNo}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>소속부서</td>
+                                                    <td>{empInfo.empDept}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>연락처</td>
+                                                    <td>{empInfo.empContact}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>이메일</td>
+                                                    <td>{empInfo.empEmail}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>자기소개</td>
+                                                    <td>{empInfo.empPr}</td>
+                                                </tr>
+                                            </React.Fragment>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div className="modal-footer">
+                                <button className="btn btn-primary">채팅하기</button>
                             </div>
                         </div>
                     </div>
