@@ -11,13 +11,13 @@ import axios from "../../utils/CustomAxios";
 import { Modal } from "bootstrap";
 import { Link } from 'react-router-dom';
 import { FcOpenedFolder } from "react-icons/fc";
-import Document from '../Document/Document';
+
 
 
 const Project = () => {
 
     //state
-    const projectName = 'Your Project Name'; // 예시로 고정값 사용, 실제로는 상태나 변수로 가져와야 함
+    // const projectName = 'Your Project Name'; // 예시로 고정값 사용, 실제로는 상태나 변수로 가져와야 함
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [projects, setProjects] = useState([]);
@@ -182,7 +182,7 @@ const Project = () => {
     //view
     return (
         <>
-           <Document projectName={projectName} />
+       
             {/* 제목 */}
             <Jumbotron title="내 프로젝트" />
 
