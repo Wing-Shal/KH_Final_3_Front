@@ -21,7 +21,7 @@ function BoardBlind() {
         blindEtime: "",
         blindPassword: "",
         blindEmpNo: "",
-        companyName:""
+        companyName: ""
     });
 
     //effect
@@ -30,11 +30,11 @@ function BoardBlind() {
     }, []);
 
     const loadData = useCallback(async () => {
-        // const blindEmpNo = loginId;
+        const blindEmpNo = loginId;
         const resp = await axios.get("/boardBlind/"); // 이 엔드포인트가 companyName을 포함한 블라인드 게시글을 반환한다고 가정합니다.
         setBoardBlinds(resp.data);
-    }, []);
-    
+    }, [loginId]);
+
 
     //신규 등록 화면 입력값 변경
     const changeInput = useCallback((e) => {
@@ -52,11 +52,11 @@ function BoardBlind() {
         closeModal();
     }, [input, loadData]);
 
-    
+
     //입력값 초기화
     const clearInput = useCallback(() => {
         setInput({
-            blindNo:"",
+            blindNo: "",
             blindTitle: "",
             blindContent: "",
             blindWriterCompany: "",
@@ -65,12 +65,12 @@ function BoardBlind() {
             blindEtime: "",
             blindPassword: "",
             blindEmpNo: "",
-            blindView:"",
-            companyName:""
+            blindView: "",
+            companyName: ""
         });
     }, []);
 
-    
+
     //ref + modal
     const bsModal = useRef();
     const openModal = useCallback(() => {
@@ -85,7 +85,7 @@ function BoardBlind() {
         const modal = Modal.getInstance(bsModal.current);
         modal.hide();
     }, [bsModal]);
-    
+
     //등록 취소
     const cancelInput = useCallback(() => {
         const choice = window.confirm("작성을 취소하시겠습니까?");
@@ -138,6 +138,66 @@ function BoardBlind() {
                     </table>
                 </div>
             </div>
+
+            {/* Modal */}
+            <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">글쓰기1</h1>
+                            <button type="button" className="btn-close" aria-label="Close"
+                                onClick={e => cancelInput()}></button>
+                        </div>
+                        <div className="modal-body">
+                            {/* 등록 화면 */}
+                            {/* 프로젝트 정보 표시 */}
+                            <div>
+                                <p>사원 번호: {input.blindEmpNo}</p>
+                                <p>회사: {input.blindWriterCompany}</p>
+                            </div>
+                            <div className="row">
+                                <div className="col">
+                                    <label>프로젝트 명</label>
+                                    <input type="text" name="projectName"
+                                        value={input.projectName}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>시작일</label>
+                                    <input type="date" name="projectStartTime"
+                                        value={input.projectStartTime}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>마감일</label>
+                                    <input type="date" name="projectLimitTime"
+                                        value={input.projectLimitTime}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                        </div>
+                        <div className="modal-footer">
+                            <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                                등록
+                            </button>
+                            <button className='btn btn-danger' onClick={e => cancelInput()}>
+                                취소
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </>
     );
 }
