@@ -7,19 +7,17 @@ import { FaEdit } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
 import axios from "../../utils/CustomAxios";
 
-const Project = () => {
+const Document = () => {
     // State
     const [loginId, setLoginId] = useRecoilState(loginIdState);
-    const [projects, setProjects] = useState([]);
+    const [documents, setDocuments] = useState([]);
     const [input, setInput] = useState({
-        projectName: "",
-        projectStartTime: "",
-        projectLimitTime: "",
-        empNo: ""
+        documentWriteTime: "",
+        documentLimitTime: "",
+        documentTitle: "",
+        documentContent:""
     });
     const [backup, setBackup] = useState(null);
-
-    // Effect: 페이지 로드 시 데이터 로딩
     useEffect(() => {
         loadData();
     }, []);
@@ -27,17 +25,17 @@ const Project = () => {
     // Data Loading
     const loadData = useCallback(async () => {
         const empNo = loginId;
-        const resp = await axios.get("/project/" + empNo);
-        setProjects(resp.data);
+        const resp = await axios.get("/document/" + empNo);
+        setDocuments(resp.data);
     }, []);
 
     // Data Deletion
-    const deleteProject = useCallback(async (target) => {
+    const deleteDocument = useCallback(async (target) => {
         const choice = window.confirm("정말 삭제하시겠습니까?");
         if (!choice) return;
 
         // 서버에 삭제 요청 후 데이터 다시 로드
-        await axios.delete("/project/" + target.projectNo);
+        await axios.delete("/document/" + target.documentNo);
         loadData();
     }, []);
 
@@ -51,7 +49,7 @@ const Project = () => {
 
     // Register
     const saveInput = useCallback(async () => {
-        await axios.post("/project/", input);
+        await axios.post("/document/", input);
         loadData();
         clearInput();
     }, [input]);
@@ -65,39 +63,39 @@ const Project = () => {
     // Clear Input
     const clearInput = useCallback(() => {
         setInput({
-            projectName: "",
-            projectStartTime: "",
-            projectLimitTime: "",
-            empNo: ""
+        documentWriteTime: "",
+        documentLimitTime: "",
+        documentTitle: "",
+        documentContent:""
         });
     }, []);
 
-    // Editing
-    const editProject = useCallback((target) => {
-        const copy = [...projects];
+    // Editing 수정
+    const editDocument= useCallback((target) => {
+        const copy = [...documents];
 
-        const recover = copy.map(project => {
-            if (project.edit === true) {
+        const recover = copy.map(document => {
+            if (document.edit === true) {
                 return { ...backup, edit: false };
             } else {
-                return { ...project };
+                return { ...document };
             }
         });
         setBackup({ ...target });
 
-        const copy2 = recover.map(project => {
-            if (target.projectNo === project.projectNo) {
+        const copy2 = recover.map(document => {
+            if (target.documentNo === document.documentNo) {
                 return {
-                    ...project,
+                    ...document,
                     edit: true,
                 };
             } else {
-                return { ...project };
+                return { ...document };
             }
         });
 
-        setProjects(copy2);
-    }, [projects]);
+        setDocuments(copy2);
+    }, [documents]);
 
     // View
     return (
@@ -110,8 +108,8 @@ const Project = () => {
 
             {/* Project List */}
             <div className="row mt-4 center">
-    {projects.map(project => (
-        <div className="col-12" key={project.projectNo}>
+    {documents.map(document => (
+        <div className="col-12" key={document.documentNo}>
             <div className="card mb-4" style={{ height: '800px' }}>
                 <div className="card-body">
                     <div className="row"> {/* 시작일과 마감일을 감싸는 row 추가 */}
@@ -120,8 +118,8 @@ const Project = () => {
                                 <div>
                                     <div className="d-flex align-items-center">
                                         <div className="alert alert-warning me-2" style={{ fontSize: '20px' }}>프로젝트명: {project.projectName}</div>
-                                        <div className="alert alert-warning me-2" style={{ fontSize: '20px' }}>문서 번호: {project.documentNo}</div>
-                                        <div className="alert alert-danger me-2" style={{ fontSize: '20px' }}>상태: {project.status}</div>
+                                        <div className="alert alert-warning me-2" style={{ fontSize: '20px' }}>문서 번호: {document.documentNo}</div>
+                                        <div className="alert alert-danger me-2" style={{ fontSize: '20px' }}>상태: {document.documentStatus}</div>
                                     </div>
                                 </div>
                                 <div className="col text-end">
@@ -133,31 +131,31 @@ const Project = () => {
                             </div>
                             <div className="d-flex align-items-center flex-wrap">
                                 <label className="me-2">시작일 </label>
-                                <input type="date" className="form-control me-2" style={{ width: '200px' }} value={project.projectStartTime} onChange={changeInput} />
+                                <input type="date" className="form-control me-2" style={{ width: '200px' }} value={document.documentWriteTime} onChange={changeInput} />
                                 <label className="me-2">마감일 </label>
-                                <input type="date" className="form-control me-2" style={{ width: '200px' }} value={project.projectLimitTime} onChange={changeInput} />
+                                <input type="date" className="form-control me-2" style={{ width: '200px' }} value={document.documentLimitTime} onChange={changeInput} />
                             </div>
                         </div>
                     </div>
                     <div className="mb-3"></div> {/* 마감일 아래에 여백 추가 */}
                     <div className="d-flex align-items-center">
-                        <div className="alert alert-light me-1" style={{ fontSize: '30px' , width: '1050px'}}>제목 {project.projectName}</div>
+                        <div className="alert alert-light me-1" style={{ fontSize: '30px' , width: '1050px'}}>제목 {document.documentTitle}</div>
                     </div>
                     <div>
                         <div className="d-flex align-items-center">
-                            <div className="alert alert-light me-1" style={{ fontSize: '30px'  , width: '1050px', height:'450px'}}>내용 {project.projectName}</div>
+                            <div className="alert alert-light me-1" style={{ fontSize: '30px'  , width: '1050px', height:'450px'}}>내용 {document.documentContent}</div>
                         </div>
                     </div>
                     <div className="d-flex align-items-center justify-content-between">
     <div className="d-flex align-items-center">
-        <div className="alert alert-success me-1" style={{ fontSize: '20px' }}>작성자 {project.projectWriter}</div>
-        <div className="alert alert-success me-1" style={{ fontSize: '20px' }}>결재자 {project.projectWriter}</div>
+        <div className="alert alert-success me-1" style={{ fontSize: '20px' }}>작성자 {document.documentWriter}</div>
+        <div className="alert alert-success me-1" style={{ fontSize: '20px' }}>결재자 {document.documentApprover}</div>
     </div>
                         <div className="d-flex align-items-center">
-        <button className="btn btn-warning me-2" onClick={() => editProject(project)} style={{ fontSize: '25px' }}>
+        <button className="btn btn-warning me-2" onClick={() => editDocument(document)} style={{ fontSize: '25px' }}>
             <FaEdit />
         </button>
-        <button className="btn btn-danger" onClick={() => deleteProject(project)} style={{ fontSize: '25px' }}>
+        <button className="btn btn-danger" onClick={() => deleteDocument(document)} style={{ fontSize: '25px' }}>
             <FaSquareXmark />
         </button>
     </div>
@@ -174,23 +172,28 @@ const Project = () => {
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title" id="staticBackdropLabel">새 프로젝트</h5>
+                            <h5 className="modal-title" id="staticBackdropLabel">새 문서</h5>
                             <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div className="modal-body">
                             {/* Registration Form */}
                             <div>
-                                <label className="form-label">프로젝트명</label>
-                                <input type="text" className="form-control" name="projectName" value={input.projectName} onChange={changeInput} />
-                            </div>
-                            <div>
                                 <label className="form-label">시작일</label>
-                                <input type="date" className="form-control" name="projectStartTime" value={input.projectStartTime} onChange={changeInput} />
+                                <input type="date" className="form-control" name="documentWriteTime" value={input.documentWriteTime} onChange={changeInput} />
                             </div>
                             <div>
                                 <label className="form-label">마감일</label>
-                                <input type="date" className="form-control" name="projectLimitTime" value={input.projectLimitTime} onChange={changeInput} />
+                                <input type="date" className="form-control" name="documentLimitTime" value={input.documentLimitTime} onChange={changeInput} />
                             </div>
+                            <div>
+                                <label className="form-label">문서제목</label>
+                                <input type="text" className="form-control" name="documentTitle" value={input.documentTitle} onChange={changeInput} />
+                            </div>
+                            <div>
+                                <label className="form-label">문서내용</label>
+                                <input type="date" className="form-control" name="documentContent" value={input.documentContent} onChange={changeInput} />
+                            </div>
+                          
                         </div>
                         <div className="modal-footer">
                             <button type="button" className="btn btn-primary" onClick={saveInput}>등록</button>
@@ -203,4 +206,4 @@ const Project = () => {
     );
 };
 
-export default Project;
+export default Document;

@@ -10,10 +10,14 @@ import { TbPencilCancel } from "react-icons/tb";
 import axios from "../../utils/CustomAxios";
 import { Modal } from "bootstrap";
 import { Link } from 'react-router-dom';
+import { FcOpenedFolder } from "react-icons/fc";
+import Document from '../Document/Document';
+
 
 const Project = () => {
 
     //state
+    const projectName = 'Your Project Name'; // 예시로 고정값 사용, 실제로는 상태나 변수로 가져와야 함
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [projects, setProjects] = useState([]);
@@ -135,6 +139,7 @@ const Project = () => {
     }, [projects]);
 
     const changeProject = useCallback((e, target)=>{
+
         const copy = [...projects];
         const copy2 = copy.map(project=>{
             if(target.projectNo === project.projectNo) {//이벤트 발생한 학생이라면
@@ -158,6 +163,7 @@ const Project = () => {
         loadData();
     }, [projects]);
 
+    
     //ref + modal
     const bsModal = useRef();
     const openModal = useCallback(() => {
@@ -176,6 +182,7 @@ const Project = () => {
     //view
     return (
         <>
+           <Document projectName={projectName} />
             {/* 제목 */}
             <Jumbotron title="내 프로젝트" />
 
@@ -190,76 +197,59 @@ const Project = () => {
                 </div>
             </div>
 
-            {/* 데이터 출력(표) */}
-            <div className="row mt-4">
-                <div className="col">
-                    <table className="table table-striped">
-                        <thead className="text-center">
-                            <tr>
-                                <th>프로젝트번호</th>
-                                <th>프로젝트명</th>
-                                <th>작성자</th>
-                                <th>시작일</th>
-                                <th>마감일</th>
-                                <th>관리</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-center">
-                            {projects.map(project => (
-                                <tr key={project.projectNo}>
-                             {project.edit === true ? (
-                                        <>
-                                 <td>{project.projectNo}</td>
-
-                                            <td>
-                                          
-                                                <input type="text" className="form-control"
-                                                    value={project.projectName} name="projectName"
-                                                    onChange={e=>changeProject(e, project)}/>
-                                            </td>
-                                            <td>
-                                                {project.projectWriter}
-                                            </td>
-                                            <td>
-                                                <input type="date" className="form-control"
-                                                    value={project.projectStartTime} name="projectStartTime"
-                                                    onChange={e=>changeProject(e, project)}/>
-                                            </td>
-                                            <td>
-                                                <input type="date" className="form-control"
-                                                    value={project.projectLimitTime} name="projectLimitTime"
-                                                    onChange={e=>changeProject(e, project)}/>
-                                            </td>
-
-                                            <td>
-                                                <FaCheck className="text-success me-2"
-                                                        onClick={e=>saveEditProject(project)}/>
-                                                <TbPencilCancel className="text-danger"
-                                                        onClick={e=>cancelEditProject(project)}/>
-                                            </td>
-                                        </>
-                                    ) : (
-                                        <>
-                                    <td>{project.projectNo}</td>
-                                    <td><Link to={`/projects/${project.projectNo}`} style={{ textDecoration: 'none' }}>{project.projectName}</Link></td>
-                                    <td>{project.projectWriter}</td>
-                                    <td>{project.projectStartTime}</td>
-                                    <td>{project.projectLimitTime}</td>
-                                    <td>
-                                        <FaEdit className="text-warning me-2"
-                                            onClick={e=>editProject(project)} />
-                                        <FaSquareXmark className="text-danger"
-                                            onClick={e=>deleteProject(project)}/>
-                                    </td>
-                                    </>
-                               
-                            )}
-                             </tr>
-                            ))}
-                        </tbody>
-                    </table>
+           
+           
+{/* 데이터 출력(카드) */}
+{projects.map(project => (
+    <div key={project.projectNo} className="row mt-4">
+        <div className="col">
+            <div className="card mb-3">
+                <div className="card-body">
+                    <div className="card-title">
+                        <FcOpenedFolder style={{ color: '#007bff', fontSize: '1.5em', marginRight: '0.5em' }} />
+                        {/* 수정된 부분: projectName을 링크로 표시하는 부분과 input으로 변경하는 부분을 분리 */}
+                        {project.edit ? (
+                            <div>
+                                <input
+                                    type="text"
+                                    value={project.projectName}
+                                    name="projectName"onChange={(e) => changeProject(e, project)}
+                                    className="form-control"
+                                />
+                            </div>
+                        ) : (
+                            <Link to={`/document/${project.projectNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                {project.projectName}
+                            </Link>
+                        )}
+                    </div>
+                    <div>
+                        <div className="card-text">프로젝트 번호: {project.projectNo}</div>
+                        <div className="card-text">작성자: {project.projectWriter}</div>
+                        <div className="card-date-picker">시작일: {project.edit ? <input type="date" name="projectStartTime" value={project.projectStartTime} onChange={(e) => changeProject(e, project)} /> : project.projectStartTime}</div>
+                        <div className="card-date-picker">마감일: {project.edit ? <input type="date" name="projectLimitTime" value={project.projectLimitTime} onChange={(e) => changeProject(e, project)} /> : project.projectLimitTime}</div>
+                    </div>
+                    <div className="text-end">
+                        {project.edit ? (
+                            <>
+                                <FaCheck className="text-success me-2" onClick={() => saveEditProject(project)} />
+                                <TbPencilCancel className="text-danger" onClick={() => cancelEditProject(project)} />
+                            </>
+                        ) : (
+                            <>
+                                <FaEdit className="text-warning me-2" onClick={() => editProject(project)} />
+                                <FaSquareXmark className="text-danger" onClick={() => deleteProject(project)} />
+                            </>
+                        )}
+                    </div>
                 </div>
             </div>
+        </div>
+    </div>
+))}
+
+
+
 
             {/* Modal */}
             <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
