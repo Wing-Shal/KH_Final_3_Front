@@ -1,6 +1,6 @@
 //import
 
-import { Route, Routes, useLocation, useNavigate } from 'react-router';
+import { Route, Routes, useLocation } from 'react-router';
 import './App.css';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isLoginState, loginIdState, loginLevelState } from './components/utils/RecoilData';
@@ -27,11 +27,13 @@ const AdminHome = lazy(() => import("./components/intergrated/Admin/AdminHome"))
 const AdminCompany = lazy(() => import("./components/intergrated/Admin/AdminCompany"));
 const AdminLogin = lazy(() =>import("./components/intergrated/Admin/AdminLogin"));
 const NEL = lazy(()=>import("./components/NEL"));
+const PurchaseTest = lazy(()=>import("./components/intergrated/kakaopay/PurchaseTest"));
+const PurchaseSuccess = lazy(()=>import("./components/intergrated/kakaopay/PurchaseSuccess"));
+const PurchaseComplete = lazy(()=>import("./components/intergrated/kakaopay/PurchaseComplete"));
 
 const App = () => {
   //recoil state
   const location = useLocation();
-  const navigate = useNavigate();
   const isAdminPath = location.pathname.includes("admin");
   const isLoginPath = location.pathname.includes("login");
   const [loginId, setLoginId] = useRecoilState(loginIdState);
@@ -93,6 +95,9 @@ const App = () => {
                     <Route path="/document" element={<Document />} />
                     <Route path='/login' element={<Login />} />
                     <Route path="/company/join" element={<CompanyJoin />} />
+                    <Route path="/kakaopay/purchaseTest" element={<PurchaseTest/>}/>
+                    <Route path="/kakaopay/purchaseSuccess" element={<PurchaseSuccess />}/>
+                    <Route path="/kakopay/purchaseComplete" element={<PurchaseComplete />}/>
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
                       <Route path="company" element={<AdminCompany />} />
