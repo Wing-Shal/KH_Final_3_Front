@@ -240,7 +240,6 @@ const ChatRoom = () => {
 
     //모달오픈
     const openChatModal = useCallback((chatroomNo) => {
-        setChatModalOpen(true);
         const modal = new Modal(bsModal.current);
         modal.show();
         setChatroomNo(chatroomNo);
@@ -249,7 +248,8 @@ const ChatRoom = () => {
         if (selectedChatroom) {
             setChatroomName(selectedChatroom.chatroomName);
             // console.log("채팅방 이름 : ", selectedChatroom.chatroomName);
-        } else {
+        } 
+        else {
             // console.log("채팅방을 찾을 수 없습니다.");
         }
         setPage(1);
@@ -263,12 +263,12 @@ const ChatRoom = () => {
             modalContent.addEventListener("scroll", modalScrollListener);
 
             const handleOutsideModalClick = (event) => {
-                if (!bsModal.current.contains(event.target)) {
+                if (bsModal.current && !bsModal.current.contains(event.target)) {
                     closeChatModal();
                 }
             };
 
-            //스크롤 맨 밑으로 내리는거
+            //모달 오픈 시 스크롤 맨 밑으로 내리는거
             setTimeout(() => {
                 if (scrollRef.current) {
                     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;

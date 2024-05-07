@@ -19,6 +19,12 @@ const loginLevelState = atom({
     default : ''
 });
 
+//웹소켓 관련
+const socketConnectState = atom({
+    key: 'socketState', // 고유한 키
+    default: null, // 기본값은 연결되지 않은 상태
+  });
+
 
 //atom으로 생성한 데이터를 조합하여 무언가를 계산할 수 있다(selector)
 // -> 외부에서는 useRecoilValue로 부른다
@@ -41,4 +47,4 @@ const isLoginState = selector({
 //export default countState;
 
 //naming export는 여러 개 할 수 있다.
-export {countState, loginIdState, loginLevelState, isLoginState};
+export {countState, loginIdState, loginLevelState, isLoginState, socketConnectState};
