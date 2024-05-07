@@ -1,209 +1,283 @@
-import React, { useCallback, useEffect, useState } from "react";
-import { loginIdState } from '../../../components/utils/RecoilData';
+import { useCallback, useEffect, useRef, useState } from "react";
+import { loginIdState, loginLevelState } from '../../../components/utils/RecoilData';
 import { useRecoilState } from 'recoil';
 import Jumbotron from "../../Jumbotron";
 import { FaSquareXmark } from "react-icons/fa6";
 import { FaEdit } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa";
 import { IoMdAdd } from "react-icons/io";
+import { TbPencilCancel } from "react-icons/tb";
 import axios from "../../utils/CustomAxios";
+import { Modal } from "bootstrap";
+import { Link } from 'react-router-dom';
+import { FcOpenedFolder } from "react-icons/fc";
 
-const Document = () => {
-    // State
+const Project = () => {
+
+    //state
+    // const projectName = 'Your Project Name'; // 예시로 고정값 사용, 실제로는 상태나 변수로 가져와야 함
     const [loginId, setLoginId] = useRecoilState(loginIdState);
-    const [documents, setDocuments] = useState([]);
+    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+    const [projects, setProjects] = useState([]);
     const [input, setInput] = useState({
-        documentWriteTime: "",
-        documentLimitTime: "",
-        documentTitle: "",
-        documentContent:""
+        projectName: "",
+        projectStartTime: "",
+        projectLimitTime: "",
+        empNo: ""
     });
-    const [backup, setBackup] = useState(null);
+    const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
+    //effect
     useEffect(() => {
         loadData();
     }, []);
-
-    // Data Loading
     const loadData = useCallback(async () => {
         const empNo = loginId;
-        const resp = await axios.get("/document/" + empNo);
-        setDocuments(resp.data);
+        const resp = await axios.get("/project/" + empNo);
+        setProjects(resp.data);
     }, []);
-
-    // Data Deletion
-    const deleteDocument = useCallback(async (target) => {
+    //삭제
+    const deleteProject = useCallback(async (target) => {
         const choice = window.confirm("정말 삭제하시겠습니까?");
-        if (!choice) return;
-
-        // 서버에 삭제 요청 후 데이터 다시 로드
-        await axios.delete("/document/" + target.documentNo);
+        if (choice === false) return;
+        //target에 있는 내용을 서버에 지워달라고 요청하고 목록을 다시 불러온다
+        const resp = await axios.delete("/project/" + target.projectNo);
         loadData();
-    }, []);
-
-    // New Project Input Change
+    }, [projects]);
+    //신규 등록 화면 입력값 변경
     const changeInput = useCallback((e) => {
         setInput({
             ...input,
             [e.target.name]: e.target.value
         });
     }, [input]);
-
-    // Register
+    //등록
     const saveInput = useCallback(async () => {
-        await axios.post("/document/", input);
+        const resp = await axios.post("/project/", input);
         loadData();
         clearInput();
+        closeModal();
     }, [input]);
-
-    // Cancel Registration
+    //등록 취소
     const cancelInput = useCallback(() => {
         const choice = window.confirm("작성을 취소하시겠습니까?");
-        if (choice) clearInput();
+        if (choice === false) return;
+        clearInput();
+        closeModal();
     }, [input]);
-
-    // Clear Input
+    //입력값 초기화
     const clearInput = useCallback(() => {
         setInput({
-        documentWriteTime: "",
-        documentLimitTime: "",
-        documentTitle: "",
-        documentContent:""
+            projectName: "",
+            projectStartTime: "",
+            projectLimitTime: "",
+            empNo: ""
         });
-    }, []);
-
-    // Editing 수정
-    const editDocument= useCallback((target) => {
-        const copy = [...documents];
-
-        const recover = copy.map(document => {
-            if (document.edit === true) {
-                return { ...backup, edit: false };
-            } else {
-                return { ...document };
+    }, [input]);
+    //수정
+    const editProject = useCallback((target)=>{
+        //복제
+        const copy = [...projects];
+        //(+추가) 이미 수정중인 항목이 있을 수 있으므로 해당 항목은 취소 처리가 필요
+        const recover = copy.map(project=>{
+            if(project.edit === true) {//수정중인 항목을 발견하면
+                return {...backup, edit:false};//백업으로 갱신 + 수정모드 취소
+            }
+            else {
+                return {...project};//그대로
             }
         });
-        setBackup({ ...target });
-
-        const copy2 = recover.map(document => {
-            if (target.documentNo === document.documentNo) {
+        setBackup({...target}); //백업
+        const copy2 = recover.map(project=>{
+            if(target.projectNo === project.projectNo) {//원하는 정보일 경우
                 return {
-                    ...document,
-                    edit: true,
+                    ...project,//나머지 정보는 유지하되
+                    edit:true,//edit 관련된 처리를 추가하여 반환
                 };
-            } else {
-                return { ...document };
+            }
+            else {//원하는 정보가 아닐 경우
+                return {...project};//데이터를 그대로 복제하여 반환
             }
         });
-
-        setDocuments(copy2);
-    }, [documents]);
-
-    // View
+      
+        setProjects(copy2);
+    }, [projects]);
+    const cancelEditProject = useCallback((target)=>{
+        //1. 복제한다
+        const copy = [...projects];
+        const copy2 = copy.map(project=>{
+          
+            if(target.projectNo === project.projectNo) {//원하는 정보일 경우
+                return {
+                    ...backup,//백업 정보를 전달
+                    edit:false,//edit 관련된 처리를 추가하여 반환
+                };
+            }
+            else {//원하는 정보가 아닐 경우
+                return {...project};//데이터를 그대로 복제하여 반환
+            }
+        });
+      //덮어씌우기
+        setProjects(copy2);
+    }, [projects]);
+    const changeProject = useCallback((e, target)=>{
+        const copy = [...projects];
+        const copy2 = copy.map(project=>{
+            if(target.projectNo === project.projectNo) {//이벤트 발생한 학생이라면
+                return {
+                    ...project,//나머지 정보는 유지
+                    [e.target.name] : e.target.value//단, 입력항목만 교체
+                };
+            }
+            else {//다른 학생이라면
+                return {...project};//현상유지
+            }
+        });
+        setProjects(copy2);
+    }, [projects]);
+    //수정된 결과를 저장 + 목록갱신 + 수정모드 해제
+    const saveEditProject = useCallback(async (target)=>{
+        //서버에 target을 전달하여 수정 처리
+        const resp = await axios.patch("/project/", target);
+        //목록 갱신
+        loadData();
+    }, [projects]);
+    
+    //ref + modal
+    const bsModal = useRef();
+    const openModal = useCallback(() => {
+        const modal = new Modal(bsModal.current);
+        setInput({
+            ...input,
+            empNo: loginId
+        });
+        modal.show();
+    }, [bsModal]);
+    const closeModal = useCallback(() => {
+        const modal = Modal.getInstance(bsModal.current);
+        modal.hide();
+    }, [bsModal]);
+    //view
     return (
         <>
-            {/* Title */}
-            <Jumbotron title={`${project.projectName}`} />
 
-            {/* New Project Button */}
-          
-
-            {/* Project List */}
-            <div className="row mt-4 center">
-    {documents.map(document => (
-        <div className="col-12" key={document.documentNo}>
-            <div className="card mb-4" style={{ height: '800px' }}>
-                <div className="card-body">
-                    <div className="row"> {/* 시작일과 마감일을 감싸는 row 추가 */}
-                        <div className="col">
-                            <div className="d-flex justify-content-between align-items-center">
-                                <div>
-                                    <div className="d-flex align-items-center">
-                                        <div className="alert alert-warning me-2" style={{ fontSize: '20px' }}>프로젝트명: {project.projectName}</div>
-                                        <div className="alert alert-warning me-2" style={{ fontSize: '20px' }}>문서 번호: {document.documentNo}</div>
-                                        <div className="alert alert-danger me-2" style={{ fontSize: '20px' }}>상태: {document.documentStatus}</div>
-                                    </div>
-                                </div>
-                                <div className="col text-end">
-                                    <button className="btn btn-warning" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
-                                        <IoMdAdd />
-                                        새 문서
-                                    </button>
-                                </div>
-                            </div>
-                            <div className="d-flex align-items-center flex-wrap">
-                                <label className="me-2">시작일 </label>
-                                <input type="date" className="form-control me-2" style={{ width: '200px' }} value={document.documentWriteTime} onChange={changeInput} />
-                                <label className="me-2">마감일 </label>
-                                <input type="date" className="form-control me-2" style={{ width: '200px' }} value={document.documentLimitTime} onChange={changeInput} />
-                            </div>
-                        </div>
-                    </div>
-                    <div className="mb-3"></div> {/* 마감일 아래에 여백 추가 */}
-                    <div className="d-flex align-items-center">
-                        <div className="alert alert-light me-1" style={{ fontSize: '30px' , width: '1050px'}}>제목 {document.documentTitle}</div>
-                    </div>
-                    <div>
-                        <div className="d-flex align-items-center">
-                            <div className="alert alert-light me-1" style={{ fontSize: '30px'  , width: '1050px', height:'450px'}}>내용 {document.documentContent}</div>
-                        </div>
-                    </div>
-                    <div className="d-flex align-items-center justify-content-between">
-    <div className="d-flex align-items-center">
-        <div className="alert alert-success me-1" style={{ fontSize: '20px' }}>작성자 {document.documentWriter}</div>
-        <div className="alert alert-success me-1" style={{ fontSize: '20px' }}>결재자 {document.documentApprover}</div>
-    </div>
-                        <div className="d-flex align-items-center">
-        <button className="btn btn-warning me-2" onClick={() => editDocument(document)} style={{ fontSize: '25px' }}>
-            <FaEdit />
-        </button>
-        <button className="btn btn-danger" onClick={() => deleteDocument(document)} style={{ fontSize: '25px' }}>
-            <FaSquareXmark />
-        </button>
-    </div>
-    </div>
-                </div>
-            </div>
-        </div>
-    ))}
+                    {/* 제목 ...*/}
+                    <Jumbotron title="내 프로젝트" />
+  {/* 추가 버튼 */}
+  <div className="row mt-4">
+      <div className="col text-end">
+          <button className="btn btn-primary"
+              onClick={e => openModal()}>
+              <IoMdAdd />
+              새 프로젝트
+          </button>
+      </div>
+  </div>
+ 
+ 
+{/* 데이터 출력(카드) */}
+{projects.map(project => (
+<div key={project.projectNo} className="row mt-4">
+<div className="col">
+  <div className="card mb-3">
+      <div className="card-body">
+          <div className="card-title">
+              <FcOpenedFolder style={{ color: '#007bff', fontSize: '1.5em', marginRight: '0.5em' }} />
+              {/* 수정된 부분: projectName을 링크로 표시하는 부분과 input으로 변경하는 부분을 분리 */}
+              {project.edit ? (
+                  <div>
+                      <input
+                          type="text"
+                          value={project.projectName}
+                          name="projectName"onChange={(e) => changeProject(e, project)}
+                          className="form-control"
+                      />
+                  </div>
+              ) : (
+                <Link to={`/document/project/${project.projectNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                {project.projectName}
+            </Link>
+              )}
+          </div>
+          <div>
+              <div className="card-text">프로젝트 번호: {project.projectNo}</div>
+              <div className="card-text">작성자: {project.projectWriter}</div>
+              <div className="card-date-picker">시작일: {project.edit ? <input type="date" name="projectStartTime" value={project.projectStartTime} onChange={(e) => changeProject(e, project)} /> : project.projectStartTime}</div>
+              <div className="card-date-picker">마감일: {project.edit ? <input type="date" name="projectLimitTime" value={project.projectLimitTime} onChange={(e) => changeProject(e, project)} /> : project.projectLimitTime}</div>
+          </div>
+          <div className="text-end">
+              {project.edit ? (
+                  <>
+                      <FaCheck className="text-success me-2" onClick={() => saveEditProject(project)} />
+                      <TbPencilCancel className="text-danger" onClick={() => cancelEditProject(project)} />
+                  </>
+              ) : (
+                  <>
+                      <FaEdit className="text-warning me-2" onClick={() => editProject(project)} />
+                      <FaSquareXmark className="text-danger" onClick={() => deleteProject(project)} />
+                  </>
+              )}
+          </div>
+      </div>
+  </div>
 </div>
-
-
-            {/* New Project Modal */}
-            <div className="modal fade" id="staticBackdrop" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                <div className="modal-dialog">
-                    <div className="modal-content">
-                        <div className="modal-header">
-                            <h5 className="modal-title" id="staticBackdropLabel">새 문서</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div className="modal-body">
-                            {/* Registration Form */}
-                            <div>
-                                <label className="form-label">시작일</label>
-                                <input type="date" className="form-control" name="documentWriteTime" value={input.documentWriteTime} onChange={changeInput} />
-                            </div>
-                            <div>
-                                <label className="form-label">마감일</label>
-                                <input type="date" className="form-control" name="documentLimitTime" value={input.documentLimitTime} onChange={changeInput} />
-                            </div>
-                            <div>
-                                <label className="form-label">문서제목</label>
-                                <input type="text" className="form-control" name="documentTitle" value={input.documentTitle} onChange={changeInput} />
-                            </div>
-                            <div>
-                                <label className="form-label">문서내용</label>
-                                <input type="date" className="form-control" name="documentContent" value={input.documentContent} onChange={changeInput} />
-                            </div>
-                          
-                        </div>
-                        <div className="modal-footer">
-                            <button type="button" className="btn btn-primary" onClick={saveInput}>등록</button>
-                            <button type="button" className="btn btn-secondary" data-bs-dismiss="modal" onClick={cancelInput}>취소</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </>
-    );
+</div>
+))}
+  {/* Modal */}
+  <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div className="modal-dialog">
+          <div className="modal-content">
+              <div className="modal-header">
+                  <h1 className="modal-title fs-5" id="staticBackdropLabel">새 프로젝트</h1>
+                  <button type="button" className="btn-close" aria-label="Close"
+                      onClick={e => cancelInput()}></button>
+              </div>
+              <div className="modal-body">
+                  {/* 등록 화면 */}
+                  {/* 프로젝트 정보 표시 */}
+                  <div>
+                      <p>사원 번호: {input.empNo}</p>
+                  </div>
+                  <div className="row">
+                      <div className="col">
+                          <label>프로젝트 명</label>
+                          <input type="text" name="projectName"
+                              value={input.projectName}
+                              onChange={e => changeInput(e)}
+                              className="form-control" />
+                      </div>
+                  </div>
+                  <div className="row">
+                      <div className="col">
+                          <label>시작일</label>
+                          <input type="date" name="projectStartTime"
+                              value={input.projectStartTime}
+                              onChange={e => changeInput(e)}
+                              className="form-control" />
+                      </div>
+                  </div>
+                  <div className="row">
+                      <div className="col">
+                          <label>마감일</label>
+                          <input type="date" name="projectLimitTime"
+                              value={input.projectLimitTime}
+                              onChange={e => changeInput(e)}
+                              className="form-control" />
+                      </div>
+                  </div>
+              </div>
+              <div className="modal-footer">
+                  <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                      등록
+                  </button>
+                  <button className='btn btn-danger' onClick={e => cancelInput()}>
+                      취소
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+</>
+);
 };
+export default Project;
 
-export default Document;

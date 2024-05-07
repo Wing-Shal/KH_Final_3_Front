@@ -101,7 +101,7 @@ const Project = () => {
         setBackup({...target}); //백업
 
         const copy2 = recover.map(project=>{
-            if(target.projectNo === project.projectNo) {//원하는 정보일 경우
+            if(target.projectNo === project.projectNo) {//원하는 정보일,, 경우
                 return {
                     ...project,//나머지 정보는 유지하되
                     edit:true,//edit 관련된 처리를 추가하여 반환
