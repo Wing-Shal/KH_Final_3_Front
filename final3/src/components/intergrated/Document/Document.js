@@ -266,7 +266,7 @@ const Document = () => {
             </div>
 
 
-            {/* 문서목록 */}
+            {/* 문서목록... */}
             {documents.map(document => (
                 <div key={document.documentNo} className="row mt-4">
                     <div className="col">

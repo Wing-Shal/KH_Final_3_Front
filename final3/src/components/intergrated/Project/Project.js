@@ -160,7 +160,7 @@ const Project = () => {
     return (
         <>
 
-                    {/* 제목 */}
+                    {/* 제목 ...*/}
                     <Jumbotron title="내 프로젝트" />
   {/* 추가 버튼 */}
   <div className="row mt-4">
