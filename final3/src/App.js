@@ -21,11 +21,11 @@ const Login = lazy(() => import("./components/intergrated/Login"));
 const CompanyJoin = lazy(() => import("./components/intergrated/CompanyJoin"));
 const Chat = lazy(() => import("./components/intergrated/Chat/Chat"));
 const ChatRoom = lazy(() => import("./components/intergrated/Chat/Chatroom"));
-const Document = lazy(() => import("./components/intergrated/Document/Document"));
 const Project = lazy(() => import("./components/intergrated/Project/Project"));
 const AdminHome = lazy(() => import("./components/intergrated/Admin/AdminHome"));
 const AdminCompany = lazy(() => import("./components/intergrated/Admin/AdminCompany"));
 const AdminLogin = lazy(() =>import("./components/intergrated/Admin/AdminLogin"));
+const Document = lazy(() => import("./components/intergrated/Document/Document"));
 const NEL = lazy(()=>import("./components/NEL"));
 
 const App = () => {
@@ -90,13 +90,13 @@ const App = () => {
                     <Route path="/chatroom" element={<ChatRoom />} />
                     {/* <Route path="/boardBlind" element={<BoardBlind />}/> */}
                     <Route path="/project" element={<Project />} />
-                    <Route path="/document" element={<Document />} />
                     <Route path='/login' element={<Login />} />
                     <Route path="/company/join" element={<CompanyJoin />} />
-                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/document/project/:projectNo" element={<Document/>} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
-                      <Route path="company" element={<AdminCompany />} />
-                      <Route path='home' element={<AdminHome />} />
+                    <Route path="/admin/login" element={<AdminLogin />} />
+                    <Route path="/admin/company" element={<AdminCompany />} />
+                    <Route path='/admin/home' element={<AdminHome />} />
                     </Route>
                   </Route>
                 </Routes>
