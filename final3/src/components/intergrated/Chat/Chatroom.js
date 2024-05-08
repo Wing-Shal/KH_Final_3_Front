@@ -1,12 +1,14 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Modal } from "bootstrap";
-import { LuSendHorizontal } from "react-icons/lu";
 import SockJS from 'sockjs-client';
 import Draggable from 'react-draggable';
 import throttle from "lodash/throttle";
 import axios from "../../utils/CustomAxios";
 import { useRecoilState } from 'recoil';
 import { loginIdState } from "../../utils/RecoilData";
+import { PiGearSixDuotone } from "react-icons/pi";
+import { BsSend } from "react-icons/bs";
+import { GoPaperclip } from "react-icons/go";
 import './Chatroom.css';
 
 const ChatRoom = () => {
@@ -17,19 +19,32 @@ const ChatRoom = () => {
     const [messages, setMessages] = useState([]);
     const [messageInput, setMessageInput] = useState("");
     const [chatroomName, setChatroomName] = useState("");
-    const [empInChatroom, setEmpInChatroom] = useState([]);
+    const [empInChatroom, setEmpInChatroom] = useState([]); //채팅방 참여자 목록
+    const [newChatroomName, setNewChatroomName] = useState(""); //채팅방 이름 변경
     const bsModal = useRef();
     const bsEmpModal = useRef();
+    const bsEmpListModal = useRef();
+    const bsChatroomNameChangeModal = useRef();
     const scrollRef = useRef();
     const textAreaRef = useRef(null);
 
     const [showParticipants, setShowParticipants] = useState(false);
     const [isChatModalOpen, setChatModalOpen] = useState(false);
     const [isEmpListModalOpen, setEmpListModalOpen] = useState(false);
+    const [showChatroomInfo, setChatroomInfo] = useState(false);
 
+    //참여자토글
     const toggleParticipants = () => {
         setShowParticipants(prev => {
-            // console.log('현재 상태:', prev, '바뀔 상태:', !prev); //상태 변화
+            //console.log('현재 상태:', prev, '바뀔 상태:', !prev);
+            return !prev;
+        });
+    };
+
+    //채팅방 관리(사원 그룹초대, 채팅방 이름 변경 등등..)
+    const manageChatroom = () => {
+        setChatroomInfo(prev => {
+            // console.log('현재 상태:', prev, '바뀔 상태:', !prev);
             return !prev;
         });
     };
@@ -91,39 +106,84 @@ const ChatRoom = () => {
     }, [chatroomNo])
 
     //사원 초대하는 함수
-    const bsEmpListModal = useRef(null);
     const openEmpListModal = useCallback(() => {
-        setEmpListModalOpen(true);
         loadCompanyEmpData();
         const modal = new Modal(bsEmpListModal.current);
         modal.show();
     }, [loadCompanyEmpData, bsEmpListModal]);
 
+    const closeEmpListModal = useCallback(() => {
+        const modal = Modal.getInstance(bsEmpListModal.current)
+        modal.hide();
+    }, [bsEmpListModal]);
+
     useEffect(() => {
         inviteEmp();
     }, [])
 
-    //사원 목록 모달 닫기
-    // const closeEmpListModal = () => {
-    //     setEmpListModalOpen(false);
-    // };
 
     const inviteEmp = useCallback(async (empNo) => {
         // console.log(empNo)
-        console.log(chatroomNo); //이게 안찍혀서 찍히도록 구현할 예정임
+        // console.log(chatroomNo);
         if (!chatroomNo) return;
-        const resp = await axios.post(`chat/inviteEmp/${chatroomNo}/${empNo}`);
+        const resp = await axios.post(`/chat/inviteEmp/${chatroomNo}/${empNo}`);
         console.log(resp.data);
-        // closeEmpListModal();
-    }, [chatroomNo]);
+        if (resp.data) {
+            // 참여자 목록 갱신
+            setEmpInChatroom(prevEmps => [...prevEmps, resp.data.newEmp]);
+    
+            // 시스템 메시지 추가
+            const notificationMessage = {
+                messageContent: `${resp.data.newEmp.empName}님이 초대되었습니다`,
+                messageType: 'system'
+            };
+            setMessages(prevMessages => [...prevMessages, notificationMessage]);
+    
+            // 모달 닫기
+            closeEmpListModal();
+        }
+    }
+    , [chatroomNo]);
 
-    // const handleCloseEmpModal = (event) => {
-    //     event.stopPropagation(); // 이벤트 전파 중단
-    //     const modal = Modal.getInstance(bsEmpListModal.current);
-    //     if (modal) {
-    //         modal.hide();
-    //     }
-    // };
+
+    //채팅방 이름 수정 함수
+    const changeChatroomName = useCallback(async () => {
+        const chatroomDto = {
+            chatroomNo: chatroomNo,
+            chatroomName: newChatroomName
+        };
+
+        const resp = await axios.patch(`/chat/`, chatroomDto);
+        if (resp.status === 200) {
+            setChatrooms(prevChatrooms =>
+                prevChatrooms.map(chatroom =>
+                    chatroom.chatroomNo === chatroomNo
+                        ? { ...chatroom, chatroomName: newChatroomName }
+                        : chatroom
+                )
+            );
+            setChatroomName(newChatroomName);
+            closeChatroomNameChangeModal();
+        }
+
+    }, [chatroomNo, newChatroomName]);
+
+
+    //채팅방 이름 수정 모달
+    const openChatroomNameChangeModal = useCallback((chatroomNo) => {
+        if (!chatroomNo) return;
+        const selectedChatroom = chatrooms.find(chatroom => chatroom.chatroomNo === chatroomNo);
+        if (selectedChatroom) {
+            setNewChatroomName(selectedChatroom.chatroomName);
+        }
+        const modal = new Modal(bsChatroomNameChangeModal.current);
+        modal.show();
+    }, [bsChatroomNameChangeModal, chatrooms]);
+
+    const closeChatroomNameChangeModal = useCallback(() => {
+        const modal = Modal.getInstance(bsChatroomNameChangeModal.current)
+        modal.hide();
+    }, [bsChatroomNameChangeModal]);
 
 
 
@@ -161,6 +221,7 @@ const ChatRoom = () => {
                 newSocket.onmessage = (e) => {
                     const newMessage = JSON.parse(e.data);
                     setMessages(prevMessages => [...prevMessages, newMessage]);
+                    loadChatroomData();
                 };
                 loadMessageData();
             };
@@ -196,13 +257,14 @@ const ChatRoom = () => {
         if (textAreaRef.current) {
             textAreaRef.current.style.height = '65px';
         }
+        loadChatroomData();
 
-
+        //입력할 때 마다 스크롤 따라 내려오게 하고싶은데 안됨..
         setTimeout(() => {
             if (scrollRef.current) {
                 scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
             }
-        }, 0);
+        }, 400);
     };
 
     const handleKeyDown = (e) => {
@@ -221,6 +283,8 @@ const ChatRoom = () => {
         }
         setChatroomNo("");
         setMessages([]);
+        setShowParticipants(false);
+        setChatroomInfo(false);
     }, []);
 
     const modalScrollListener = useCallback(throttle(() => {
@@ -248,7 +312,7 @@ const ChatRoom = () => {
         if (selectedChatroom) {
             setChatroomName(selectedChatroom.chatroomName);
             // console.log("채팅방 이름 : ", selectedChatroom.chatroomName);
-        } 
+        }
         else {
             // console.log("채팅방을 찾을 수 없습니다.");
         }
@@ -262,11 +326,12 @@ const ChatRoom = () => {
         if (modalContent) {
             modalContent.addEventListener("scroll", modalScrollListener);
 
-            const handleOutsideModalClick = (event) => {
-                if (bsModal.current && !bsModal.current.contains(event.target)) {
-                    closeChatModal();
-                }
-            };
+            //바깥눌렀을 때
+            // const handleOutsideModalClick = (event) => {
+            //     if (bsModal.current && !bsModal.current.contains(event.target)) {
+            //         closeChatModal();
+            //     }
+            // };
 
             //모달 오픈 시 스크롤 맨 밑으로 내리는거
             setTimeout(() => {
@@ -281,11 +346,11 @@ const ChatRoom = () => {
                 }
             };
 
-            document.addEventListener('mousedown', handleOutsideModalClick);
+            // document.addEventListener('mousedown', handleOutsideModalClick);
             document.addEventListener('keydown', handleEscKeyPress);
 
             return () => {
-                document.removeEventListener('mousedown', handleOutsideModalClick);
+                // document.removeEventListener('mousedown', handleOutsideModalClick);
                 document.removeEventListener('keydown', handleEscKeyPress);
             };
         }
@@ -324,19 +389,13 @@ const ChatRoom = () => {
 
     const startChatWithEmp = async (selectedEmpNo) => {
         const token = axios.defaults.headers.common['Authorization'];
-        try {
-            const resp = await axios.post(`chat/findOrCreate/${token}/${selectedEmpNo}`);
-            if (resp.data) {
-                closeEmpModal();
-                openChatModal(resp.data.chatroomNo);
-                loadChatroomData();
-                //console.log("chatroomNo :", resp.data.chatroomNo);
-            }
-        }
-        catch (error) {
-            // console.error('채팅방 생성 또는 조회 실패:', error);
-            // console.log("토큰 :", token);
-            // console.log("선택된 empNo :", selectedEmpNo);
+
+        const resp = await axios.post(`chat/findOrCreate/${token}/${selectedEmpNo}`);
+        if (resp.data) {
+            closeEmpModal();
+            openChatModal(resp.data.chatroomNo);
+            loadChatroomData();
+            //console.log("chatroomNo :", resp.data.chatroomNo);
         }
     };
 
@@ -382,24 +441,31 @@ const ChatRoom = () => {
             </div>
 
 
-            <div ref={bsModal} className="modal fade" id="chatModal" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            <div ref={bsModal} className="modal fade" id="chatModal" data-bs-backdrop="static" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <Draggable cancel=".form-control, .chat-container">
                     <div className="modal-dialog modal-dialog-scrollable">
                         <div className="modal-content">
                             <div className="modal-header">
                                 <div className='col-3'>
-                                    <button className="btn btn-primary clickable" onClick={toggleParticipants}>참여자</button>
+                                    <button className="btn btn-secondary clickable" onClick={toggleParticipants}>참여자</button>
                                     <ul className={`participants-sidebar ${showParticipants ? 'expanded' : ''}`}>
-                                        <button className="btn btn-primary clickable" onClick={toggleParticipants}>닫기</button>
                                         {empInChatroom.map(emp => (
                                             <div key={emp.empNo} className="participant-list">{emp.empName} ({emp.empGrade})</div>
                                         ))}
-                                        <button className="mt-2 btn btn-info" data-bs-target="#empListModal"  data-bs-toggle="modal" data-bs-dismiss="modal">사원초대</button>
+                                        <button className="mt-2 btn btn-secondary" onClick={() => openEmpListModal(chatroomNo)}>사원초대</button>
                                     </ul>
                                 </div>
                                 <p className="modal-title chatroom-name" id="staticBackdropLabel">
                                     {chatroomName}
                                 </p>
+                                <p className="modal-title gear clickable" onClick={manageChatroom}>
+                                    {/* <p className="modal-title gear clickable"> */}
+                                    <PiGearSixDuotone />
+                                </p>
+                                <ul className={`manageChatroom-sidebar ${showChatroomInfo ? 'expanded' : ''}`}>
+                                    {chatroomName}
+                                    <button className="mt-2 btn btn-secondary" onClick={() => openChatroomNameChangeModal(chatroomNo)}>채팅방이름수정</button>
+                                </ul>
                                 <button type="button" className="btn-close" onClick={closeChatModal}></button>
                             </div>
                             <div className="modal-body">
@@ -426,8 +492,11 @@ const ChatRoom = () => {
                                     onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
                                 />
-                                <button className="btn btn-success" onClick={sendMessage}>
-                                    전송
+                                <button className="btn btn-pink">
+                                    <GoPaperclip />
+                                </button>
+                                <button className="btn btn-pink" onClick={sendMessage}>
+                                    <BsSend />
                                 </button>
                             </div>
                         </div>
@@ -491,8 +560,8 @@ const ChatRoom = () => {
                 <div className="modal-dialog modal-dialog-scrollable">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">사원 초대</h5>
-                            <button type="button" className="btn-close" data-bs-dismiss="modal"></button>
+                            <h5 className="modal-title">☆ㅋㅋ사원 초대ㅋㅋ☆</h5>
+                            <button type="button" className="btn-close" onClick={e => closeEmpListModal()}></button>
                         </div>
                         <div className="modal-body">
                             <table className="table">
@@ -509,6 +578,35 @@ const ChatRoom = () => {
                     </div>
                 </div>
             </div>
+
+            <div ref={bsChatroomNameChangeModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">♡채팅방 이름 변경 ^___^♡</h1>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={e => closeChatroomNameChangeModal()}></button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="form-group">
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    id="newChatroomName"
+                                    placeholder="변경할 채팅방 이름을 입력하세요."
+                                    value={newChatroomName}
+                                    onChange={e => setNewChatroomName(e.target.value)}
+                                />
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button type="button" className="btn btn-pink" onClick={changeChatroomName}>이름 변경</button>
+                            <button type="button" className="btn btn-secondary" onClick={closeChatroomNameChangeModal}>닫기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
         </>
     );
 };
