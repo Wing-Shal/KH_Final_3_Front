@@ -1,10 +1,13 @@
 import { useCallback } from "react";
+import axios from "../../utils/CustomAxios";
+import { useNavigate } from "react-router";
 
 const SubScriptionInactive = ()=> {
-
+    const navigator = useNavigate();
     const cancel = useCallback(async ()=> {
         const resp = await axios.get("/kakaopay/purchase/cancel");
 
+        navigator("/");
     });
 
     return (
