@@ -133,11 +133,11 @@ const ChatRoom = () => {
             setEmpInChatroom(prevEmps => [...prevEmps, resp.data.newEmp]);
     
             // 시스템 메시지 추가
-            const notificationMessage = {
-                messageContent: `${resp.data.newEmp.empName}님이 초대되었습니다`,
-                messageType: 'system'
-            };
-            setMessages(prevMessages => [...prevMessages, notificationMessage]);
+            // const notificationMessage = {
+            //     messageContent: `${resp.data.newEmp.empName}님이 초대되었습니다`,
+            //     messageType: 'system'
+            // };
+            // setMessages(prevMessages => [...prevMessages, notificationMessage]);
     
             // 모달 닫기
             closeEmpListModal();
