@@ -3,7 +3,7 @@
 import { Route, Routes, useLocation } from 'react-router';
 import './App.css';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { isLoginState, loginIdState, loginLevelState, socketConnectState } from './components/utils/RecoilData';
+import { isLoginState, isPaidState, loginIdState, loginLevelState, socketConnectState } from './components/utils/RecoilData';
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import axios from "./components/utils/CustomAxios";
 import LoadingScreen from './components/LoadingScreen';
@@ -21,13 +21,11 @@ import { Modal } from "bootstrap";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
-
 //lazy import
 const Header = lazy(() => import("./components/Header"));
 const Home = lazy(() => import("./components/Home"));
-// const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
+const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
 const Login = lazy(() => import("./components/intergrated/Login"));
-const CompanyJoin = lazy(() => import("./components/intergrated/CompanyJoin"));
 const Chat = lazy(() => import("./components/intergrated/Chat/Chat"));
 const ChatRoom = lazy(() => import("./components/intergrated/Chat/Chatroom"));
 const Document = lazy(() => import("./components/intergrated/Document/Document"));
@@ -39,6 +37,9 @@ const NEL = lazy(() => import("./components/NEL"));
 const PurchaseTest = lazy(() => import("./components/intergrated/kakaopay/PurchaseTest"));
 const PurchaseSuccess = lazy(() => import("./components/intergrated/kakaopay/PurchaseSuccess"));
 const PurchaseComplete = lazy(() => import("./components/intergrated/kakaopay/PurchaseComplete"));
+const SubScriptionInactive = lazy(() => import("./components/intergrated/kakaopay/SubsciptionInacitve"));
+const CompanyJoin = lazy(() => import("./components/intergrated/CompanyJoin2"));
+const EmpMypage = lazy(()=>import("./components/intergrated/Emp/EmpMypage"));
 
 const App = () => {
   //recoil state
@@ -47,6 +48,7 @@ const App = () => {
   const isLoginPath = location.pathname.includes("login");
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+  const [isPaid, setIsPaid] = useRecoilState(isPaidState);
 
   const [socket, setSocket] = useRecoilState(socketConnectState)
   const [userChatroomNos, setUserChatroomNos] = useState([]);
@@ -72,6 +74,7 @@ const App = () => {
       //결과를 적절한 위치에 설정한다
       setLoginId(resp.data.loginId);
       setLoginLevel(resp.data.loginLevel);
+      setIsPaid(resp.data.isPaid);
       axios.defaults.headers.common["Authorization"] = resp.data.accessToken;
       window.localStorage.setItem("refreshToken", resp.data.refreshToken);
     }
@@ -186,172 +189,172 @@ const App = () => {
     setEmpInChatroom(resp.data);
   }, [chatroomNo])
 
-    //메세지 불러오는 함수
-    const loadMessageData = useCallback(async () => {
-      try {
-          if (!chatroomNo) return;
-          const modalContent = bsModal.current.querySelector('.modal-body');
-          const oldScrollHeight = modalContent.scrollHeight; // 데이터 로드 전 스크롤 높이 저장
-          const resp = await axios.get(`/chat/${chatroomNo}/page/${page}/size/${size}`);
-          setMessages(prevMessages => [...resp.data.list, ...prevMessages]);
-          setLast(resp.data.last);
+  //메세지 불러오는 함수
+  const loadMessageData = useCallback(async () => {
+    try {
+      if (!chatroomNo) return;
+      const modalContent = bsModal.current.querySelector('.modal-body');
+      const oldScrollHeight = modalContent.scrollHeight; // 데이터 로드 전 스크롤 높이 저장
+      const resp = await axios.get(`/chat/${chatroomNo}/page/${page}/size/${size}`);
+      setMessages(prevMessages => [...resp.data.list, ...prevMessages]);
+      setLast(resp.data.last);
 
-          setTimeout(() => {
-              const newScrollHeight = modalContent.scrollHeight; // 데이터 로드 후 스크롤 높이 측정
-              modalContent.scrollTop = newScrollHeight - oldScrollHeight; // 이전 스크롤 위치 복원
-          }, 0);
-      }
-      catch (error) {
-          console.error("에러임", error);
-      }
+      setTimeout(() => {
+        const newScrollHeight = modalContent.scrollHeight; // 데이터 로드 후 스크롤 높이 측정
+        modalContent.scrollTop = newScrollHeight - oldScrollHeight; // 이전 스크롤 위치 복원
+      }, 0);
+    }
+    catch (error) {
+      console.error("에러임", error);
+    }
   }, [chatroomNo, page, size]);
 
   const socketRef = useRef(null);
   useEffect(() => {
-      if (chatroomNo) {
-          const connectWebSocket = () => {
-              if (socketRef.current) {
-                  socketRef.current.close();
-              }
-              const newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
-              newSocket.onopen = () => {
-                  socketRef.current = newSocket;
-              };
-              newSocket.onmessage = (e) => {
-                  const newMessage = JSON.parse(e.data);
-                  setMessages(prevMessages => [...prevMessages, newMessage]);
-              };
-              loadMessageData();
-          };
+    if (chatroomNo) {
+      const connectWebSocket = () => {
+        if (socketRef.current) {
+          socketRef.current.close();
+        }
+        const newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
+        newSocket.onopen = () => {
+          socketRef.current = newSocket;
+        };
+        newSocket.onmessage = (e) => {
+          const newMessage = JSON.parse(e.data);
+          setMessages(prevMessages => [...prevMessages, newMessage]);
+        };
+        loadMessageData();
+      };
 
-          connectWebSocket();
-          return () => {
-              if (socketRef.current) {
-                  socketRef.current.close();
-              }
-          };
-      }
+      connectWebSocket();
+      return () => {
+        if (socketRef.current) {
+          socketRef.current.close();
+        }
+      };
+    }
   }, [chatroomNo, loadMessageData]);
 
   //textarea 높이 입력 내용에 맞게 조정
   const handleInputChange = (e) => {
-      setMessageInput(e.target.value);
-      e.target.style.height = '65px';  //높이를 초기화
-      e.target.style.height = `${e.target.scrollHeight}px`;  //스크롤 크기만큼 높이 설정
+    setMessageInput(e.target.value);
+    e.target.style.height = '65px';  //높이를 초기화
+    e.target.style.height = `${e.target.scrollHeight}px`;  //스크롤 크기만큼 높이 설정
   };
 
   //메세지 보내는 부분
   const sendMessage = () => {
-      if (!messageInput.trim() || !socketRef.current) return;
-      const message = {
-          token: axios.defaults.headers.common['Authorization'],
-          messageContent: messageInput.trim(),
-          chatroomNo: chatroomNo
-      };
-      const json = JSON.stringify(message);
-      socketRef.current.send(json);
+    if (!messageInput.trim() || !socketRef.current) return;
+    const message = {
+      token: axios.defaults.headers.common['Authorization'],
+      messageContent: messageInput.trim(),
+      chatroomNo: chatroomNo
+    };
+    const json = JSON.stringify(message);
+    socketRef.current.send(json);
 
-      setMessageInput(""); //입력한 부분 초기화
-      if (textAreaRef.current) {
-          textAreaRef.current.style.height = '65px';
+    setMessageInput(""); //입력한 부분 초기화
+    if (textAreaRef.current) {
+      textAreaRef.current.style.height = '65px';
+    }
+
+
+    setTimeout(() => {
+      if (scrollRef.current) {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
       }
-
-
-      setTimeout(() => {
-          if (scrollRef.current) {
-              scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-          }
-      }, 0);
+    }, 0);
   };
 
   const handleKeyDown = (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {  //Shift 키와 함께 Enter 키를 누르면 줄바꿈
-          e.preventDefault();  //기본 Enter 이벤트(새 줄 추가) 방지
-          sendMessage();
-      }
+    if (e.key === 'Enter' && !e.shiftKey) {  //Shift 키와 함께 Enter 키를 누르면 줄바꿈
+      e.preventDefault();  //기본 Enter 이벤트(새 줄 추가) 방지
+      sendMessage();
+    }
   };
 
   const closeChatModal = useCallback(() => {
-      if (bsModal.current) {
-          const modal = Modal.getInstance(bsModal.current);
-          if (modal) {
-              modal.hide();
-          }
+    if (bsModal.current) {
+      const modal = Modal.getInstance(bsModal.current);
+      if (modal) {
+        modal.hide();
       }
-      setChatroomNo("");
-      setMessages([]);
+    }
+    setChatroomNo("");
+    setMessages([]);
   }, []);
 
   const modalScrollListener = useCallback(throttle(() => {
-      if (!loading.current && !last) {
-          const modalContent = bsModal.current.querySelector('.modal-body');
-          if (modalContent) {
-              const modalScrollTop = modalContent.scrollTop;
-              // const modalScrollHeight = modalContent.scrollHeight;
-              // const modalClientHeight = modalContent.clientHeight;
-              if (modalScrollTop === 0 && !last) { //맨 위에 도달했을 때 페이지 추가
-                  setPage(prevPage => prevPage + 1);
-              }
-          }
+    if (!loading.current && !last) {
+      const modalContent = bsModal.current.querySelector('.modal-body');
+      if (modalContent) {
+        const modalScrollTop = modalContent.scrollTop;
+        // const modalScrollHeight = modalContent.scrollHeight;
+        // const modalClientHeight = modalContent.clientHeight;
+        if (modalScrollTop === 0 && !last) { //맨 위에 도달했을 때 페이지 추가
+          setPage(prevPage => prevPage + 1);
+        }
       }
+    }
   }, 300), [last]);
 
 
   //모달오픈
   const openChatModal = useCallback((chatroomNo) => {
-      const modal = new Modal(bsModal.current);
-      modal.show();
-      setChatroomNo(chatroomNo);
+    const modal = new Modal(bsModal.current);
+    modal.show();
+    setChatroomNo(chatroomNo);
 
-      setPage(1);
+    setPage(1);
 
-      loadMessageData();
+    loadMessageData();
 
 
 
-      const modalContent = bsModal.current.querySelector('.modal-body');
-      if (modalContent) {
-          modalContent.addEventListener("scroll", modalScrollListener);
+    const modalContent = bsModal.current.querySelector('.modal-body');
+    if (modalContent) {
+      modalContent.addEventListener("scroll", modalScrollListener);
 
-          const handleOutsideModalClick = (event) => {
-              if (bsModal.current && !bsModal.current.contains(event.target)) {
-                  closeChatModal();
-              }
-          };
+      const handleOutsideModalClick = (event) => {
+        if (bsModal.current && !bsModal.current.contains(event.target)) {
+          closeChatModal();
+        }
+      };
 
-          //모달 오픈 시 스크롤 맨 밑으로 내리는거
-          setTimeout(() => {
-              if (scrollRef.current) {
-                  scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-              }
-          }, 400);
+      //모달 오픈 시 스크롤 맨 밑으로 내리는거
+      setTimeout(() => {
+        if (scrollRef.current) {
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+      }, 400);
 
-          const handleEscKeyPress = (event) => {
-              if (event.key === 'Escape') {
-                  closeChatModal();
-              }
-          };
+      const handleEscKeyPress = (event) => {
+        if (event.key === 'Escape') {
+          closeChatModal();
+        }
+      };
 
-          document.addEventListener('mousedown', handleOutsideModalClick);
-          document.addEventListener('keydown', handleEscKeyPress);
+      document.addEventListener('mousedown', handleOutsideModalClick);
+      document.addEventListener('keydown', handleEscKeyPress);
 
-          return () => {
-              document.removeEventListener('mousedown', handleOutsideModalClick);
-              document.removeEventListener('keydown', handleEscKeyPress);
-          };
-      }
+      return () => {
+        document.removeEventListener('mousedown', handleOutsideModalClick);
+        document.removeEventListener('keydown', handleEscKeyPress);
+      };
+    }
   }, [bsModal, closeChatModal, loadMessageData, modalScrollListener]);
 
   //모달 스크롤 이벤트제어
   useEffect(() => {
-      const modalContent = bsModal.current.querySelector('.modal-body');
-      if (modalContent) {
-          modalContent.addEventListener("scroll", modalScrollListener);
+    const modalContent = bsModal.current.querySelector('.modal-body');
+    if (modalContent) {
+      modalContent.addEventListener("scroll", modalScrollListener);
 
-          return () => {
-              modalContent.removeEventListener("scroll", modalScrollListener);
-          };
-      }
+      return () => {
+        modalContent.removeEventListener("scroll", modalScrollListener);
+      };
+    }
   }, [modalScrollListener]);
 
 
@@ -386,13 +389,15 @@ const App = () => {
                     <Route path="/NEL" element={<NEL />} />
                     <Route path="/chat/:chatroomNo" element={<Chat />} />
                     <Route path="/chatroom" element={<ChatRoom />} />
-                    {/* <Route path="/boardBlind" element={<BoardBlind />}/> */}
+                    <Route path="/boardBlind" element={<BoardBlind />}/>
                     <Route path="/project" element={<Project />} />
                     <Route path="/document" element={<Document />} />
                     <Route path='/login' element={<Login />} />
                     <Route path="/company/join" element={<CompanyJoin />} />
+                    <Route path='/empMypage' element={<EmpMypage />} />
                     <Route path="/kakaopay/purchaseTest" element={<PurchaseTest />} />
                     <Route path="/kakaopay/purchaseSuccess" element={<PurchaseSuccess />} />
+                    <Route path="/kakaopay/subscriptionInactive" element={<SubScriptionInactive />} />
                     <Route path="/kakopay/purchaseComplete" element={<PurchaseComplete />} />
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>

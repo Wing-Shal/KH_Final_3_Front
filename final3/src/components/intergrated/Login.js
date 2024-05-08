@@ -3,7 +3,7 @@ import "./Login.css";
 import { useCallback, useState } from "react";
 import Jumbotron from "../Jumbotron";
 import { useRecoilState } from "recoil";
-import { loginIdState, loginLevelState } from "../utils/RecoilData";
+import { loginIdState, loginLevelState, isPaidState } from "../utils/RecoilData";
 //import axios from "axios";//기본 라이브러리
 import axios from "../utils/CustomAxios";//개조 라이브러리
 import { useNavigate } from "react-router";
@@ -18,6 +18,7 @@ const EmpLogin = () => {
     //recoil
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+    const [isPaid, setIsPaid] = useRecoilState(isPaidState);
 
     //callback
     const changeInput = useCallback(e => {
@@ -37,6 +38,7 @@ const EmpLogin = () => {
         const resp = await axios.post("/emp/login", input);
         setLoginId(parseInt(resp.data.loginId));
         setLoginLevel(resp.data.loginLevel);
+        setIsPaid(resp.data.isPaid)
 
         axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
 
@@ -54,6 +56,7 @@ const EmpLogin = () => {
         const resp = await axios.post("/company/login", input);
         setLoginId(parseInt(resp.data.loginId));
         setLoginLevel(resp.data.loginLevel);
+        setIsPaid(resp.data.isPaid)
 
         axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
 

@@ -3,3 +3,6 @@
     border-bottom: 1px solid #FFC0CB;
     transform: scaleY(0.5);
 }
+.logo-image {
+    width: 200px;
+}

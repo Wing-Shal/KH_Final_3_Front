@@ -9,6 +9,8 @@ import {
 
 import { Link } from 'react-router-dom';
 
+import Logo from "../assets/PlanetLogo.png";
+
 import './Sidebar.css';
 
 const basicTheme = {
@@ -68,7 +70,7 @@ const SideBar = () => {
             <Sidebar rootStyles={sidebarStyles}>
                 <div className="text-center py-4">
                     <Link to="/">
-                        <img src="https://flow.team/flow-renewal/assets/images/logo/logo-flow.svg" />
+                        <img className="logo-image" src={Logo} />
                     </Link>
                 </div>
                 <div className="logo-outline" />

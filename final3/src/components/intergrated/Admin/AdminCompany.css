@@ -1,8 +1,19 @@
 /* table width */
 .tw-1 {width: 10%}
-.tw-2 {width: 20%}
-.tw-3 {width: 30%}
+.tw-2 {width: 15%}
+.tw-3 {width: 20%}
 .pointer {
     cursor: pointer;
     margin: 0;
+}
+
+.table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+}
+
+.table th {
+    background-color: #ffe6ea;
+    color: #2D3436;
 }

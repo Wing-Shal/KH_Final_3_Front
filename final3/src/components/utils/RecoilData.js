@@ -18,6 +18,10 @@ const loginLevelState = atom({
     key : 'loginLevelState',
     default : ''
 });
+const isPaidState = atom({
+    key : 'isPaidState',
+    default: ''
+})
 
 //웹소켓 관련
 const socketConnectState = atom({
@@ -47,4 +51,4 @@ const isLoginState = selector({
 //export default countState;
 
 //naming export는 여러 개 할 수 있다.
-export {countState, loginIdState, loginLevelState, isLoginState, socketConnectState};
+export {countState, loginIdState, loginLevelState, isPaidState, isLoginState, socketConnectState};

@@ -55,10 +55,13 @@ function Header() {
                             채팅
                         </div>
                         <div className="col-4">
-                        <NavLink className="dropdown-item" to="/company/join">회원가입</NavLink>
+                                <NavLink className="dropdown-item" to="/empMypage">마이페이지</NavLink>
                         </div>
-                        <div className='col-4'>
-                        
+                        <div className="col-4">
+                                <NavLink className="dropdown-item" to="/company/join">회원가입</NavLink>
+                        </div>
+                    
+                        <div className='col-4'>                        
                         {isLogin ? (
                             <>
                                 <NavLink className="dropdown-item" to="#" onClick={e => logout()}>로그아웃</NavLink>
