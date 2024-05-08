@@ -1,185 +1,342 @@
-// import
-import { useState, useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { loginIdState } from '../../../components/utils/RecoilData';
+import { useRecoilState } from 'recoil';
 import Jumbotron from "../../Jumbotron";
-import { startTransition } from 'react';
-import { Link } from "react-router-dom";
-//
-import { Modal } from 'bootstrap';
+import { IoMdAdd } from "react-icons/io";
 import axios from "../../utils/CustomAxios";
-import { MdDelete } from "react-icons/md";
-import { IoIosSave } from "react-icons/io";
-import { GiCancel } from "react-icons/gi";
-import { FaPlus } from "react-icons/fa";
-import NewBoardBlind from './NewBoardBlind';
-// import { FaPlus } from "react-icons/fa"; // 폰트어썸 아이콘 라이브러리에서 Plus 아이콘을 import 합니다.
+import { Modal } from "bootstrap";
+import { Link } from 'react-router-dom';
 
 
-// funtion
 function BoardBlind() {
 
-
     // state
-    const [blindContents, setBlindContents] = useState([
-        { blindNo: 1, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "32" },
-        { blindNo: 2, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "63" },
-        { blindNo: 3, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "33" },
-        { blindNo: 4, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "23" },
-        { blindNo: 5, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "31" },
-        { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
-        { blindNo: 5, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "31" },
-        { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
-        { blindNo: 5, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "31" },
-        { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
-        { blindNo: 5, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "31" },
-        { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
-        { blindNo: 5, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "31" },
-        { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
-        { blindNo: 5, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "31" },
-        { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
-        { blindNo: 5, blindTitle: "와 어렵다 이거", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "31" },
-        { blindNo: 6, blindTitle: "한글", blindWriterNick: "뽀로로", blindWtime: "작성시각", blindView: "39" },
-    ]);
+    const [boardBlinds, setBoardBlinds] = useState([]);
+    // const [blindEmpNo, setblindEmpNo] = useRecoilState(loginIdState); // 사용자의 blindEmpNo를 저장합니다.
+    const [loginId, setLoginId] = useRecoilState(loginIdState);
+    // useState 훅을 사용하여 회사 정보를 저장할 상태 추가
+    const [companyInfo, setCompanyInfo] = useState({});
 
-    // blindNo 상태 정의
-    const [blindNo, setBlindNo] = useState({
-        edit: false // 기본값 설정
+    const [input, setInput] = useState({
+        // blindNo:"",
+        blindTitle:"",
+        blindContent:"",
+        blindWriterNick:"",
+        // blindWriterCompany:"",
+        // blindWtime:"",
+        // blindEtime:"",
+        // blindView:"",
+        blindPassword:"",
+        // blindEmpNo:""
     });
 
-    // 모달 열기 상태
-    const [showModal, setShowModal] = useState(false);
+    //기존 effect
+    // useEffect(() => {
+    //     loadData();
+    // }, []);
 
-    // 모달 열기 함수
-    const openModal = () => {
-        setShowModal(true);
+    //변경된 effect
+
+    useEffect(() => {
+        loadData();
+        // fetchCompanyInfo(); // 회사 정보 가져오기 호출
+    }, []);
+
+    // blind_emp
+
+    const loadData = useCallback(async () => {
+        const blindEmpNo = loginId;
+        const resp = await axios.get("/boardBlind/");
+        setBoardBlinds(resp.data);
+    }, []);
+
+    // 회사 정보 가져오기 함수
+    // const fetchCompanyInfo = useCallback(async () => {
+    //     try {
+    //         const response = await axios.get(`/boardBlind/`);
+    //         setCompanyInfo(response.data);
+    //     } catch (error) {
+    //         console.error("Error fetching company info:", error);
+    //     }
+    // }, [loginId]);
+
+    //신규 등록 화면 입력값 변경
+    const changeInput = useCallback((e) => {
+        setInput({
+            ...input,
+            [e.target.name]: e.target.value
+        });
+    }, [input]);
+
+    //기존 등록
+    // const saveInput = useCallback(async () => {
+    //     const resp = await axios.post("/boardBlind/", input);
+    //     loadData();
+    //     clearInput();
+    //     closeModal();
+    // }, [input, loadData]);
+
+  // saveInput 함수 내부에서 필요한 값만 서버에 전달하도록 수정
+const saveInput = useCallback(async () => {
+    const requestData = {
+     
+        blindTitle: input.blindTitle,
+        blindContent: input.blindContent,
+        blindWriterNick: input.blindWriterNick,
+        // blindWriterCompany:input.blindWriterCompany,
+        // blindWtime:input.blindWtime,
+        // blindEtime:,
+        // blindView:,
+        blindPassword: input.blindPassword,
+        // blindEmpNo: input.blindEmpNo
+
+
     };
 
-    // 검색어 상태 변수
-    const [searchTerm, setSearchTerm] = useState("");
-    // 검색 결과 상태 변수
-    const [searchResults, setSearchResults] = useState([]);
+    // 서버에 필요한 추가 정보를 전달하지 않음
+    const resp = await axios.post("/boardBlind/", requestData);
+    loadData();
+    clearInput();
+    closeModal();
+}, [input, loadData]);
 
-    // 검색어 변경 시 처리 함수
-    const handleSearch = (event) => {
-        const term = event.target.value;
-        setSearchTerm(term);
-        // 검색어가 비어있으면 전체 문서 목록을 보여줍니다.
-        if (!term.trim()) {
-            setSearchResults([]);
-            return;
-        }
-        // 검색어가 포함된 문서를 필터링하여 결과에 저장합니다.
-        const results = blindContents.filter(blindContent =>
-            blindContent.blindTitle.includes(term)
-        );
-        setSearchResults(results);
+    //입력값 초기화
+    const clearInput = useCallback(() => {
+        setInput({
+            blindTitle: "",
+            blindContent: "",
+            blindWriterNick: "",
+            blindPassword: ""
+        });
+    }, []);
 
-        // 검색어가 비어있으면 전체 문서 목록을 보여주고, 그렇지 않으면 검색 결과를 보여줍니다.
-        const displayedBlindContentsList = searchTerm.trim() ? searchResults : blindContents;
 
-        // DB에서 문서 목록을 가져오는 비동기 함수
-        // const fetchBlindContents = async () => {
-        //     // 여기서는 단순히 mock 데이터를 사용하겠습니다.
-        //     const mockData = [
-        //         {documentNo:1, documentTitle:"프로젝트시작", documentStatus:"승인", documentWriter:"김윤경", documentApprover:"강지원", documentWriteTime:"2024-04-29", documentLimitTime:"2024-05-01", documentContent: "이 문서는 프로젝트를 시작하기 위한 것입니다.", documentReferrer: "박성진", documentApprover: "김지연"},
-        //         {documentNo:2, documentTitle:"CRUD작성", documentStatus:"요청", documentWriter:"김윤경", documentApprover:"강지원", documentWriteTime:"2024-04-30", documentLimitTime:"2024-05-02", documentContent: "이 문서는 CRUD 작성을 요청하는 문서입니다.", documentReferrer: "이철수", documentApprover: "이영희"},
-        //         // 나머지 문서 데이터도 추가해주세요.
-        //     ];
-        //     // 데이터를 설정합니다.
-        //     setDocuments(mockData);
-        // };
+    //ref + modal
+    const bsModal = useRef();
+    // const asModal = useRef();
+    // const openBModal = useCallback(() => {
+    //     const modal = new Modal(asModal.current);
+    //     modal.show();
+    // }, [asModal]);
 
-    };
+    // const closeBModal = useCallback(() => {
+    //     const modal = Modal.getInstance(asModal.current);
+    //     if (modal) { // 모달이 초기화되었는지 확인
+    //         modal.hide();
+    //     }
+    // }, [asModal]);
+
+
+    const openModal = useCallback(() => {
+        const modal = new Modal(bsModal.current);
+        modal.show();
+    }, [bsModal]);
+
+    const closeModal = useCallback(() => {
+        const modal = Modal.getInstance(bsModal.current);
+        modal.hide();
+    }, [bsModal]);
+
+    //등록 취소
+    const cancelInput = useCallback(() => {
+        // const choice = window.confirm("작성을 취소하시겠습니까?");
+        // if (choice === false) return;
+        clearInput();
+        closeModal();
+        // closeBModal();
+        // }, [clearInput, closeModal, closeBModal]);
+    }, [clearInput, closeModal]);
+
+
 
     return (
         <>
-            {/* div 형식 틀 */}
-            {/* <div className="row mt-4 text-center">
-                <div className="col">글번호</div>
-                <div className="col">제목</div>
-                <div className="col">글쓴이</div>
-                <div className="col">작성일</div>
-                <div className="col">조회수</div>
-            </div>
-            <hr />
-            {blindContents.map((blindContent) => (
-                <div className="row">
-                    <div className="col">{blindContent.blindNo}</div>
-                    <div className="col">{blindContent.blindTitle}</div>
-                    <div className="col">{blindContent.blindWriterNick}</div>
-                    <div className="col">{blindContent.blindWtime}</div>
-                    <div className="col">{blindContent.blindView}</div>
-                </div>
-            ))} */}
+            {/* 블라인드 게시판 */}
+            <Jumbotron title="블라인드 게시판"></Jumbotron>
 
-
+            {/* 추가 버튼 */}
             <div className="row mt-4">
-                <div className="col-auto">
-                    <button onClick={openModal} className="btn btn-primary">글쓰기</button>
+                <div className="col text-end">
+                    <button className="btn btn-primary"
+                        onClick={openModal}>
+                        <IoMdAdd />
+                        글쓰기
+                    </button>
                 </div>
             </div>
-            {/* 모달 */}
-            {showModal && <NewBoardBlind closeModal={() => setShowModal(false)} />}
 
+            {/* 데이터 출력 */}
             <div className="row mt-4">
-                <div className="col">
-                    <table className="table table-hover table-bordered">
-                        <thead className="text-center">
-                            <tr>
-                                <th>글번호</th>
-                                <th>제목</th>
-                                <th>글쓴이</th>
-                                <th>작성일</th>
-                                <th>조회수</th>
-                            </tr>
-                        </thead>
-                        <tbody className="text-center">
-                            {blindContents.map((blindContent) => (
-                                <tr key={blindContent.blindNo}>
-                                    {blindNo.edit === true ? (
-                                        <>
-                                            <td>
-                                                <input type="text" value={blindContent.blindNo} />
-                                            </td>
-                                            <td>입력창</td>
-                                            <td>입력창</td>
-                                            <td>버튼</td>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <td>{blindContent.blindNo}</td>
-                                            <td>{blindContent.blindTitle}</td>
-                                            <td>{blindContent.blindWriterNick}</td>
-                                            <td>{blindContent.blindWtime}</td>
-                                            <td>{blindContent.blindView}</td>
-                                        </>
-                                    )}
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+    {boardBlinds.map(boardBlind => (
+        <div className="col-lg-6 mb-4" key={boardBlind.blindNo}>
+            <div className="card h-100">
+                <div className="card-body">
+                    <h5 className="card-title">
+                        <p className="card-text">{boardBlind.blindTitle}</p>
+                    </h5>
+                    <p className="card-text">작성자: {boardBlind.blindWriterNick}</p>
+                    <p className="card-text">회사명: {boardBlind.blindWriterCompany}</p>
+                    <p className="card-text">작성일: {boardBlind.blindWtime}</p>
+                    <p className="card-text">내용: {boardBlind.blindContent}</p>
+                    <p className="card-text">조회수: {boardBlind.blindView}</p>
+                </div>
+            </div>
+        </div>
+    ))}
+</div>
 
-                    <div className="row mt-4 justify-content-center"> {/* 가운데 정렬 */}
-                        <div className="col">
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="검색어를 입력하세요"
-                                value={searchTerm}
-                                onChange={handleSearch}
-                            />
+
+
+            {/* Modal */}
+            <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">글쓰기</h1>
+                            <button type="button" className="btn-close" aria-label="Close"
+                                onClick={e => cancelInput()}></button>
+                        </div>
+                        <div className="modal-body">
+                            {/* 등록 화면 */}
+                            {/* 프로젝트 정보 표시 */}
+                            <div>
+                                <p>사원 번호: {loginId}</p>
+                                {/* <p>회사: {companyInfo.companyName}</p> */}
+                                <p>회사: {boardBlinds.blindWriterCompany}</p>
+                            </div>
+                            <form>
+                            <div className="row">
+                                <div className="col">
+                                    <label>제목</label>
+                                    <input type="text" name="blindTitle"
+                                        value={input.blindTitle}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>내용</label>
+                                    <textarea name="blindContent"
+                                        value={input.blindContent}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>작성자 닉네임</label>
+                                    <input type="text" name="blindWriterNick"
+                                        value={input.blindWriterNick}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>비밀번호</label>
+                                    <input type="password" name="blindPassword"
+                                        value={input.blindPassword}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+                            </form>
                         </div>
                         
+                        <div className="modal-footer">
+                            <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                                등록
+                            </button>
+                            <button className='btn btn-danger' onClick={e => cancelInput()}>
+                                취소
+                            </button>
+                        </div>
                     </div>
-
                 </div>
-
             </div>
+
+
+            {/* 모달투  */}
+
+            {/* <div ref={asModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">글쓰기</h1>
+                            <button type="button" className="btn-close" aria-label="Close"
+                                onClick={e => cancelInput()}></button>
+                        </div> */}
+            {/* <div ref={asModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <button type="button" className="btn-close" aria-label="Close"
+                    onClick={e => cancelInput()}></button>
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-body">
+                            {/* 등록 화면 */}
+            {/* 프로젝트 정보 표시 */}
+            {/* <div>
+                                <p>뽕뽕이: {loginId}</p>
+                                <p>뽕뽕: {companyInfo.companyName}</p>
+                            </div> */}
+
+
+            {/* <div className="row">
+                                <div className="col">
+                                    <label>제목</label>
+                                    <input type="text" name="blindTitle"
+                                        value={input.blindTitle}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div> */}
+
+            {/* <div className="row">
+                                <div className="col">
+                                    <label>내용</label>
+                                    <textarea name="blindContent"
+                                        value={input.blindContent}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div> */}
+
+            {/* <div className="row">
+                                <div className="col">
+                                    <label>작성자 닉네임</label>
+                                    <input type="text" name="blindWriterNick"
+                                        value={input.blindWriterNick}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>비밀번호</label>
+                                    <input type="password" name="blindPassword"
+                                        value={input.blindPassword}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
+                                </div>
+                            </div> */}
+
+            {/* </div>
+                        <div className="modal-footer">
+                            <button className='btn btn-danger' onClick={e => cancelInput()}>
+                                취소
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>  */}
+
 
         </>
     );
-
-
 }
 
-// export
 export default BoardBlind;

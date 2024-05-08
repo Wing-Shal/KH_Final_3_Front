@@ -1,26 +1,158 @@
+.header {
+    min-height: 30px;
+    width: 100%;
+    border-bottom: 1px solid #FFC0CB;
+}
+
+.toast-custom {
+    background-color: #f8e5e8; 
+    color: rgb(39, 36, 36); 
+    /* border-radius: 8px;       모서리 둥글게 */
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.chat-container {
+    flex: 1;
+    overflow-y: auto; /* 채팅 부분만 스크롤 */
+}
+
 /* 모달 내의 스크롤바 전체 스타일 설정 */
 .modal-body::-webkit-scrollbar {
-    width: 10px; /* 스크롤바의 너비를 더 얇게*/
-    border-radius: 10px; /* 스크롤바의 모서리를 둥글게 */
+    width: 10px;
+    /* 스크롤바의 너비를 더 얇게*/
+    border-radius: 10px;
+    /* 스크롤바의 모서리를 둥글게 */
 }
 
 /* 스크롤바 배경 */
 .modal-body::-webkit-scrollbar-track {
-    background: #f3dbdf; /* 밝은 회색으로 트랙의 배경 색상 설정 */
-    border-radius: 10px; /* 트랙의 모서리도 둥글게 */
+    background: #f3dbdf;
+    /* 밝은 회색으로 트랙의 배경 색상 설정 */
+    border-radius: 10px;
+    /* 트랙의 모서리도 둥글게 */
 }
 
 /* 스크롤바 색상 */
 .modal-body::-webkit-scrollbar-thumb {
-    background: linear-gradient(180deg, #FFC0CB, #f5abb7) !important; 
-    border-radius: 10px; /* 핸들의 모서리 둥글게 */
+    background: linear-gradient(180deg, #FFC0CB, #f5abb7) !important;
+    border-radius: 10px;
+    /* 핸들의 모서리 둥글게 */
 }
 
 /* 호버했을 때 */
 .modal-body::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(180deg, #f594a4, #ff657f) !important; 
+    background: linear-gradient(180deg, #f594a4, #ff657f) !important;
 }
 
 .modal-backdrop {
     background-color: rgba(50, 50, 50, 0.15);
+}
+
+/* 텍스트입력창 */
+textarea {
+    resize: none;
+    overflow: hidden;
+}
+
+/* 채팅 디자인 */
+
+.chat-container {
+    display: flex; /* 채팅 컨테이너를 flex container로 만듭니다. */
+    flex-direction: column; /* 세로 방향으로 아이템들을 배치합니다. */
+}
+
+.chat-bubble {
+    margin: 5px;
+    padding: 10px;
+    border-radius: 20px;
+    background-color: #f0f0f0;
+    max-width: 70%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 내 메세지 색상 */
+.chat-bubble.mine {
+    align-self: flex-end;
+    font-size: 13px;
+    background-color: #FFC0CB; 
+}
+
+
+/* 다른사람 메시지 */
+.chat-bubble.others {
+    align-self: flex-start;
+    font-size: 13px;
+    background-color: #f7d7dc;
+}
+
+.sender-info, .message-time {
+    color: #000;
+}
+
+.message-content {
+    margin-top: 5px;
+    color: #000;  /* 메시지 텍스트 색상 */
+}
+
+.message-time {
+    align-self: flex-end;
+    font-size: 0.8em;
+}
+
+/* 채팅 참여자 관련*/
+.participants-sidebar {
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    width: 200px;
+    height: auto;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    z-index: 1050; /* 모달보다 높은 z-index */
+    overflow-y: auto;
+}
+
+/* 참여자 목록 내부 스타일링 */
+.participants-sidebar {
+    /* padding: 20px; */
+    list-style: none;
+    margin: 0;
+}
+
+.participants-sidebar {
+    padding: 10px 20px;
+    margin: 0;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.participants-sidebar {
+    width: 200px;
+    overflow-y: auto; /* 참여자 목록 부분만 스크롤 */
+    /* margin-right: 100px;  */
+    display: none; 
+}
+
+.participants-sidebar.expanded {
+    display: block; /* 확장됐을 때 보임 */
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.participant-list {
+    padding: 5px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.participant-list:last-child {
+    border-bottom: none;
+}
+
+.btn-pink {
+    background-color: #f7d7dc;
 }
