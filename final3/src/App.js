@@ -26,7 +26,6 @@ const Header = lazy(() => import("./components/Header"));
 const Home = lazy(() => import("./components/Home"));
 const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
 const Login = lazy(() => import("./components/intergrated/Login"));
-const Chat = lazy(() => import("./components/intergrated/Chat/Chat"));
 const ChatRoom = lazy(() => import("./components/intergrated/Chat/Chatroom"));
 const Document = lazy(() => import("./components/intergrated/Document/Document"));
 const Project = lazy(() => import("./components/intergrated/Project/Project"));
@@ -129,44 +128,49 @@ const App = () => {
   //오류 계속 떠서 try catch로했는데 이유 아시는분
   useEffect(() => {
     let newSocket;
-    try {
-      newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
-      newSocket.onopen = () => {
-        console.log("웹소켓 연결됨");
-        setSocket(newSocket);
-      };
-
-      newSocket.onmessage = (e) => {
-        // console.log(e.data);
-        const messageData = JSON.parse(e.data);
-        const { messageSenderName, messageSenderGrade, messageContent, messageSender, chatroomNo } = messageData;
-        // console.log(loginId);
-        // console.log(messageSender);
-        if (userChatroomNos.includes(chatroomNo) && messageSender !== loginId) {
-          toast(
-            <div className="toast-custom" onClick={() => moveChatroom(chatroomNo)}>
-              <strong>{messageSenderName} ({messageSenderGrade})</strong>
-              <br />
-              {messageContent}
-            </div>, {
-            position: "top-right",
-            autoClose: 5000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: true,
-            progress: undefined,
-          });
-        }
-      };
-    }
-    catch (error) {
-      console.error("에러 떠서 분조장 온사람");
-    }
-
+  
+    const setupWebSocket = () => {
+      try {
+        newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
+        newSocket.onopen = () => {
+          console.log("웹소켓 연결됨");
+          setSocket(newSocket);
+        };
+  
+        newSocket.onmessage = (e) => {
+          // console.log(e.data);
+          const messageData = JSON.parse(e.data);
+          const { messageSenderName, messageSenderGrade, messageContent, messageSender, chatroomNo } = messageData;
+          // console.log(loginId);
+          // console.log(messageSender);
+          if (userChatroomNos.includes(chatroomNo) && messageSender !== loginId) {
+            toast(
+              <div className="toast-custom" onClick={() => moveChatroom(chatroomNo)}>
+                <strong>{messageSenderName} ({messageSenderGrade})</strong>
+                <br />
+                {messageContent}
+              </div>, {
+              position: "top-right",
+              autoClose: 5000,
+              hideProgressBar: true,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+              progress: undefined,
+            });
+          }
+        };
+      }
+      catch (error) {
+        console.error("에러 떠서 분조장 온사람");
+      }
+    };
+  
+    setupWebSocket();
+  
     return () => {
       try {
-        if (newSocket) {
+        if (newSocket && newSocket.close) {
           newSocket.close();
         }
       }
@@ -387,11 +391,10 @@ const App = () => {
                   <Route element={<LoginRoute refreshLogin={refreshLogin} />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/NEL" element={<NEL />} />
-                    <Route path="/chat/:chatroomNo" element={<Chat />} />
                     <Route path="/chatroom" element={<ChatRoom />} />
                     <Route path="/boardBlind" element={<BoardBlind />}/>
                     <Route path="/project" element={<Project />} />
-                    <Route path="/document" element={<Document />} />
+                    <Route path="/document/project/:projectNo" element={<Document />} />
                     <Route path='/login' element={<Login />} />
                     <Route path="/company/join" element={<CompanyJoin />} />
                     <Route path='/empMypage' element={<EmpMypage />} />
