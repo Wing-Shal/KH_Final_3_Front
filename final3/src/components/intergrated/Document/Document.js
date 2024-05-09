@@ -246,13 +246,14 @@ const Document = () => {
     //     // 파일 처리 로직 추가
     // };
 
-// 일반버튼 클릭시 참조자,결재자 숨기기 기능
+    // 일반버튼 클릭시 참조자,결재자 숨기기 기능
 
 
     //ref + modal
     const bsModal = useRef();
     const openModal = useCallback(() => {
         const modal = new Modal(bsModal.current);
+        console.log(modal);
         setInput({
             ...input,
             empNo: loginId,
@@ -307,295 +308,293 @@ const Document = () => {
 
             {/* 문서목록... */}
             {filteredDocuments.map(document => (
-    <div key={document.documentNo} className="row mt-4">
-        <div className="col">
-            <div className="card mb-3" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                <div className="card-body" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                    <div className="card-body d-flex flex-wrap justify-content-between">
-                        {/* 플젝 번호, 문서 번호, 상태 */}
-                        <div className="d-flex justify-content-between" style={{ marginBottom: "10px" }} >
-                            <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)', border: 'none' }}>플젝 번호: {document.projectNo}</div>
-                            <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)' }}>문서 번호: {document.documentNo}</div>
-                            <div className="rounded border p-2 shadow-sm bg-light" style={{ width: "150px" }}>상태: {document.documentStatus}</div>
-                        </div>
-                        {/* 시작일, 마감일 */}
-                        <div className="d-flex justify-content-between">
-                            <div className="rounded border p-2 shadow-sm bg-light" style={{ width: "250px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)' }}>프로젝트 이름: {document.projectName}</div>
-                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">시작일: {document.edit ? <input type="date" name="documentWriteTime" value={document.documentWriteTime} onChange={(e) => changeDocument(e, document)} /> : document.documentWriteTime}</div>
-                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
-                        </div>
-                    </div>
-                    <div className="card-title" >
-                        <div className="card-text" >
-                            {/* 제목 */}
-                            {document.edit ? (
-                                <input
-                                    type="text"
-                                    value={document.documentTitle}
-                                    name="documentTitle"
-                                    onChange={(e) => changeDocument(e, document)}
-                                    className="form-control"
-                                />
-                            ) : (
-                                <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                    {/* 검색어 강조 */}
-                                    제목: {document.documentTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                        <span>
-                                            {document.documentTitle.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                    <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                <div key={document.documentNo} className="row mt-4">
+                    <div className="col">
+                        <div className="card mb-3" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
+                            <div className="card-body" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
+                                <div className="card-body d-flex flex-wrap justify-content-between">
+                                    {/* 플젝 번호, 문서 번호, 상태 */}
+                                    <div className="d-flex justify-content-between" style={{ marginBottom: "10px" }} >
+                                        <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)', border: 'none' }}>플젝 번호: {document.projectNo}</div>
+                                        <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)' }}>문서 번호: {document.documentNo}</div>
+                                        <div className="rounded border p-2 shadow-sm bg-light" style={{ width: "150px" }}>상태: {document.documentStatus}</div>
+                                    </div>
+                                    {/* 시작일, 마감일 */}
+                                    <div className="d-flex justify-content-between">
+                                        <div className="rounded border p-2 shadow-sm bg-light" style={{ width: "250px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)' }}>프로젝트 이름: {document.projectName}</div>
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">시작일: {document.edit ? <input type="date" name="documentWriteTime" value={document.documentWriteTime} onChange={(e) => changeDocument(e, document)} /> : document.documentWriteTime}</div>
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
+                                    </div>
+                                </div>
+                                <div className="card-title" >
+                                    <div className="card-text" >
+                                        {/* 제목 */}
+                                        {document.edit ? (
+                                            <input
+                                                type="text"
+                                                value={document.documentTitle}
+                                                name="documentTitle"
+                                                onChange={(e) => changeDocument(e, document)}
+                                                className="form-control"
+                                            />
+                                        ) : (
+                                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">
+                                                {/* 검색어 강조 */}
+                                                제목: {document.documentTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                                                    <span>
+                                                        {document.documentTitle.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                                            ) : (
+                                                                <span key={index}>{text}</span>
+                                                            )
+                                                        ))}
+                                                    </span>
                                                 ) : (
-                                                    <span key={index}>{text}</span>
-                                                )
-                                            ))}
-                                        </span>
+                                                    document.documentTitle
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                                <div className="card-text">
+                                    {/* 내용 */}
+                                    {document.edit ? (
+                                        <textarea
+                                            value={document.documentContent}
+                                            name="documentContent"
+                                            onChange={(e) => changeDocument(e, document)}
+                                            className="form-control"
+                                            rows={7}
+                                        />
                                     ) : (
-                                        document.documentTitle
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light" style={{ height: "200px" }}>
+                                            {/* 검색어 강조 */}
+                                            {document.documentContent.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                                                <span>
+                                                    {document.documentContent.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                                        text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                                            <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                                        ) : (
+                                                            <span key={index}>{text}</span>
+                                                        )
+                                                    ))}
+                                                </span>
+                                            ) : (
+                                                document.documentContent
+                                            )}
+                                        </div>
                                     )}
                                 </div>
-                            )}
-                        </div>
-                    </div>
-                    <div className="card-text">
-                        {/* 내용 */}
-                        {document.edit ? (
-                            <textarea
-                                value={document.documentContent}
-                                name="documentContent"
-                                onChange={(e) => changeDocument(e, document)}
-                                className="form-control"
-                                rows={7}
-                            />
-                        ) : (
-                            <div className="rounded border p-2 mb-2 shadow-sm bg-light" style={{ height: "200px" }}>
-                                {/* 검색어 강조 */}
-                                {document.documentContent.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                    <span>
-                                        {document.documentContent.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                <div className="card-title">
+                                    <div className="card-text d-flex justify-content-between">
+                                        {/* 참조자, 결재자, 작성자 */}
+
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
+                                            {/* 참조자 */}
+                                            참조자: {document.documentApprover ? (
+                                                document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                                                    <span>
+                                                        {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                                            ) : (
+                                                                <span key={index}>{text}</span>
+                                                            )
+                                                        ))}
+                                                    </span>
+                                                ) : (
+                                                    document.documentApprover
+                                                )
+                                            ) : null}
+                                        </div>
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
+                                            {/* 결재자 */}
+
+                                            결재자: {document.documentApprover ? (
+                                                document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                                                    <span>
+                                                        {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                                            ) : (
+                                                                <span key={index}>{text}</span>
+                                                            )
+                                                        ))}
+                                                    </span>
+                                                ) : (
+                                                    document.documentApprover
+                                                )
+                                            ) : null}
+                                        </div>
+
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
+                                            {/* 작성자 */}
+                                            작성자: {document.documentWriter ? (
+                                                document.documentWriter.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                                                    <span>
+                                                        {document.documentWriter.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                                            ) : (
+                                                                <span key={index}>{text}</span>
+                                                            )
+                                                        ))}
+                                                    </span>
+                                                ) : (
+                                                    document.documentWriter
+                                                )
+                                            ) : null}
+                                        </div>
+                                        <div className="text-end">
+                                            {/* 편집 및 삭제 버튼 */}
+                                            {document.edit ? (
+                                                <>
+                                                    <FaCheck className="text-success me-2" onClick={() => saveEditDocument(document)} style={{ fontSize: "40px" }} />
+                                                    <TbPencilCancel className="text-danger" onClick={() => cancelEditDocument(document)} style={{ fontSize: "40px" }} />
+                                                </>
                                             ) : (
-                                                <span key={index}>{text}</span>
-                                            )
-                                        ))}
-                                    </span>
-                                ) : (
-                                    document.documentContent
-                                )}
-                            </div>
-                        )}
-                    </div>
-                    <div className="card-title">
-                        <div className="card-text d-flex justify-content-between">
-                            {/* 참조자, 결재자, 작성자 */}
-
-                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                {/* 참조자 */}
-                                참조자: {document.documentApprover ? (
-                                    document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                        <span>
-                                            {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                    <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                ) : (
-                                                    <span key={index}>{text}</span>
-                                                )
-                                            ))}
-                                        </span>
-                                    ) : (
-                                        document.documentApprover
-                                    )
-                                ) : null} 
-                            </div>
-                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                {/* 결재자 */}
-
-                                결재자: {document.documentApprover ? (
-                                    document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                        <span>
-                                            {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                    <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                ) : (
-                                                    <span key={index}>{text}</span>
-                                                )
-                                            ))}
-                                        </span>
-                                    ) : (
-                                        document.documentApprover
-                                    )
-                                ) : null}
-                            </div>
-
-                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                {/* 작성자 */}
-                                작성자: {document.documentWriter ? (
-                                    document.documentWriter.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                        <span>
-                                            {document.documentWriter.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                    <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                ) : (
-                                                    <span key={index}>{text}</span>
-                                                )
-                                            ))}
-                                        </span>
-                                    ) : (
-                                        document.documentWriter
-                                    )
-                                ) : null}
-                            </div>
-                            <div className="text-end">
-                                {/* 편집 및 삭제 버튼 */}
-                                {document.edit ? (
-                                    <>
-                                        <FaCheck className="text-success me-2" onClick={() => saveEditDocument(document)} style={{ fontSize: "40px" }} />
-                                        <TbPencilCancel className="text-danger" onClick={() => cancelEditDocument(document)} style={{ fontSize: "40px" }} />
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaEdit className="text-warning me-2" onClick={() => editDocument(document)} style={{ fontSize: "40px" }} />
-                                        <FaSquareXmark className="text-danger" onClick={() => deleteDocument(document)} style={{ fontSize: "40px" }} />
-                                    </>
-                                )}
+                                                <>
+                                                    <FaEdit className="text-warning me-2" onClick={() => editDocument(document)} style={{ fontSize: "40px" }} />
+                                                    <FaSquareXmark className="text-danger" onClick={() => deleteDocument(document)} style={{ fontSize: "40px" }} />
+                                                </>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-))}
+            ))}
 
 
 
 
 
             {/* Modal */}
-            {documents.map(document => (
-                <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <div className="modal-dialog">
-                        <div className="modal-content">
-                            <div className="modal-header">
-                                <h1 className="modal-title fs-5" id="staticBackdropLabel">내문서</h1>
-                                <button type="button" className="btn-close" aria-label="Close"
-                                    onClick={e => cancelInput()}></button>
+            <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">내문서</h1>
+                            <button type="button" className="btn-close" aria-label="Close"
+                                onClick={e => cancelInput()}></button>
+                        </div>
+                        <div className="modal-body">
+                            {/* 등록 화면 */}
+                            <button className={`btn btn-secondary me-2`} style={{ backgroundColor: !isApprovalMode ? 'white' : 'pink' }} onClick={() => setIsApprovalMode(true)}>일반</button>
+                            <button className={`btn btn-secondary me-2`} style={{ backgroundColor: isApprovalMode ? 'white' : 'pink' }} onClick={() => setIsApprovalMode(false)}>결재</button>
+                            <div>
+                                <p>프로젝트 번호: {input.projectNo}</p>
                             </div>
-                            <div className="modal-body">
-                                {/* 등록 화면 */}
-                                <button className={`btn btn-secondary me-2`} style={{ backgroundColor: !isApprovalMode ? 'white' : 'pink' }} onClick={() => setIsApprovalMode(true)}>일반</button>
-                                <button className={`btn btn-secondary me-2`} style={{ backgroundColor: isApprovalMode ? 'white' : 'pink' }} onClick={() => setIsApprovalMode(false)}>결재</button>
-                                <div>
-                                    <p>프로젝트 번호: {input.projectNo}</p>
+                            <div>
+                                <p>사원 번호: {input.empNo}</p>
+                            </div>
+
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>시작일</label>
+                                    <input type="date" name="documentWriteTime"
+                                        value={input.documentWriteTime}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
                                 </div>
-                                <div>
-                                    <p>사원 번호: {input.empNo}</p>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>마감일</label>
+                                    <input type="date" name="documentLimitTime"
+                                        value={input.documentLimitTime}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
                                 </div>
-
-
-                                <div className="row">
-                                    <div className="col">
-                                        <label>시작일</label>
-                                        <input type="date" name="documentWriteTime"
-                                            value={input.documentWriteTime}
-                                            onChange={e => changeInput(e)}
-                                            className="form-control" />
-                                    </div>
+                            </div>
+                            <div className="row">
+                                <div className="col">
+                                    <label>문서 제목</label>
+                                    <input type="text" name="documentTitle"
+                                        value={input.documentTitle}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control" />
                                 </div>
+                            </div>
 
-                                <div className="row">
-                                    <div className="col">
-                                        <label>마감일</label>
-                                        <input type="date" name="documentLimitTime"
-                                            value={input.documentLimitTime}
-                                            onChange={e => changeInput(e)}
-                                            className="form-control" />
-                                    </div>
+
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>내용</label>
+                                    <textarea name="documentContent"
+                                        value={input.documentContent}
+                                        onChange={e => changeInput(e)}
+                                        className="form-control"
+                                        rows={5} />
                                 </div>
-                                <div className="row">
-                                    <div className="col">
-                                        <label>문서 제목</label>
-                                        <input type="text" name="documentTitle"
-                                            value={input.documentTitle}
-                                            onChange={e => changeInput(e)}
-                                            className="form-control" />
-                                    </div>
-                                </div>
+                            </div>
 
-
-
-                                <div className="row">
-                                    <div className="col">
-                                        <label>내용</label>
-                                        <textarea name="documentContent"
-                                            value={input.documentContent}
+                            <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
+                                <div className="col">
+                                    <label>참조자</label>
+                                    <div className="input-group">
+                                        <input
+                                            type="text"
+                                            name="documentApprover"
+                                            value={input.documentApprover}
                                             onChange={e => changeInput(e)}
                                             className="form-control"
-                                            rows={5} />
-                                    </div>
-                                </div>
-
-                                <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
-                                    <div className="col">
-                                        <label>참조자</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="text"
-                                                name="documentApprover"
-                                                value={input.documentApprover}
-                                                onChange={e => changeInput(e)}
-                                                className="form-control"
-                                            /><button className="btn btn-outline-secondary" type="button" onClick={handleSearchClick}
+                                        /><button className="btn btn-outline-secondary" type="button" onClick={handleSearchClick}
                                             style={{ backgroundColor: 'rgb(255,192,203,0.5)' }}>
                                             <FaSearch />
                                         </button>
-                                        
-                                        </div>
+
                                     </div>
                                 </div>
-                                <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
+                            </div>
+                            <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
 
-                                    <div className="col">
-                                        <label>결재자</label>
-                                        <div className="input-group">
-                                            <input
-                                                type="search"
-                                                name="documentApprover"
-                                                value={input.documentApprover}
-                                                onChange={e => changeInput(e)}
-                                                className="form-control"
-                                            /><button className="btn btn-outline-secondary" type="button" onClick={handleSearchClick}
+                                <div className="col">
+                                    <label>결재자</label>
+                                    <div className="input-group">
+                                        <input
+                                            type="search"
+                                            name="documentApprover"
+                                            value={input.documentApprover}
+                                            onChange={e => changeInput(e)}
+                                            className="form-control"
+                                        /><button className="btn btn-outline-secondary" type="button" onClick={handleSearchClick}
                                             style={{ backgroundColor: 'rgb(255,192,203,0.5)' }}>
                                             <FaSearch /></button>
-                                        </div>
                                     </div>
                                 </div>
-                                <div className="row">
+                            </div>
+                            <div className="row">
                                 <div className="col">
                                     <label>첨부파일</label>
                                     <input type="file" name="attachment"
                                         value={input.documentFile}
                                         // onChange={handleFileChange}
                                         className="form-control" />
-                                
-                            </div>
-                            </div> 
-                            </div>
-                            <div className="modal-footer">
-                                <button className='btn btn-success me-2' onClick={e => saveInput()}>
-                                    등록
-                                </button>
-                                <button className='btn btn-danger' onClick={e => cancelInput()}>
-                                    취소
-                                </button>
+
+                                </div>
                             </div>
                         </div>
+                        <div className="modal-footer">
+                            <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                                등록
+                            </button>
+                            <button className='btn btn-danger' onClick={e => cancelInput()}>
+                                취소
+                            </button>
+                        </div>
                     </div>
-
-
-
                 </div>
-            ))}
+
+
+
+            </div>
         </>
     );
 };
