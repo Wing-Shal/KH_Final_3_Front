@@ -173,7 +173,7 @@ const AdminCompany = () => {
     };
     return (
         <>
-            <Jumbotron title="회사 목록 관리" />
+            <Jumbotron title="회사 목록/관리" />
 
             <div className="form-check">
                 <input

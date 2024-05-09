@@ -8,6 +8,7 @@ const LoginRoute = ({refreshLogin}) => {
     const isAdminPath = location.pathname.includes("admin");
     const isLoginPath = location.pathname.includes("login");
     const isPurchasePath = location.pathname.includes("purchase");
+    const isJoinPath = location.pathname.includes("join");
 
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [isPaid, setIsPaid] = useRecoilState(isPaidState);
@@ -30,8 +31,8 @@ const LoginRoute = ({refreshLogin}) => {
         isLoading ? (
             <div>Loading...</div>
         ) : (   
-            (isLogin || isLoginPath) ? (
-                checkPaid || isLoginPath || isPurchasePath ? (
+            (isLogin || isLoginPath || isJoinPath) ? (
+                checkPaid || isLoginPath || isPurchasePath || isJoinPath ? (
                     <>
                         <Outlet />
                     </>

@@ -4,7 +4,7 @@
 import './Header.css'
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { isLoginState, loginIdState, loginLevelState } from "./utils/RecoilData";
+import { isLoginState, isPaidState, loginIdState, loginLevelState } from "./utils/RecoilData";
 import { useCallback } from "react";
 import axios from "./utils/CustomAxios";
 
@@ -14,6 +14,7 @@ function Header() {
         //recoil state
         const [loginId, setLoginId] = useRecoilState(loginIdState);
         const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+        const [isPaid, setIsPaid] = useRecoilState(isPaidState);
     
         //recoil value
         const isLogin = useRecoilValue(isLoginState);
@@ -34,6 +35,7 @@ function Header() {
             //recoil 저장소에 대한 정리 + axios의 헤더 제거 + localStorage 청소
             setLoginId('');
             setLoginLevel('');
+            setIsPaid('');
             delete axios.defaults.headers.common['Authorization'];
             window.localStorage.removeItem("refreshToken");
             // navigator(isAdminPath ? ("/admin/login") : ("/login"));
@@ -51,31 +53,19 @@ function Header() {
                 </div>
                 <div className="col-2 text-center">
                     <div className="row">
+                    <div className='col-4'>                        
+                        {isLogin && (
+                            <>
+                                <NavLink className="dropdown-item" to="#" onClick={e => logout()}>로그아웃</NavLink>
+                            </>
+                        )}
+                        </div>
                         <div className="col-4">
                             채팅
                         </div>
                         <div className="col-4">
                                 <NavLink className="dropdown-item" to="/empMypage">마이페이지</NavLink>
                         </div>
-                        <div className="col-4">
-                                <NavLink className="dropdown-item" to="/company/join">회원가입</NavLink>
-                        </div>
-                    
-                        <div className='col-4'>                        
-                        {isLogin ? (
-                            <>
-                                <NavLink className="dropdown-item" to="#" onClick={e => logout()}>로그아웃</NavLink>
-                            </>
-                        ) : (
-                            <>
-                                <NavLink className="dropdown-item" to="/login">로그인</NavLink>
-                            </>
-                        )}
-                    
-                        </div>
-                        
-
-                        
                     </div>
                 </div>
             </div>

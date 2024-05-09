@@ -1,12 +1,15 @@
 import { useCallback } from "react";
+import { isPaidState } from "../../utils/RecoilData";
+import { useRecoilState } from "recoil";
 import axios from "../../utils/CustomAxios";
 import { useNavigate } from "react-router";
 
 const SubScriptionInactive = ()=> {
     const navigator = useNavigate();
+    const [isPaid, setIsPaid] = useRecoilState(isPaidState);
     const cancel = useCallback(async ()=> {
         const resp = await axios.get("/kakaopay/purchase/cancel");
-
+        setIsPaid("INACTIVE");
         navigator("/");
     });
 

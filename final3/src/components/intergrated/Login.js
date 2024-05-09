@@ -64,7 +64,8 @@ const EmpLogin = () => {
         window.localStorage.setItem("refreshToken", resp.data.refreshToken);
 
         //강제 페이지 이동 - useNavigate()
-        navigator("/");
+        navigator("/company/home")
+       
     }, [input]);
 
     return (
