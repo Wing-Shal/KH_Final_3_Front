@@ -7,10 +7,10 @@ import { isLoginState, isPaidState, loginIdState, loginLevelState, socketConnect
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import axios from "./components/utils/CustomAxios";
 import LoadingScreen from './components/LoadingScreen';
-import SideBar from './components/Sidebar';
-import AdminSideBar from './components/AdminSidebar';
-import AdminRoute from './components/routes/AdminRoute';
-import LoginRoute from './components/routes/LoginRoute';
+import SidebarSelector from './components/sidebar/SidebarSelector';
+import AdminRoute from './components/CustomRoute/AdminRoute';
+import LoginRoute from './components/CustomRoute/LoginRoute';
+import CompanyRoute from './components/CustomRoute/CompanyRoute';
 
 //토스티파이 알림용
 import SockJS from 'sockjs-client';
@@ -24,7 +24,7 @@ import 'react-toastify/dist/ReactToastify.css';
 //lazy import
 const Header = lazy(() => import("./components/Header"));
 const Home = lazy(() => import("./components/Home"));
-const BoardBlind = lazy(()=>import("./components/intergrated/BoardBlind/BoardBlind"));
+const BoardBlind = lazy(() => import("./components/intergrated/BoardBlind/BoardBlind"));
 const Login = lazy(() => import("./components/intergrated/Login"));
 const ChatRoom = lazy(() => import("./components/intergrated/Chat/Chatroom"));
 const Document = lazy(() => import("./components/intergrated/Document/Document"));
@@ -38,13 +38,17 @@ const PurchaseSuccess = lazy(() => import("./components/intergrated/kakaopay/Pur
 const PurchaseComplete = lazy(() => import("./components/intergrated/kakaopay/PurchaseComplete"));
 const SubScriptionInactive = lazy(() => import("./components/intergrated/kakaopay/SubsciptionInacitve"));
 const CompanyJoin = lazy(() => import("./components/intergrated/CompanyJoin2"));
-const EmpMypage = lazy(()=>import("./components/intergrated/Emp/EmpMypage"));
+const EmpMypage = lazy(() => import("./components/intergrated/Emp/EmpMypage"));
+const CompanyHome = lazy(() => import('./components/intergrated/Company/CompanyHome'));
+const CompanyEmp = lazy(() => import('./components/intergrated/Company/CompanyEmp'));
 
 const App = () => {
   //recoil state
   const location = useLocation();
   const isAdminPath = location.pathname.includes("admin");
   const isLoginPath = location.pathname.includes("login");
+  const isCompanyPath = location.pathname.includes("company");
+  const isNELpath = location.pathname.includes("NEL");
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
   const [isPaid, setIsPaid] = useRecoilState(isPaidState);
@@ -128,7 +132,7 @@ const App = () => {
   //오류 계속 떠서 try catch로했는데 이유 아시는분
   useEffect(() => {
     let newSocket;
-  
+
     const setupWebSocket = () => {
       try {
         newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
@@ -136,7 +140,7 @@ const App = () => {
           console.log("웹소켓 연결됨");
           setSocket(newSocket);
         };
-  
+
         newSocket.onmessage = (e) => {
           // console.log(e.data);
           const messageData = JSON.parse(e.data);
@@ -165,9 +169,9 @@ const App = () => {
         console.error("에러 떠서 분조장 온사람");
       }
     };
-  
+
     setupWebSocket();
-  
+
     return () => {
       try {
         if (newSocket && newSocket.close) {
@@ -375,13 +379,9 @@ const App = () => {
       <Header />
       <ToastContainer />
       <div className='container-fluid d-flex'>
-        <div className='sideber'>
-          {isLoginPath ? (<></>) : (
-            isAdminPath ? (
-              <AdminSideBar />
-            ) : (
-              <SideBar />
-            ))}
+        <div className="sidebar">
+          <SidebarSelector isLoginPath={isLoginPath} isAdminPath={isAdminPath} 
+                                            isCompanyPath={isCompanyPath} isNELpath={isNELpath} />
         </div>
         <div className='container'>
           <div className='row mt-4'>
@@ -392,7 +392,7 @@ const App = () => {
                     <Route path="/" element={<Home />} />
                     <Route path="/NEL" element={<NEL />} />
                     <Route path="/chatroom" element={<ChatRoom />} />
-                    <Route path="/boardBlind" element={<BoardBlind />}/>
+                    <Route path="/boardBlind" element={<BoardBlind />} />
                     <Route path="/project" element={<Project />} />
                     <Route path="/document/project/:projectNo" element={<Document />} />
                     <Route path='/login' element={<Login />} />
@@ -402,6 +402,10 @@ const App = () => {
                     <Route path="/kakaopay/purchaseSuccess" element={<PurchaseSuccess />} />
                     <Route path="/kakaopay/subscriptionInactive" element={<SubScriptionInactive />} />
                     <Route path="/kakopay/purchaseComplete" element={<PurchaseComplete />} />
+                    <Route path="/company" element={<CompanyRoute refreshLogin={refreshLogin}/>} >
+                      <Route path="home" element={<CompanyHome />} />  
+                      <Route path='emp' element={<CompanyEmp />} />
+                    </Route> 
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
                       <Route path="company" element={<AdminCompany />} />

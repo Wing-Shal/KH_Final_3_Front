@@ -1,12 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../utils/CustomAxios";
+import { isPaidState } from "../../utils/RecoilData";
+import { useRecoilState } from "recoil";
 const PurchaseTest = ()=> {
     const navigator = useNavigate();
 
     const [partnerOrderId, setPartnerOrderId] = useState("");
     const [partnerUserId, setPartnerUserId] = useState("");
     const [tid, setTid] = useState("");
+    const [isPaid, setIsPaid] = useRecoilState(isPaidState);
 
     const purchase = useCallback(async() => {
         const resp = await axios.get("/kakaopay/purchase");
@@ -28,7 +31,9 @@ const PurchaseTest = ()=> {
             pgToken
         };
         const resp = await axios.post("/kakaopay/purchase/success", postData);
-        navigator("/kakopay/purchaseComplete");
+        setIsPaid("ACTIVE");
+
+        navigator("/company/home");
     });
 
     useEffect(()=> {
