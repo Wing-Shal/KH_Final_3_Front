@@ -217,3 +217,20 @@
     display: block;
     /* 확장됐을 때 보임 */
 }
+
+.last-message {
+    font-size: 0.9em;
+    color: #888;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block; 
+    text-align: left;
+}
+
+.last-message-time {
+    font-size: 0.9em;
+    color: #aaa;
+    display: block; 
+    text-align: right;
+}
