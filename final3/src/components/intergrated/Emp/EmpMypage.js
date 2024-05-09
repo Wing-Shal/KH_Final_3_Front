@@ -163,7 +163,7 @@ function EmpMypage() {
         <br></br>
         {projects.map(project => (
           <div>
-            <Link to={`/document/project/:${project.projectNo}`}>
+            <Link to={`/document/project/${project.projectNo}`}>
             <p> - {project.projectName}</p>
               </Link>
           </div>
