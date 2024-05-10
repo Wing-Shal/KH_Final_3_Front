@@ -138,6 +138,10 @@
     /* 확장됐을 때 보임 */
 }
 
+tbody{
+    cursor: pointer;
+}
+
 .clickable {
     cursor: pointer;
 }
@@ -226,6 +230,7 @@
     text-overflow: ellipsis;
     display: block; 
     text-align: left;
+    width: 300px;
 }
 
 .last-message-time {
