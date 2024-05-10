@@ -6,7 +6,7 @@ import { GiCancel } from "react-icons/gi";
 import { Modal } from 'bootstrap';
 import Jumbotron from "../../Jumbotron";
 
-const CompanyEmp = () => {
+const EmpList = () => {
 
     const [emps, setEmps] = useState([]);
     const [depts, setDepts] = useState([]);
@@ -26,6 +26,7 @@ const CompanyEmp = () => {
 
     const clearInput = useCallback(() => {
         setInput({
+            companyNo: "",
             empNo: "",
             empName: "",
             deptName: "",
@@ -39,7 +40,7 @@ const CompanyEmp = () => {
     }, [input]);
 
     const saveInput = useCallback(async () => {
-        const resp = await axios.patch("/admin/company/", input);
+        const resp = await axios.patch("/company/emp", input);
 
         //정보 다시 로딩
         loadData();
@@ -256,4 +257,4 @@ const CompanyEmp = () => {
     )
 }
 
-export default CompanyEmp;
+export default EmpList;

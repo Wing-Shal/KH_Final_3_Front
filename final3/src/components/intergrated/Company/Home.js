@@ -1,4 +1,4 @@
-const companyHome = ()=> {
+const Home = ()=> {
     return (
         <>
             <h1>회사 메인 페이지</h1>
@@ -21,4 +21,4 @@ const companyHome = ()=> {
         </>
     );
 }
-export default companyHome;
+export default Home;
