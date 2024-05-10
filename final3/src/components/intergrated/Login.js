@@ -8,7 +8,7 @@ import { loginIdState, loginLevelState, isPaidState } from "../utils/RecoilData"
 import axios from "../utils/CustomAxios";//개조 라이브러리
 import { useNavigate } from "react-router";
 
-const EmpLogin = () => {
+const Login = () => {
 
     //state
     const [input, setInput] = useState({
@@ -101,4 +101,4 @@ const EmpLogin = () => {
     );
 };
 
-export default EmpLogin;
+export default Login;

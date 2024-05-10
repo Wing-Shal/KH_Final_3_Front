@@ -20,6 +20,7 @@ import throttle from "lodash/throttle";
 import { Modal } from "bootstrap";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import AdminUpload from './components/intergrated/Admin/AdminUpload';
 
 //lazy import
 const Header = lazy(() => import("./components/Header"));
@@ -39,8 +40,9 @@ const PurchaseComplete = lazy(() => import("./components/intergrated/kakaopay/Pu
 const SubScriptionInactive = lazy(() => import("./components/intergrated/kakaopay/SubsciptionInacitve"));
 const CompanyJoin = lazy(() => import("./components/intergrated/CompanyJoin2"));
 const EmpMypage = lazy(() => import("./components/intergrated/Emp/EmpMypage"));
-const CompanyHome = lazy(() => import('./components/intergrated/Company/CompanyHome'));
-const CompanyEmp = lazy(() => import('./components/intergrated/Company/CompanyEmp'));
+const CompanyHome = lazy(() => import('./components/intergrated/Company/Home'));
+const CompanyEmpList = lazy(() => import('./components/intergrated/Company/EmpList'));
+const CompanyAddEmp = lazy(() => import('./components/intergrated/Company/AddEmp'));
 
 const App = () => {
   //recoil state
@@ -378,7 +380,7 @@ const App = () => {
       {/* 메뉴 */}
       <Header />
       <ToastContainer />
-      <div className='container-fluid d-flex'>
+      <div className='container-fluid d-flex py-0'>
         <div className="sidebar">
           <SidebarSelector isLoginPath={isLoginPath} isAdminPath={isAdminPath} 
                                             isCompanyPath={isCompanyPath} isNELpath={isNELpath} />
@@ -404,12 +406,14 @@ const App = () => {
                     <Route path="/kakopay/purchaseComplete" element={<PurchaseComplete />} />
                     <Route path="/company" element={<CompanyRoute refreshLogin={refreshLogin}/>} >
                       <Route path="home" element={<CompanyHome />} />  
-                      <Route path='emp' element={<CompanyEmp />} />
+                      <Route path='empList' element={<CompanyEmpList />} />
+                      <Route path='addEmp' element={<CompanyAddEmp />} />
                     </Route> 
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
                       <Route path="company" element={<AdminCompany />} />
                       <Route path='home' element={<AdminHome />} />
+                      <Route path="upload" element={<AdminUpload />} />
                     </Route>
                   </Route>
                 </Routes>

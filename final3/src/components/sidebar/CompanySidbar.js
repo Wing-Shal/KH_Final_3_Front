@@ -80,8 +80,8 @@ const SideBar = () => {
                 <Menu>
                     <SubMenu label="사원관리">
                         <Menu menuItemStyles={subItemStyles}>
-                            <MenuItem component={<Link to="/" />}> 사원 등록 </MenuItem>
-                            <MenuItem component={<Link to="/company/emp" />}> 사원 관리 </MenuItem>
+                            <MenuItem component={<Link to="/company/addEmp" />}> 사원 등록 </MenuItem>
+                            <MenuItem component={<Link to="/company/empList" />}> 사원 관리 </MenuItem>
                         </Menu>
                     </SubMenu>
                 </Menu>
