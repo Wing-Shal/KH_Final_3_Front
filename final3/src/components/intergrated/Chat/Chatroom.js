@@ -34,6 +34,8 @@ const ChatRoom = () => {
     const [isEmpListModalOpen, setEmpListModalOpen] = useState(false);
     const [showChatroomInfo, setChatroomInfo] = useState(false);
 
+
+
     //참여자토글
     const toggleParticipants = () => {
         setShowParticipants(prev => {
@@ -59,6 +61,26 @@ const ChatRoom = () => {
     const [last, setLast] = useState(false);
 
     const loading = useRef(false);
+
+    const lastAreaRef = useRef(null);
+    useEffect(() => {
+        if (lastAreaRef.current) {
+            lastAreaRef.current.scrollIntoView();
+        }
+    }, [messages]);
+
+    //메세지 읽었는지
+    const sendReadMessageInfo = useCallback((messageNo) => {
+        const readMessageRequest = {
+            readMessageNo: messageNo,
+            chatroomNo: chatroomNo,
+            token: axios.defaults.headers.common['Authorization']
+        };
+
+        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+            socketRef.current.send(JSON.stringify(readMessageRequest));
+        }
+    }, [chatroomNo]);
 
 
 
@@ -216,11 +238,11 @@ const ChatRoom = () => {
     }, [bsOutChatroomModal]);
 
 
-    useEffect(() => {
-        if (scrollRef.current) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }, [messages]);
+    // useEffect(() => {
+    //     if (scrollRef.current) {
+    //         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    //     }
+    // }, [messages]);
 
 
     //채팅방 이름 수정 모달
@@ -251,10 +273,27 @@ const ChatRoom = () => {
             setMessages(prevMessages => [...resp.data.list, ...prevMessages]);
             setLast(resp.data.last);
 
-            setTimeout(() => {
-                const newScrollHeight = modalContent.scrollHeight; // 데이터 로드 후 스크롤 높이 측정
-                modalContent.scrollTop = newScrollHeight - oldScrollHeight; // 이전 스크롤 위치 복원
-            }, 0);
+            resp.data.list.forEach(message => {
+                sendReadMessageInfo(message.messageNo);
+            });
+
+            //최초에 불러온 경우는 스크롤을 아래로 이동
+            //console.log(resp.data.list.length, messages.length);
+            if (messages.length === 0 || resp.data.list.length === messages.length) {
+                //console.log("처음 불러왔어요");
+                setTimeout(() => {
+                    console.log(scrollRef.current, scrollRef.current.scrollTop, scrollRef.current.scrollHeight);
+                    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+                }, 200);
+            }
+            //최초가 아니라 나중에 추가한 경우 스크롤을 기존위치로 이동
+            else {
+                setTimeout(() => {
+                    //console.log("무한스크롤로 불러왔어요");
+                    const newScrollHeight = modalContent.scrollHeight;
+                    modalContent.scrollTop = newScrollHeight - oldScrollHeight;
+                }, 10);
+            }
         }
         catch (error) {
             console.error("에러임", error);
@@ -266,7 +305,7 @@ const ChatRoom = () => {
         if (chatroomNo) {
             const connectWebSocket = () => {
                 if (socketRef.current) {
-                    socketRef.current.close();
+                    // socketRef.current.close();
                 }
                 const newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
                 newSocket.onopen = () => {
@@ -279,11 +318,11 @@ const ChatRoom = () => {
                 };
                 loadMessageData();
             };
-
             connectWebSocket();
+
             return () => {
                 if (socketRef.current) {
-                    socketRef.current.close();
+                    // socketRef.current.close();
                 }
             };
         }
@@ -312,13 +351,6 @@ const ChatRoom = () => {
             textAreaRef.current.style.height = '65px';
         }
         loadChatroomData();
-
-        //입력할 때 마다 스크롤 따라 내려오게 하고싶은데 안됨..
-        setTimeout(() => {
-            if (scrollRef.current) {
-                scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-            }
-        }, 400);
     };
 
     const handleKeyDown = (e) => {
@@ -359,40 +391,26 @@ const ChatRoom = () => {
     //모달오픈
     const openChatModal = useCallback((chatroomNo) => {
         const modal = new Modal(bsModal.current);
-        modal.show();
         setChatroomNo(chatroomNo);
+        
 
         const selectedChatroom = chatrooms.find(chatroom => chatroom.chatroomNo === chatroomNo);
         if (selectedChatroom) {
             setChatroomName(selectedChatroom.chatroomName);
             // console.log("채팅방 이름 : ", selectedChatroom.chatroomName);
+            modal.show();
+            setPage(1);
+            loadMessageData();
         }
         else {
             // console.log("채팅방을 찾을 수 없습니다.");
         }
-        setPage(1);
-
-        loadMessageData();
 
 
 
         const modalContent = bsModal.current.querySelector('.modal-body');
         if (modalContent) {
             modalContent.addEventListener("scroll", modalScrollListener);
-
-            //바깥눌렀을 때
-            // const handleOutsideModalClick = (event) => {
-            //     if (bsModal.current && !bsModal.current.contains(event.target)) {
-            //         closeChatModal();
-            //     }
-            // };
-
-            //모달 오픈 시 스크롤 맨 밑으로 내리는거
-            setTimeout(() => {
-                if (scrollRef.current) {
-                    scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-                }
-            }, 200);
 
             const handleEscKeyPress = (event) => {
                 try {
@@ -471,20 +489,30 @@ const ChatRoom = () => {
                             <tr>
                                 <th>방번호</th>
                                 <th>방이름</th>
+                                <th>안읽메</th>
                             </tr>
                         </thead>
-                        <tbody className="">
+                        <tbody>
                             {chatrooms.map(chatroom => (
                                 <React.Fragment key={chatroom.chatroomNo}>
                                     <tr onClick={() => openChatModal(chatroom.chatroomNo)}>
                                         <td>{chatroom.chatroomNo}</td>
-                                        <td>{chatroom.chatroomName} <br />
+                                        <td>
+                                            {chatroom.chatroomName} <br />
                                             <span className="last-message mt-2">
                                                 {chatroom.recentMessage || ""}
                                             </span>
                                             <span className="last-message-time">
                                                 {chatroom.recentMessageTime || ""}
                                             </span>
+                                        </td>
+                                        <td>
+                                            {chatroom.unreadMessagesCount > 0 ?
+                                                <span className="badge bg-danger">
+                                                    {chatroom.unreadMessagesCount}
+                                                </span>
+                                                : <span className="badge bg-secondary">0</span>
+                                            }
                                         </td>
                                     </tr>
                                 </React.Fragment>
@@ -496,7 +524,7 @@ const ChatRoom = () => {
                     <table className="table">
                         <thead className="text-center">
                             <tr>
-                                <th>우리회사 사원</th>
+                                <th>우리회사 사원 ♥</th>
                             </tr>
                         </thead>
                         <tbody className="text-center">
@@ -510,70 +538,73 @@ const ChatRoom = () => {
                 </div>
             </div>
 
-            
-                <div ref={ bsModal } className="modal fade" id="chatModal" data-bs-backdrop="static" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-                    <Draggable cancel=".form-control, .chat-container">
-                        <div className="modal-dialog modal-dialog-scrollable">
-                            <div className="modal-content">
-                                <div className="modal-header">
-                                    <div className='col-3'>
-                                        <button className="btn btn-secondary clickable" onClick={toggleParticipants}>참여자</button>
-                                        <ul className={`participants-sidebar ${showParticipants ? 'expanded' : ''}`}>
-                                            {empInChatroom.map(emp => (
-                                                <div key={emp.empNo} className="participant-list">{emp.empName} ({emp.empGrade})</div>
-                                            ))}
-                                            <button className="mt-2 btn btn-secondary" onClick={() => openEmpListModal(chatroomNo)}>사원초대</button>
-                                        </ul>
-                                    </div>
-                                    <p className="modal-title chatroom-name" id="staticBackdropLabel">
-                                        {chatroomName}
-                                    </p>
-                                    <p className="modal-title gear clickable" onClick={manageChatroom}>
-                                        <PiGearSixDuotone />
-                                    </p>
-                                    <ul className={`manageChatroom-sidebar ${showChatroomInfo ? 'expanded' : ''}`}>
-                                        {chatroomName}<br/>
-                                        <button className="mt-2 btn btn-secondary" onClick={() => openChatroomNameChangeModal(chatroomNo)}>채팅방이름수정</button>
-                                        <button className="mt-2 btn btn-danger" onClick={() => openOutChatroomModal(chatroomNo)}>채팅방나가기</button>
-                                    </ul>
-                                    <button type="button" className="btn-close" onClick={closeChatModal}></button>
-                                </div>
-                                <div className="modal-body">
-                                    <div className="chat-container">
-                                        {messages.map(message => (
-                                            <div key={message.messageNo} className={`chat-bubble ${message.messageSender === loginId ? 'mine' : 'others'}`}>
-                                                {message.messageSender !== loginId && (
-                                                    <div className="sender-info">
-                                                        {message.messageSenderName} ({message.messageSenderGrade})
-                                                    </div>
-                                                )}
-                                                <div className="message-content">{message.messageContent}</div>
-                                                <div className="message-time">{message.messageTimeMinute}</div>
-                                            </div>
+
+            <div ref={bsModal} className="modal fade" id="chatModal" data-bs-backdrop="static" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <Draggable cancel=".form-control, .chat-container">
+                    <div className="modal-dialog modal-dialog-scrollable">
+                        <div className="modal-content">
+                            <div className="modal-header">
+                                <div className='col-3'>
+                                    <button className="btn btn-secondary clickable" onClick={toggleParticipants}>참여자</button>
+                                    <ul className={`participants-sidebar ${showParticipants ? 'expanded' : ''}`}>
+                                        {empInChatroom.map(emp => (
+                                            <div key={emp.empNo} className="participant-list">{emp.empName} ({emp.empGrade})</div>
                                         ))}
-                                    </div>
+                                        <button className="mt-2 btn btn-secondary" onClick={() => openEmpListModal(chatroomNo)}>사원초대</button>
+                                    </ul>
                                 </div>
-                                <div className="modal-footer">
-                                    <textarea
-                                        className="form-control"
-                                        placeholder="할 말 입력하셈"
-                                        ref={textAreaRef}
-                                        value={messageInput}
-                                        onChange={handleInputChange}
-                                        onKeyDown={handleKeyDown}
-                                    />
-                                    <button className="btn btn-pink">
-                                        <GoPaperclip />
-                                    </button>
-                                    <button className="btn btn-pink" onClick={sendMessage}>
-                                        <BsSend />
-                                    </button>
+                                <p className="modal-title chatroom-name" id="staticBackdropLabel">
+                                    {chatroomName}
+                                </p>
+                                <p className="modal-title gear clickable" onClick={manageChatroom}>
+                                    <PiGearSixDuotone />
+                                </p>
+                                <ul className={`manageChatroom-sidebar ${showChatroomInfo ? 'expanded' : ''}`}>
+                                    {chatroomName}<br />
+                                    <button className="mt-2 btn btn-secondary" onClick={() => openChatroomNameChangeModal(chatroomNo)}>채팅방이름수정</button>
+                                    <button className="mt-2 btn btn-danger" onClick={() => openOutChatroomModal(chatroomNo)}>채팅방나가기</button>
+                                </ul>
+                                <button type="button" className="btn-close" onClick={closeChatModal}></button>
+                            </div>
+
+                            <div className="modal-body" ref={scrollRef}>
+                                <div className="chat-container">
+                                    {messages.map(message => (
+                                        <div key={message.messageNo} className={`chat-bubble ${message.messageSender === loginId ? 'mine' : 'others'}`}>
+                                            {message.messageSender !== loginId && (
+                                                <div className="sender-info">
+                                                    {message.messageSenderName} ({message.messageSenderGrade})
+                                                </div>
+                                            )}
+                                            <div className="message-content">{message.messageContent}</div>
+                                            <div className="message-time">{message.messageTimeMinute}</div>
+                                        </div>
+                                    ))}
+                                    <div className="last-area" ref={lastAreaRef}></div>
                                 </div>
                             </div>
+
+                            <div className="modal-footer">
+                                <textarea
+                                    className="form-control"
+                                    placeholder="할 말 입력하셈"
+                                    ref={textAreaRef}
+                                    value={messageInput}
+                                    onChange={handleInputChange}
+                                    onKeyDown={handleKeyDown}
+                                />
+                                <button className="btn btn-pink">
+                                    <GoPaperclip />
+                                </button>
+                                <button className="btn btn-pink" onClick={sendMessage}>
+                                    <BsSend />
+                                </button>
+                            </div>
                         </div>
-                    </Draggable>
-                </div>
-            
+                    </div>
+                </Draggable>
+            </div>
+
 
             <div ref={bsEmpModal} className="modal fade" id="staticBackdrop" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog modal-dialog-scrollable">
@@ -582,7 +613,7 @@ const ChatRoom = () => {
                             <h1 className="modal-title fs-5" id="staticBackdropLabel">사원사원</h1>
                             <button type="button" className="btn-close" aria-label="Close" onClick={closeEmpModal}></button>
                         </div>
-                        <div className="modal-body" ref={scrollRef}>
+                        <div className="modal-body">
                             <table className="table text-center">
                                 <tbody>
                                     {empInfos.map(empInfo => (
@@ -618,9 +649,11 @@ const ChatRoom = () => {
                         </div>
                         <div className="modal-footer">
                             {empInfos.map(empInfo => (
-                                <button key={empInfo.empNo} className="btn btn-primary" onClick={() => startChatWithEmp(empInfo.empNo)}>
-                                    채팅하기
-                                </button>
+                                empInfo.empNo !== loginId && (
+                                    <button key={empInfo.empNo} className="btn btn-pink" onClick={() => startChatWithEmp(empInfo.empNo)}>
+                                        채팅하기
+                                    </button>
+                                )
                             ))}
                         </div>
                     </div>
@@ -694,8 +727,6 @@ const ChatRoom = () => {
                     </div>
                 </div>
             </div>
-
-
         </>
     );
 };
