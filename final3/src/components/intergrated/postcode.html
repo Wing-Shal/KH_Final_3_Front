@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>우편번호 찾기</title>
+    <script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+</head>
+<body>
+    <div id="postcode"></div>
+    <script>
+        new daum.Postcode({
+            oncomplete: function(data) {
+                window.opener.postMessage({ zonecode: data.zonecode, address: data.address }, '*');
+                window.close();
+            }
+        }).embed(document.getElementById('postcode'));
+    </script>
+</body>
+</html>

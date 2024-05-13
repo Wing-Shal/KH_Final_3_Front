@@ -73,8 +73,7 @@ const SideBar = () => {
                 </div>
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
-                    <MenuItem component={<Link to="/company/home" />}> 대시보드 </MenuItem>
-                    <MenuItem component={<Link to="/" />}> 회사정보 </MenuItem>
+                    <MenuItem component={<Link to="/company/home" />}> 회사정보 </MenuItem>
                 </Menu>
                 <div className="logo-outline" />
                 <Menu>
@@ -84,6 +83,10 @@ const SideBar = () => {
                             <MenuItem component={<Link to="/company/empList" />}> 사원 관리 </MenuItem>
                         </Menu>
                     </SubMenu>
+                </Menu>
+                <div className="logo-outline" />
+                <Menu>
+                    <MenuItem component={<Link to="/company/management" />}> 부서/직급 관리 </MenuItem>
                 </Menu>
             </Sidebar >
         </>

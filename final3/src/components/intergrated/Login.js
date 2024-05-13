@@ -1,18 +1,34 @@
 //실제 로그인을 처리하기 위한 정보 입력 페이지
 import "./Login.css";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import Jumbotron from "../Jumbotron";
+import { FaPlus } from "react-icons/fa";
+import { IoIosSave } from "react-icons/io";
+import { GiCancel } from "react-icons/gi";
 import { useRecoilState } from "recoil";
 import { loginIdState, loginLevelState, isPaidState } from "../utils/RecoilData";
 //import axios from "axios";//기본 라이브러리
 import axios from "../utils/CustomAxios";//개조 라이브러리
 import { useNavigate } from "react-router";
+import { Modal } from 'bootstrap';
+import postcodeHTML from './postcode.html';
 
 const Login = () => {
 
     //state
     const [input, setInput] = useState({
         id: "", pw: ""
+    });
+    const [join, setJoin] = useState({
+        companyNo: "",
+        companyPw: "",
+        companyName: "",
+        companyBn: "",
+        companyContact: "",
+        companyEmail: "",
+        companyZipcode: "",
+        companyAddress1: "",
+        companyAddress2: ""
     });
 
     //recoil
@@ -28,6 +44,35 @@ const Login = () => {
         });
     }, [input]);
 
+    const clearJoin = useCallback(() => {
+        setJoin({
+            companyNo: "",
+            companyPw: "",
+            companyName: "",
+            companyBn: "",
+            companyContact: "",
+            companyEmail: "",
+            companyZipcode: "",
+            companyAddress1: "",
+            companyAddress2: ""
+        });
+    });
+
+    const saveJoin = useCallback(async () => {
+        const resp = await axios.post("/company/join", join);
+        clearJoin();
+        closeModal();
+    });
+
+    const cancelJoin = useCallback(() => {
+        const choice = window.confirm("작성을 취소하시겠습니까?");
+        if (choice === false) return;
+
+        clearJoin();
+
+        closeModal();
+    });
+
     //navigator
     const navigator = useNavigate();
 
@@ -42,11 +87,9 @@ const Login = () => {
 
         axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
 
-        //(+추가) refreshToken을 localStroage에 저장
         window.localStorage.setItem("refreshToken", resp.data.refreshToken);
-
-        //강제 페이지 이동 - useNavigate()
         navigator("/");
+        
     }, [input]);
 
     const companyLogin = useCallback(async () => {
@@ -60,17 +103,57 @@ const Login = () => {
 
         axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
 
-        //(+추가) refreshToken을 localStroage에 저장
         window.localStorage.setItem("refreshToken", resp.data.refreshToken);
-
-        //강제 페이지 이동 - useNavigate()
         navigator("/company/home")
-       
+
     }, [input]);
+
+    const bsModal = useRef();//리모컨
+    const openModal = useCallback(() => {
+        const modal = new Modal(bsModal.current);
+        modal.show();
+    }, [bsModal]);
+    const closeModal = useCallback(() => {
+        const modal = Modal.getInstance(bsModal.current);
+        modal.hide();
+    }, [bsModal]);
+
+    //주소 입력
+    const openPostcodePopup = () => {
+        const popupWidth = 600;
+        const popupHeight = 600;
+        const popupX = (window.screen.width / 2) - (popupWidth / 2);
+        const popupY = (window.screen.height / 2) - (popupHeight / 2);
+
+        const blob = new Blob([postcodeHTML], { type: 'text/html' });
+        const url = URL.createObjectURL(blob);
+
+        const popup = window.open(url, '우편번호 찾기', 
+        `width=${popupWidth},height=${popupHeight},left=${popupX},top=${popupY}`);
+
+        window.addEventListener('message', event => {
+            const { zonecode, address } = event.data;
+            setJoin(prev => ({
+                ...prev,
+                companyZipcode: zonecode,
+                companyAddress1: address
+            }));
+            URL.revokeObjectURL(url);
+        }, { once: true });
+    };
 
     return (
         <>
             <Jumbotron title="로그인" />
+            <div className='row mt-4'>
+                <div className='col text-end'>
+                    <button className='btn btn-primary'
+                        onClick={e => openModal()}>
+                        <FaPlus />
+                        회원가입
+                    </button>
+                </div>
+            </div>
 
             <div className="row mt-4">
                 <div className="col">
@@ -97,6 +180,103 @@ const Login = () => {
                 </div>
             </div>
 
+            <div ref={bsModal} className=" modal modal-xl fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">회사 회원가입</h1>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={e => cancelJoin()}></button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="container-fluid">
+                                <div className='row mt-4'>
+                                    <div className='col-6'>
+                                        <div className="form-floating mb-3">
+                                            <input type="password" name="companyPw"
+                                                value={input.companyPw}
+                                                onChange={e => changeInput(e)}
+                                                className='form-control'
+                                                placeholder="*********" />
+                                            <label>비밀번호</label>
+                                        </div>
+                                        <div className="form-floating mb-3">
+                                            <input type="text" name="companyName"
+                                                value={input.companyName}
+                                                onChange={e => changeInput(e)}
+                                                className='form-control'
+                                                placeholder="새회사" />
+                                            <label>회사명</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="companyBn"
+                                                value={input.companyBn}
+                                                onChange={e => changeInput(e)}
+                                                className='form-control'
+                                                placeholder="사업자번호" />
+                                            <label for="companyBn">사업자번호</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="companyContact"
+                                                value={input.companyContact}
+                                                onChange={e => changeInput(e)}
+                                                className='form-control'
+                                                placeholder="연락처" />
+                                            <label for="companyContact">연락처</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="companyEmail"
+                                                value={input.companyEmail}
+                                                onChange={e => changeInput(e)}
+                                                className='form-control'
+                                                placeholder="이메일" />
+                                            <label for="companyEmail">이메일</label>
+                                        </div>
+                                        <div className="form-floating mb-3">
+                                            <input type="text" name="companyZipcode"
+                                                value={input.companyZipcode}
+                                                readOnly
+                                                className='form-control'
+                                                placeholder="zipcode" />
+                                            <label>우편번호</label>
+                                        </div>
+                                        <button className='btn btn-dark' type='button' onClick={openPostcodePopup}>우편번호 찾기</button>
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="companyAddress1"
+                                                value={input.companyAddress1}
+                                                readOnly
+                                                className='form-control'
+                                                placeholder="주소" />
+                                            <label for="companyAddress1">주소</label>
+                                        </div>
+                                        <div class="form-floating mb-3">
+                                            <input type="text" name="companyAddress2"
+                                                value={input.companyAddress2}
+                                                onChange={e => changeInput(e)}
+                                                className='form-control'
+                                                placeholder="보완주소" />
+                                            <label for="companyAddress2">보완주소</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="modal-footer">
+                                <button className='btn btn-success me-2'
+                                    onClick={e => saveJoin()}>
+                                    <IoIosSave />
+                                    &nbsp;
+                                    등록
+                                </button>
+                                <button className='btn btn-danger'
+                                    onClick={e => cancelJoin()}>
+                                    <GiCancel />
+                                    &nbsp;
+                                    취소
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </>
     );
 };
