@@ -82,6 +82,8 @@ const EmpCalendar = () => {
     setEvents(calendarEvents);
   }, [setEvents])
 
+  
+
   const openInfo = (clickInfo) => {
     setSelectedEvent(clickInfo.event.extendedProps);
     openInfoModal();
@@ -94,6 +96,7 @@ const EmpCalendar = () => {
       editable: true,
       events: events,
       selectable: true,
+      select: dateSelect,
       eventClick: openInfo
     });
 
@@ -127,6 +130,7 @@ const EmpCalendar = () => {
     modal.hide();
   }, []);
 
+
   //일정 등록 모달
   const bsInputModal = useRef();
   const openInputModal = useCallback(() => {
@@ -139,6 +143,22 @@ const EmpCalendar = () => {
     clearInput();
     modal.hide();
   }, []);
+
+  const dateSelect = useCallback((selectInfo) => {
+    const startStr = selectInfo.startStr; // 선택된 시작 날짜
+    const endStr = selectInfo.endStr; // 선택된 종료 날짜
+
+    // 입력 폼에 날짜 설정
+    setInput({
+        calendarTitle: "",
+        calendarContent: "",
+        calendarStart: startStr,
+        calendarEnd: endStr,
+    });
+
+    // 일정 등록 모달 열기
+    openInputModal();
+}, [setInput, openInputModal]);
 
 
 
