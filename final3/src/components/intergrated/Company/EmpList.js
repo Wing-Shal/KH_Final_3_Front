@@ -1,10 +1,12 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import axios from '../../utils/CustomAxios';
-import { FaPenToSquare } from "react-icons/fa6";
+import { FaPenToSquare, FaXmark } from "react-icons/fa6";
 import { IoIosSave } from "react-icons/io";
 import { GiCancel } from "react-icons/gi";
 import { Modal } from 'bootstrap';
 import Jumbotron from "../../Jumbotron";
+import { throttle } from "lodash";
+import './EmpList.css';
 
 const EmpList = () => {
 
@@ -12,10 +14,63 @@ const EmpList = () => {
     const [depts, setDepts] = useState([]);
     const [grades, setGrades] = useState([]);
     const [input, setInput] = useState({});
+    const [page, setPage] = useState(1);
+    const [size, setSize] = useState(15);
+    const [count, setCount] = useState(0);
+    const [last, setLast] = useState(false);
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const loading = useRef(false);
+
+    const loadData = useCallback(async () => {  
+        const searchQuery = searchTerm ? `?search=${searchTerm}` : "";
+        const empList = await axios.get(`/company/emp/page/${page}/size/${size}${searchQuery}`);
+        setCount(empList.data.count);
+        setLast(empList.data.last);
+        if (page > 1) {
+            setEmps(prevEmps => [...prevEmps, ...empList.data.list]);
+        } else {
+            setEmps(empList.data.list);
+        }
+    }, [page, size, searchTerm]);
 
     useEffect(() => {
-        loadData();
+        const loadInfo = async () => {
+            const gradeList = await axios.get("/company/gradeList");
+            setGrades(gradeList.data);
+            const deptList = await axios.get("/company/deptList");
+            setDepts(deptList.data);
+        };
+        loadInfo();
     }, []);
+
+    useEffect(() => {
+        loading.current = true;
+        loadData();
+        loading.current = false;
+    }, [page]);
+
+    const listener = useCallback(throttle((e) => {
+        if (loading.current || last) return; //로딩중이면 리턴
+
+        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollTop = window.scrollY;
+        const scrollPercent = (scrollTop / scrollableHeight) * 100;
+
+        if (last === false && scrollPercent >= 80) {
+            setPage(prevPage => prevPage + 1);
+        }
+    }, 750), [last, loading.current]);
+
+    useEffect(() => {
+        if (loading.current === true) return;
+
+        window.addEventListener("scroll", listener);
+
+        return () => {
+            window.removeEventListener("scroll", listener);
+        }
+    }, [listener]);
 
     const changeInput = useCallback((e) => {
         setInput({
@@ -42,31 +97,40 @@ const EmpList = () => {
     const saveInput = useCallback(async () => {
         const resp = await axios.patch("/company/emp", input);
 
-        //정보 다시 로딩
+        loading.current = true;
         loadData();
+        loading.current = false;
 
-        // 입력 폼 초기화
         clearInput();
 
-        // 모달 닫기
         closeEditModal();
     }, [input]);
 
     const cancelInput = useCallback(() => {
-        const choice = window.confirm("작성을 취소하시겠습니까?");
-        if (choice === false) return;
+        // const choice = window.confirm("작성을 취소하시겠습니까?");
+        // if (choice === false) return;
 
         clearInput();
 
         closeEditModal();
     }, [input]);
-    const loadData = useCallback(async () => {
-        const empList = await axios.get("/company/emp");
-        setEmps(empList.data);
-        const gradeList = await axios.get("/company/gradeList");
-        setGrades(gradeList.data);
-        const deptList = await axios.get("/company/deptList");
-        setDepts(deptList.data);
+
+    const clearSearch = useCallback(async () => {
+        setSearchTerm("");
+        setPage(1);
+        const empList = await axios.get(`/company/emp/page/${page}/size/${size}`);
+        setEmps(empList.data.list);
+        setCount(empList.data.count);
+        setLast(empList.data.last);
+    }, [loadData]);
+
+    const handleSearch = useCallback(() => {
+        setPage(1);
+        loadData();
+    }, [loadData]);
+
+    const handleSearchChange = useCallback((e) => {
+        setSearchTerm(e.target.value);
     }, []);
 
     //정보 수정 모달
@@ -84,6 +148,22 @@ const EmpList = () => {
     return (
         <>
             <Jumbotron title="사원 목록/관리" />
+
+            <div className="row mt-4">
+                <div className="col-6 offset-3">
+                    <div className="input-group">
+                        <input
+                            type="text"
+                            className="form-control search-bar"
+                            placeholder="검색..."
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                        />
+                        <button onClick={clearSearch} className="btn btn-warning"><FaXmark /></button>
+                        <button onClick={handleSearch} className="btn btn-primary">검색</button>
+                    </div>
+                </div>
+            </div>
 
             <div className="row mt-4">
                 <div className="col">
@@ -200,15 +280,6 @@ const EmpList = () => {
                                     <label>이메일</label>
                                     <input type="text" name="empEmail"
                                         value={input.empEmail}
-                                        readOnly
-                                        className='form-control' />
-                                </div>
-                            </div>
-                            <div className='row mt-4'>
-                                <div className='col'>
-                                    <label>재직여부</label>
-                                    <input type="text" name="empStatus"
-                                        value={input.empStatus}
                                         readOnly
                                         className='form-control' />
                                 </div>

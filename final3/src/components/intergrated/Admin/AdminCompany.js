@@ -337,10 +337,7 @@ const AdminCompany = () => {
                             </div>
                             <button className='btn btn-dark' type='button' onClick={() => toggleHandler()}>우편번호 찾기</button>
                             {isOpen && (
-                                <div>
-
-
-                                    
+                                <div>                                    
                                     <DaumPostcode
                                         style={postCodeStyle}
                                         onComplete={completeHandler}

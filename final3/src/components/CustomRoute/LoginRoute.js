@@ -21,7 +21,7 @@ const LoginRoute = ({ refreshLogin }) => {
 
     const isCompany = useMemo(() => {
         return loginLevel === '회사'
-    }, [])
+    }, [loginLevel]);
 
     useEffect(() => {
         const load = async () => {
