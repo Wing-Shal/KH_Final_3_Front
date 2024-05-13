@@ -89,7 +89,7 @@ const SideBar = () => {
                 </Menu>
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
-                    <MenuItem component={<Link to="/" />}> 캘린더 </MenuItem>
+                    <MenuItem component={<Link to="/calendar" />}> 캘린더 </MenuItem>
                     <MenuItem component={<Link to="/boardBlind" />}> 블라인드 </MenuItem>
                     <MenuItem component={<Link to="/chatroom" />}> 채팅 </MenuItem>
                 </Menu>

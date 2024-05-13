@@ -43,6 +43,7 @@ const EmpMypage = lazy(() => import("./components/intergrated/Emp/EmpMypage"));
 const CompanyHome = lazy(() => import('./components/intergrated/Company/Home'));
 const CompanyEmpList = lazy(() => import('./components/intergrated/Company/EmpList'));
 const CompanyAddEmp = lazy(() => import('./components/intergrated/Company/AddEmp'));
+const EmpCalendar = lazy(() => import('./components/intergrated/Calendar/EmpCalendar'));
 
 const App = () => {
   //recoil state
@@ -394,6 +395,7 @@ const App = () => {
                     <Route path="/" element={<Home />} />
                     <Route path="/NEL" element={<NEL />} />
                     <Route path="/chatroom" element={<ChatRoom />} />
+                    <Route path="/calendar" element={<EmpCalendar />} />
                     <Route path="/boardBlind" element={<BoardBlind />} />
                     <Route path="/project" element={<Project />} />
                     <Route path="/document/project/:projectNo" element={<Document />} />
