@@ -25,7 +25,7 @@
 }
 
 /* 날짜 헤더 스타일 */
-.fc-col-header-cell {
+.fc-col-header-cell-cushion {
   background-color: #ffffff;
   color: #5f5e5e;
   text-decoration: none !important;
@@ -38,9 +38,9 @@
 }
 
 /* 날짜 칸 스타일 */
-.fc-daygrid-day {
-  border: 1px solid #f8e5e8; /* 경계선 색상 지정 */
-  
+.fc-daygrid-day-number {
+  color: black; 
+  text-decoration: none !important; 
 }
 
 /* 이벤트 호버 스타일 */
