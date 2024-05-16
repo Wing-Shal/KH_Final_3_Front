@@ -12,32 +12,27 @@ import { Modal } from "bootstrap";
 import { Link, useParams } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
+import defaultImage from "../../../assets/user.png"; // 기본 이미지 경로를 추가해주세요ny
 
 
 
 const Document = () => {
     const { projectNo } = useParams();
-
-
-
-    //state
-    // const documentName = 'Your document Name'; // 예시로 고정값 사용, 실제로는 상태나 변수로 가져와야 함
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [documents, setDocuments] = useState([]);
     const [project, setProjects] = useState([]);
     //파일첨부
     const [file, setFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(null);
     // 검색창
     const [searchKeyword, setSearchKeyword] = useState("");
     const [searchResults, setSearchResults] = useState([]);
 
     const [isApprovalMode, setIsApprovalMode] = useState(false); // 결재 모드 여부 상태
-
-
     const [projectName, setProjectName] = useState(""); // projectName 상태 추가
-
     const [emps, setEmps] = useState([]);
+    const[invitations,setInvitations] = useState(false);
 
     const [input, setInput] = useState({
         documentTitle: "",
@@ -46,15 +41,12 @@ const Document = () => {
         documentLimitTime: "",
         projectNo: projectNo,
         documentApprover: "",
-        documentFile: null,
-        empNo:"",
+        file: null,
+        empNo: "",
     });
-
+    //결재자 사원 목록
     const [selectedApprover, setSelectedApprover] = useState("");
 
-    //결재자 목록
-
-    
 
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
 
@@ -96,11 +88,68 @@ const Document = () => {
 
 
 
-    //effect
+    //effect && 파일첨부
     useEffect(() => {
         loadData();
-    }, []);
-    
+        // 해당 게시글의 documentNo를 기반으로 이미지를 로컬 스토리지에서 가져와 설정
+        const savedImage = localStorage.getItem(`savedImage_${document.documentNo}`);
+    if (savedImage) {
+        setImagePreview(savedImage);
+    } else {
+        // 만약 저장된 이미지가 없다면 기본 이미지로 설정
+        setImagePreview(defaultImage);
+    }
+    }, [document.documentNo]); // documentNo가 변경될 때만 실행되도록 useEffect의 의존성 배열을 설정
+
+    // useEffect(() -> {
+    //     //결제자 목록 불러오기
+    //     //dept, grade  가져오기(project 안에서 관리자등급만 grade, dept, emp, project join)
+
+    // }, []);
+
+    const handleImageChange = e => {
+        const file = e.target.files[0];
+        if (file) {
+            setFile(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImagePreview(reader.result);
+                // 이미지를 선택한 후 로컬 스토리지에 해당 documentNo를 기반으로 저장
+            localStorage.setItem(`savedImage_${document.documentNo}`, reader.result);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSave = async () => {
+        try {
+            if (file) {
+                const formData = new FormData();
+                formData.append('attach', file);
+
+                const response = await axios.post("/document/upload/" + document.documentNo, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }, [loginIdState]);
+                console.log('파일 업로드 결과:', response.data);
+
+                console.log('DB에 저장되었습니다.');
+            } else {
+                console.log('파일이 선택되지 않았습니다.');
+            }
+        } catch (error) {
+            console.error('파일 업로드 오류:', error);
+        }
+    };
+
+    // 기본 이미지 설정 함수
+    const setDefaultImage = () => {
+        setImagePreview(defaultImage);
+        setFile(null); // 이미지 파일을 선택한 것이 아니므로 파일 상태를 초기화합니다.
+    };
+
+
 
     useEffect(() => {
         const fetchProjectInfo = async () => {
@@ -122,12 +171,7 @@ const Document = () => {
 
     }, [projectNo, loginId]);
 
-    // const loadEmpData = useCallback(async () => {
-    
-    //     const empNo = loginId;
-    //     const empList = await axios.get("/document/companyEmployees/" + empNo)
-    //     setEmps(empList.data);
-    // }, [projectNo, loginId,empNo]);
+
 
     //삭제
     const deleteDocument = useCallback(async (target) => {
@@ -147,7 +191,7 @@ const Document = () => {
         });
     }, [input]);
 
-   
+
 
     //기존 등록
     const saveInput = useCallback(async () => {
@@ -271,13 +315,6 @@ const Document = () => {
         loadData();
     }, [documents]);
 
-    // const handleFileChange = (e) => {
-    //     const file = e.target.files[0];
-    //     // 파일 처리 로직 추가
-    // };
-
-    // 일반버튼 클릭시 참조자,결재자 숨기기 기능
-
 
     //ref + modal
     const bsModal = useRef();
@@ -299,36 +336,14 @@ const Document = () => {
         modal.hide();
     }, [bsModal]);
 
-    //파일첨부
-
-
-    // 이미지 파일을 업로드할 때의 핸들러
-    const handleSave = (event) => {
-        const file = event.target.files[0];
-        setInput({ ...input, documentFile: file }); // 입력 상태 업데이트
-    };
-
-    // 이미지를 표시할 때의 핸들러
-    const displayImage = (document) => {
-        if (document.documentFile) {
-            return (
-                <img
-                    src={URL.createObjectURL(document.documentFile)} // 이미지 URL 생성
-                    alt="첨부 이미지"
-                    style={{ maxWidth: "100%", maxHeight: "150px" }} // 이미지 크기 조절 가능
-                />
-            );
-        } else {
-            return null;
-        }
-    };
-
 
 
     return (
         <>
             {/* 제목 */}
             <Jumbotron title={`${projectNo} 번 프로젝트`} style={{ backgroundColor: 'rgb(255, 192, 203)' }} />
+            <label>프로젝트 참여자</label> 
+            
             <div className="row mt-4 justify-content-center"> {/* justify-content-center를 추가하여 가로 가운데 정렬 */}
                 <div className="col-8 col-md-9 d-flex align-items-center"> {/* col-md-6으로 변경, d-flex와 align-items-center를 추가하여 내용을 세로 중앙 정렬 */}
                     <input
@@ -351,11 +366,63 @@ const Document = () => {
                     </button>
                 </div>
             </div>
+            
+{/* 프로젝트 초대 목록 */}
+<div className="row mt-4">
+    <div className="col-md-3 text-end"> 
+        {invitations ? (
+            <>
+              
+                <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={openModal}>
+                    등록
+                </button>
+                &nbsp; &nbsp;
+                <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(false)}>
+                    취소
+                </button>
+            </>
+        ) : (
+            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(true)}>
+                프로젝트 초대하기
+            </button>
+        )}
+    </div>
+</div>
+{invitations && (
+    <div className="row mt-4">
+        <div className="col-md-3 text-end">
+            {/* 직원 목록을 닫는 버튼 추가 */}
+          
+        </div>
+        <div className="row">
+            {emps.map((emp) => (
+                <div key={emp.empNo} className="form-check">
+                    <input 
+                        className="form-check-input" 
+                        type="checkbox" 
+                        value={emp.empName} 
+                        id={emp.empNo} 
+                        checked={input.documentApprover.includes(emp.empName)}
+                        onChange={(e) => {
+                            if (e.target.checked) {
+                                setInput({ ...input, documentApprover: [...input.documentApprover, e.target.value] });
+                            } else {
+                                setInput({ ...input, documentApprover: input.documentApprover.filter(name => name !== e.target.value) });
+                            }
+                        }} 
+                    />
+                    <label className="form-check-label" htmlFor={emp.empNo}>
+                        {emp.empName}
+                    </label>
+                </div>
+            ))}
+        </div>
+    </div>
+)}
 
-
-
-
-
+                  
+                            
+                    
 
             {/* 문서목록... */}
             {filteredDocuments.map(document => (
@@ -381,7 +448,6 @@ const Document = () => {
                                             <div className="rounded border p-2 mb-2 shadow-sm bg-light">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
                                         </div>
                                     </div>
-
                                 </div>
                                 <div className="card-title" >
                                     <div className="card-text" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }} >
@@ -443,34 +509,17 @@ const Document = () => {
                                         </div>
                                     )}
                                 </div>
-                                {/* <div className="card-body"style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                                {displayImage(document)}
-                                </div> */}
+                                <div>
+                                {/* 첨부사진 */}
+                                {imagePreview && (
+                                <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
+                                        )}
+                                </div>
                                 <div className="card-title" >
                                     <div className="card-text d-flex justify-content-between" >
                                         {/* 참조자, 결재자, 작성자 */}
-
                                         <div className="rounded border p-2 mb-2 shadow-sm bg-light ">
-                                            {/* 참조자 */}
-                                            {/* 참조자: {document.documentApprover ? (
-                                                document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                                    <span>
-                                                        {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                            ) : (
-                                                                <span key={index}>{text}</span>
-                                                            )
-                                                        ))}
-                                                    </span>
-                                                ) : (
-                                                    document.documentApprover
-                                                )
-                                            ) : null}
-                                        </div>
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light"> */}
                                             {/* 결재자 */}
-
                                             결재자: {document.documentApprover ? (
                                                 document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
                                                     <span>
@@ -487,7 +536,6 @@ const Document = () => {
                                                 )
                                             ) : null}
                                         </div>
-
                                         <div className="rounded border p-2 mb-2 shadow-sm bg-light">
                                             {/* 작성자 */}
                                             작성자: {document.documentWriter ? (
@@ -528,10 +576,6 @@ const Document = () => {
                 </div>
             ))}
 
-
-
-
-
             {/* Modal */}
             <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
@@ -551,7 +595,6 @@ const Document = () => {
                             <div>
                                 <p>사원 번호: {input.empNo}</p>
                             </div>
-
 
                             <div className="row">
                                 <div className="col">
@@ -582,8 +625,6 @@ const Document = () => {
                                 </div>
                             </div>
 
-
-
                             <div className="row">
                                 <div className="col">
                                     <label>내용</label>
@@ -595,58 +636,48 @@ const Document = () => {
                                 </div>
                             </div>
 
-                            {/* <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
-                                <div className="col">
-                                    <label>참조자</label>
-                                    <div className="input-group">
-                                        <input
-                                            type="text"
-                                            name="documentApprover"
-                                            value={input.documentApprover}
-                                            onChange={e => changeInput(e)}
-                                            className="form-control"
-                                        /><button className="btn btn-outline-secondary" type="button" onClick={handleSearchClick}
-                                            style={{ backgroundColor: 'rgb(255,192,203,0.5)' }}>
-                                            <FaSearch />
-                                        </button>
+                            <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
+
+
+                                <div className="row mt-4">
+                                    <div className="col">
+                                        <label htmlFor="approver">결재자 선택:</label>
+                                        <select id="approver" className="form-select" value={input.documentApprover} onChange={(e) => setInput({ ...input, documentApprover: e.target.value })}>
+                                            <option value="">결재자를 선택하세요</option>
+                                            {emps.map((emp) => (
+                                                <option key={emp.empNo} value={emp.empName}>{emp.empName}</option>
+                                            ))}
+                                        </select>
 
                                     </div>
                                 </div>
-                            </div> */}
-                            <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
+                                <div className="col-md-3">
+                                    <div>
+                                        {/* 파일첨부 */}
+                                        <input type="file" onChange={handleImageChange} className="form-control form-control-sm"
+                                            id="upload" aria-label="upload" style={{ display: 'none' }} />
+                                        <br />
+                                        {imagePreview && (
+                                            <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
+                                        )}
+                                    </div>
+                                    <label htmlFor="upload" className="custom-file-upload" style={{
+                                        display: 'inline-block',
+                                        padding: '15px 20px',
+                                        backgroundColor: '#f0f0f0',
+                                        border: '1px solid #ccc',
+                                        borderRadius: '5px',
+                                        cursor: 'pointer',
+                                    }}>
+                                        파일첨부
+                                    </label>
+        
 
-                            <div className="row">
-                                <div className="col">
-                                    {/* <label>결재자</label><RiUserSearchFill /> */}
+                                    {/* 기본 이미지 버튼
+                                <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button> */}
 
-                                </div>
-                            </div>
-
-                            <div className="row mt-4">
-                                <div className="col">
-                                <div className="row mt-4">
-    <div className="col">
-        <label htmlFor="approver">결재자 선택:</label>
-        <select id="approver" className="form-select" value={input.documentApprover} onChange={(e) => setInput({ ...input, documentApprover: e.target.value })}>
-    <option value="">결재자를 선택하세요</option>
-    {emps.map((emp) => (
-        <option key={emp.empNo} value={emp.empName}>{emp.empName}</option>
-    ))}
-</select>
-
-    </div>
-</div>
-                                </div>
-                            </div>
-                            </div>
-                            <div className="row">
-                                <div className="col">
-                                    <label>첨부파일</label>
-                                    <input type="file" name="attachment"
-                                        value={input.documentFile}
-                                        onClick={handleSave}
-                                        className="form-control" />
-
+                                    {/* 이미지가 선택되었을 때만 저장 버튼이 활성화되도록 설정 */}
+                                  
                                 </div>
                             </div>
                         </div>
@@ -660,13 +691,12 @@ const Document = () => {
                         </div>
                     </div>
                 </div>
-
-
-
             </div>
         </>
     );
-};
+
+
+
+}
 
 export default Document;
-
