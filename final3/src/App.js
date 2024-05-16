@@ -123,7 +123,7 @@ const App = () => {
     const fetchUserChatrooms = async () => {
       const token = axios.defaults.headers.common['Authorization'];
       if (!token) return;
-      const resp = await axios.get(`/chat/list/${token}`);
+      const resp = await axios.get("/chat/list");
       const chatroomNos = resp.data.map(chatroom => chatroom.chatroomNo);
       // console.log(chatroomNos);
       setUserChatroomNos(chatroomNos);
