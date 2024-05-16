@@ -1,4 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useRecoilState } from 'recoil';
+import { loginIdState } from "../../utils/RecoilData";
 import { Calendar as FullCalendar } from '@fullcalendar/core';
 import interactionPlugin from '@fullcalendar/interaction';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -12,6 +14,11 @@ import "flatpickr/dist/flatpickr.min.css";
 import './EmpCalendar.css';
 
 const EmpCalendar = () => {
+
+
+  //recoil
+  const [loginId, setLoginId] = useRecoilState(loginIdState);
+
   const calendarRef = useRef(null);
   const [events, setEvents] = useState([]);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -45,27 +52,29 @@ const EmpCalendar = () => {
   const saveInput = useCallback(async () => {
     const token = axios.defaults.headers.common['Authorization'];
     if (!token) return;
-    const resp = await axios.post("/calendar/", input, {
+
+    const formattedInput = {
+      ...input,
+      calendarStart: formatDate(new Date(input.calendarStart)),
+      calendarEnd: formatDate(new Date(input.calendarEnd)),
+    };
+
+    const resp = await axios.post("/calendar/", formattedInput, {
       headers: {
         Authorization: token
       }
     });
-    // console.log(input);
     await loadCalendarEvents();
     clearInput();
     closeInputModal();
   }, [input]);
-
-  const [backup, setBackup] = useState(null)
 
   useEffect(() => {
     loadCalendarEvents();
   }, []);
 
   const loadCalendarEvents = useCallback(async () => {
-    const token = axios.defaults.headers.common['Authorization'];
-    if (!token) return;
-    const resp = await axios.get(`/calendar/listByDept/${token}`);
+    const resp = await axios.get("/calendar/listByDept");
     // console.log(resp);
     const calendarEvents = resp.data.map(event => ({
       id: event.calendarNo.toString(),
@@ -88,6 +97,8 @@ const EmpCalendar = () => {
 
 
 
+
+
   const openInfo = (clickInfo) => {
     setSelectedEvent(clickInfo.event.extendedProps);
     openInfoModal();
@@ -101,7 +112,11 @@ const EmpCalendar = () => {
       events: events,
       selectable: true,
       select: dateSelect,
-      eventClick: openInfo
+      eventClick: openInfo,
+      eventTimeFormat: {
+        hour: 'numeric',
+        meridiem: 'short'
+      },
     });
 
     calendar.render();
@@ -110,6 +125,7 @@ const EmpCalendar = () => {
       calendar.destroy();
     };
   }, [events]);
+
 
   //삭제하기
   const deleteCalendar = useCallback(async (target) => {
@@ -123,10 +139,18 @@ const EmpCalendar = () => {
 
   //수정하기
   const editCalendar = useCallback(async () => {
-    const resp = await axios.patch("/calendar/", input)
+    const formattedInput = {
+      ...input,
+      calendarStart: formatDate(new Date(input.calendarStart)),
+      calendarEnd: formatDate(new Date(input.calendarEnd)),
+    };
+
+    const resp = await axios.patch("/calendar/", formattedInput);
     await loadCalendarEvents();
     clearInput();
     closeEditModal();
+    loadCalendarEvents();
+    openInfoModal();
   }, [input]);
 
 
@@ -146,9 +170,10 @@ const EmpCalendar = () => {
   const bsEditModal = useRef();
   const openEditModal = useCallback(() => {
     if (selectedEvent) {
+      closeInfoModal();
       setInput({
-        calendarNo: selectedEvent.calendarNo, 
-        calendarWriter: selectedEvent.calendarWriter, 
+        calendarNo: selectedEvent.calendarNo,
+        calendarWriter: selectedEvent.calendarWriter,
         calendarTitle: selectedEvent.title,
         calendarContent: selectedEvent.calendarContent,
         calendarStart: selectedEvent.start,
@@ -180,35 +205,39 @@ const EmpCalendar = () => {
   }, []);
 
   const dateSelect = useCallback((selectInfo) => {
-    const startStr = selectInfo.startStr; //선택된 시작 날짜
-    const endStr = selectInfo.endStr; //선택된 종료 날짜
-
-    //현재 시간으로 설정
-    // const now = new Date();
-    // const currentDateTime = now.toISOString().substring(0, 16);
-
     const startDate = new Date(selectInfo.start);
-    startDate.setHours(9, 0, 0, 0); // 오전 9시로 시간 설정
+    const endDate = new Date(selectInfo.end - 1);
+
+    startDate.setHours(9, 0, 0, 0);
+    endDate.setHours(18, 0, 0, 0);
 
 
     //입력 폼에 날짜 설정
     setInput({
       calendarTitle: "",
       calendarContent: "",
-      calendarStart: startStr,
-      calendarEnd: endStr,
+      calendarStart: formatDate(startDate),
+      calendarEnd: formatDate(endDate),
     });
 
     // 일정 등록 모달 열기
     openInputModal();
   }, [setInput, openInputModal]);
 
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${year}-${month}-${day} ${hours}:${minutes}`;
+  };
+
 
 
   return (
     <>
       <div ref={calendarRef} />
-      <div className='btn btn-success mt-2' onClick={openInputModal}>일정등록</div>
 
       <div ref={bsInfoModal} className="modal fade" id="staticBackdrop infoModal" data-bs-backdrop="static" data-bs-keyboard="true" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div className="modal-dialog">
@@ -222,10 +251,6 @@ const EmpCalendar = () => {
                 <table className="table">
                   <tbody>
                     <tr>
-                      <td>번호</td>
-                      <td>{selectedEvent.calendarNo}</td>
-                    </tr>
-                    <tr>
                       <td>작성자</td>
                       <td>{selectedEvent.empName}({selectedEvent.empGrade})</td>
                     </tr>
@@ -235,23 +260,29 @@ const EmpCalendar = () => {
                     </tr>
                     <tr>
                       <td>내용</td>
-                      <td>{selectedEvent.calendarContent}</td>
+                      <td>
+                        <div dangerouslySetInnerHTML={{ __html: selectedEvent.calendarContent.replace(/\n/g, '<br />') }} />
+                      </td>
                     </tr>
                     <tr>
                       <td>시작일자</td>
-                      <td>{selectedEvent.start}</td>
+                      <td>{selectedEvent.start.substring(0, 16)}</td>
                     </tr>
                     <tr>
                       <td>종료일자</td>
-                      <td>{selectedEvent.end}</td>
+                      <td>{selectedEvent.end.substring(0, 16)}</td>
                     </tr>
                   </tbody>
                 </table>
               )}
             </div>
             <div className="modal-footer">
-              <button className="btn btn-primary me-2" onClick={openEditModal} >수정</button>
-              <button className="btn btn-danger" onClick={() => deleteCalendar(selectedEvent)}>삭제</button>
+              {selectedEvent && selectedEvent.calendarWriter === loginId && (
+                <>
+                  <button className="btn btn-primary me-2" onClick={openEditModal}>수정</button>
+                  <button className="btn btn-danger" onClick={() => deleteCalendar(selectedEvent)}>삭제</button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -275,35 +306,39 @@ const EmpCalendar = () => {
               <div className="row mt-4">
                 <div className="col">
                   <label>내용</label>
-                  <textarea name="calendarContent" value={input.calendarContent} onChange={changeInput} className="form-control" />
+                  <textarea name="calendarContent" value={input.calendarContent} onChange={changeInput} className="form-control  custom-textarea" />
                 </div>
               </div>
 
               <div className="row mt-4">
                 <div className="col">
-                  <label>시작일자</label>
+                  <label>시작일자</label><br />
                   <Flatpickr
                     data-enable-time
-                    data-enable-minute
                     name="calendarStart"
                     value={input.calendarStart}
-                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarStart: date.toISOString() }))}
-                    className="form-control"
                     options={{
-                      defaultDate: input.calendarStart ? new Date(input.calendarStart) : new Date().setHours(9, 0, 0, 0)
+                      static: true,
+                      minuteIncrement: 30,
                     }}
+                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: formatDate(date) }))}
+                    className="form-control"
                   />
                 </div>
               </div>
 
               <div className="row mt-4">
                 <div className="col">
-                  <label>종료일자</label>
+                  <label>종료일자</label><br />
                   <Flatpickr
                     data-enable-time
-                    data-enable-minute
+                    Keyboard-focusable
                     name="calendarEnd"
                     value={input.calendarEnd}
+                    options={{
+                      static: true,
+                      minuteIncrement: 30,
+                    }}
                     onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: date.toISOString() }))}
                     className="form-control"
                   />
@@ -337,7 +372,7 @@ const EmpCalendar = () => {
               <div className="row mt-4">
                 <div className="col">
                   <label>내용</label>
-                  <textarea name="calendarContent" value={input.calendarContent} onChange={changeInput} className="form-control" />
+                  <textarea name="calendarContent" value={input.calendarContent} onChange={changeInput} className="form-control  custom-textarea" />
                 </div>
               </div>
 
@@ -349,18 +384,28 @@ const EmpCalendar = () => {
                     data-enable-minute
                     name="calendarStart"
                     value={input.calendarStart}
-                    onChange={([date]) => setInput({ ...input, calendarStart: date.toISOString().slice(0, 10) })}
+                    options={{
+                      static: true,
+                      minuteIncrement: 30,
+                    }}
+                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: formatDate(date) }))}
                     className="form-control"
                   />
                 </div>
+              </div>
+              <div className="row mt-4">
                 <div className="col">
                   <label>종료일자</label>
                   <Flatpickr
                     data-enable-time
                     data-enable-minute
                     name="calendarEnd"
+                    options={{
+                      static: true,
+                      minuteIncrement: 30,
+                    }}
                     value={input.calendarEnd}
-                    onChange={([date]) => setInput({ ...input, calendarEnd: date.toISOString().slice(0, 10) })}
+                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: formatDate(date) }))}
                     className="form-control"
                   />
                 </div>

@@ -73,14 +73,14 @@ const ChatRoom = () => {
     const sendReadMessageInfo = useCallback((messageNo) => {
         const message = messages.find(msg => msg.messageNo === messageNo);
         if (!message) return;  // 메시지를 찾지 못한 경우 함수를 종료
-    
+
         const readMessageRequest = {
             readMessageNo: messageNo,
             chatroomNo: chatroomNo,
             token: axios.defaults.headers.common['Authorization'],
             messageSender: message.messageSender,
         };
-    
+
         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
             socketRef.current.send(JSON.stringify(readMessageRequest));
         }
@@ -94,11 +94,8 @@ const ChatRoom = () => {
     }, []);
 
     const loadChatroomData = useCallback(async () => {
-        const token = axios.defaults.headers.common['Authorization'];
-        if (!token) return;
 
-
-        const resp = await axios.get(`/chat/list/${token}`);
+        const resp = await axios.get("/chat/list");
         if (resp.data) {
             const chatroomsWithMessages = await Promise.all(
                 resp.data.map(async (chatroom) => {
@@ -121,24 +118,24 @@ const ChatRoom = () => {
 
 
 
-    //회사 사원 불러오는 함수임
-    useEffect(() => {
-        loadCompanyEmpData();
-        loadEmpData();
-    }, [])
+
 
     const loadCompanyEmpData = useCallback(async () => {
-        const token = axios.defaults.headers.common['Authorization'];
-        const resp = await axios.get(`emp/list/${token}`);
+        const resp = await axios.get("/emp/list");
         setEmps(resp.data);
     }, []);
 
     //사원 정보 불러오는 함수임
     const loadEmpData = useCallback(async () => {
-        const token = axios.defaults.headers.common['Authorization'];
-        const resp = await axios.get(`emp/${token}`);
+        const resp = await axios.get("/emp/");
         setEmpInfos([resp.data]);
     }, []);
+
+    //회사 사원 불러오는 함수임
+    useEffect(() => {
+        loadCompanyEmpData();
+        loadEmpData();
+    }, [])
 
     //채팅룸 안에 있는 사람들 정보임
     useEffect(() => {
@@ -147,7 +144,7 @@ const ChatRoom = () => {
 
     const loadEmpInChatroomData = useCallback(async () => {
         if (!chatroomNo) return;
-        const resp = await axios.get(`chat/chatroomEmpList/${chatroomNo}`);
+        const resp = await axios.get(`/chat/chatroomEmpList/${chatroomNo}`);
         setEmpInChatroom(resp.data);
     }, [chatroomNo])
 
@@ -172,7 +169,7 @@ const ChatRoom = () => {
         // console.log(empNo)
         // console.log(chatroomNo);
         if (!chatroomNo) return;
-        const resp = await axios.post(`chat/inviteEmp/${chatroomNo}/${empNo}`);
+        const resp = await axios.post(`/chat/inviteEmp/${chatroomNo}/${empNo}`);
         // console.log(resp.data);
         if (resp.data) {
             //참여자 목록 갱신
@@ -222,9 +219,9 @@ const ChatRoom = () => {
     //채팅방 나가기
     const outChatroom = useCallback(async (chatroomNo) => {
         if (!chatroomNo) return;
-        const token = axios.defaults.headers.common['Authorization'];
 
-        const resp = await axios.delete(`chat/outChatroom/${token}/${chatroomNo}`);
+
+        const resp = await axios.delete(`/chat/outChatroom/${chatroomNo}`);
         if (resp.status === 200) {
             setChatrooms(chatrooms => chatrooms.filter(c => c.chatroomNo !== chatroomNo));
             closeOutChatroomModal();
@@ -396,7 +393,7 @@ const ChatRoom = () => {
     const openChatModal = useCallback((chatroomNo) => {
         const modal = new Modal(bsModal.current);
         setChatroomNo(chatroomNo);
-        
+
 
         const selectedChatroom = chatrooms.find(chatroom => chatroom.chatroomNo === chatroomNo);
         if (selectedChatroom) {
@@ -580,7 +577,9 @@ const ChatRoom = () => {
                                                     {message.messageSenderName} ({message.messageSenderGrade})
                                                 </div>
                                             )}
-                                            <div className="message-content">{message.messageContent}</div>
+                                            <div className="message-content">
+                                            <div dangerouslySetInnerHTML={{ __html: message.messageContent.replace(/\n/g, '<br />') }} />
+                                            </div>
                                             <div className="message-time">{message.messageTimeMinute}</div>
                                             {/* <div>{message.readCountForChatroom > 0 ? message.readCountForChatroom : ''}</div> */}
                                         </div>
