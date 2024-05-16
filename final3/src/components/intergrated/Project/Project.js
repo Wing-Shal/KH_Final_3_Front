@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loginIdState, loginLevelState } from '../../../components/utils/RecoilData';
 import { useRecoilState } from 'recoil';
@@ -11,6 +12,7 @@ import axios from "../../utils/CustomAxios";
 import { Modal } from "bootstrap";
 import { Link } from 'react-router-dom';
 import { FcOpenedFolder } from "react-icons/fc";
+import { RiUserSearchFill } from "react-icons/ri";
 
 const Project = () => {
 
@@ -19,22 +21,51 @@ const Project = () => {
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [projects, setProjects] = useState([]);
+    const [emps, setEmps] = useState([]);
+    const [depts, setDepts] = useState([]);
+    const [grades, setGrades] = useState([]);
+    // const [empInfo, setEmpInfo] = useState([]);
     const [input, setInput] = useState({
         projectName: "",
         projectStartTime: "",
         projectLimitTime: "",
-        empNo: ""
+        empNo: "",
+        empName: "",
+        deptName: "",
+        gradeName: ""
     });
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
+
     //effect
     useEffect(() => {
+
         loadData();
+        // loadEmpData();
     }, []);
+
+    // const loadEmps = useCallback(async() =>{
+    //     const empNo = loginId;
+    //     const resp = await axios.get("/company/"+empNo);
+    //     setEmps(resp.data);
+    //     console.log(resp.data)
+
+    // });
+
+
+
+    //현재 쓰고있는 코드
     const loadData = useCallback(async () => {
         const empNo = loginId;
+        const empList = await axios.get("/project/companyEmployees/" + empNo)
+        setEmps(empList.data);
+       
         const resp = await axios.get("/project/" + empNo);
         setProjects(resp.data);
+
+
     }, []);
+
+
     //삭제
     const deleteProject = useCallback(async (target) => {
         const choice = window.confirm("정말 삭제하시겠습니까?");
@@ -57,6 +88,8 @@ const Project = () => {
         clearInput();
         closeModal();
     }, [input]);
+
+
     //등록 취소
     const cancelInput = useCallback(() => {
         const choice = window.confirm("작성을 취소하시겠습니까?");
@@ -70,7 +103,9 @@ const Project = () => {
             projectName: "",
             projectStartTime: "",
             projectLimitTime: "",
-            empNo: ""
+            empNo: "",
+            empName: ""
+
         });
     }, [input]);
     //수정
@@ -157,53 +192,41 @@ const Project = () => {
         modal.hide();
     }, [bsModal]);
     //view
+
     return (
         <>
-
-            {/* 제목 ...*/}
             <Jumbotron title="내 프로젝트" />
-            {/* 추가 버튼 */}
             <div className="row mt-4">
                 <div className="col text-end">
-                    <button className="btn btn-primary"
-                        onClick={e => openModal()}>
-                        <IoMdAdd />
-                        새 프로젝트
+                    <button className="btn btn-primary" onClick={openModal} style={{ backgroundColor: 'pink', border: 'none' }}>
+                        <IoMdAdd /> 새 프로젝트
                     </button>
+
+
                 </div>
             </div>
 
-
-            {/* 데이터 출력(카드) */}
             {projects.map(project => (
                 <div key={project.projectNo} className="row mt-4">
                     <div className="col">
                         <div className="card mb-3">
                             <div className="card-body">
-                                <div className="card-title">
+                                <div className="card-title d-flex align-items-center">
                                     <FcOpenedFolder style={{ color: '#007bff', fontSize: '1.5em', marginRight: '0.5em' }} />
-                                    {/* 수정된 부분: projectName을 링크로 표시하는 부분과 input으로 변경하는 부분을 분리 */}
                                     {project.edit ? (
-                                        <div>
-                                            <input
-                                                type="text"
-                                                value={project.projectName}
-                                                name="projectName" onChange={(e) => changeProject(e, project)}
-                                                className="form-control"
-                                            />
-                                        </div>
+                                        <input type="text" value={project.projectName} name="projectName" onChange={(e) => changeProject(e, project)} className="form-control" />
                                     ) : (
                                         <Link to={`/document/project/${project.projectNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
                                             {project.projectName}
                                         </Link>
                                     )}
                                 </div>
-                                <div>
-                                    <div className="card-text">프로젝트 번호: {project.projectNo}</div>
-                                    <div className="card-text">작성자: {project.projectWriter}</div>
-                                    <div className="card-date-picker">시작일: {project.edit ? <input type="date" name="projectStartTime" value={project.projectStartTime} onChange={(e) => changeProject(e, project)} /> : project.projectStartTime}</div>
-                                    <div className="card-date-picker">마감일: {project.edit ? <input type="date" name="projectLimitTime" value={project.projectLimitTime} onChange={(e) => changeProject(e, project)} /> : project.projectLimitTime}</div>
-                                </div>
+                                <div className="card-text">프로젝트 번호: {project.projectNo}</div>
+                                <div className="card-text">작성자: {project.projectWriter}</div>
+                                <div className="card-date-picker">시작일: {project.edit ? <input type="date" name="projectStartTime" value={project.projectStartTime} onChange={(e) => changeProject(e, project)} /> : project.projectStartTime}</div>
+                                <div className="card-date-picker">마감일: {project.edit ? <input type="date" name="projectLimitTime" value={project.projectLimitTime} onChange={(e) => changeProject(e, project)} /> : project.projectLimitTime}</div>
+                                <div className="card-text">참조자: {project.referencePerson}</div>
+                                <div className="card-text">결재자: {project.approver}</div>
                                 <div className="text-end">
                                     {project.edit ? (
                                         <>
@@ -222,56 +245,79 @@ const Project = () => {
                     </div>
                 </div>
             ))}
+
             {/* Modal */}
             <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h1 className="modal-title fs-5" id="staticBackdropLabel">새 프로젝트</h1>
-                            <button type="button" className="btn-close" aria-label="Close"
-                                onClick={e => cancelInput()}></button>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={cancelInput}></button>
                         </div>
                         <div className="modal-body">
-                            {/* 등록 화면 */}
-                            {/* 프로젝트 정보 표시 */}
                             <div>
                                 <p>사원 번호: {input.empNo}</p>
                             </div>
                             <div className="row">
                                 <div className="col">
                                     <label>프로젝트 명</label>
-                                    <input type="text" name="projectName"
-                                        value={input.projectName}
-                                        onChange={e => changeInput(e)}
-                                        className="form-control" />
+                                    <input type="text" name="projectName" value={input.projectName} onChange={changeInput} className="form-control" />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="col">
                                     <label>시작일</label>
-                                    <input type="date" name="projectStartTime"
-                                        value={input.projectStartTime}
-                                        onChange={e => changeInput(e)}
-                                        className="form-control" />
+                                    <input type="date" name="projectStartTime" value={input.projectStartTime} onChange={changeInput} className="form-control" />
                                 </div>
                             </div>
                             <div className="row">
                                 <div className="col">
                                     <label>마감일</label>
-                                    <input type="date" name="projectLimitTime"
-                                        value={input.projectLimitTime}
-                                        onChange={e => changeInput(e)}
-                                        className="form-control" />
+                                    <input type="date" name="projectLimitTime" value={input.projectLimitTime} onChange={changeInput} className="form-control" />
                                 </div>
                             </div>
+                            <div className="row">
+                                <div className="col">
+                                    <label>참조인</label><RiUserSearchFill />
+
+                                </div>
+                            </div>
+
+                            <div className="row">
+                                <div className="col">
+                                    <label>결재자</label><RiUserSearchFill />
+
+                                </div>
+                            </div>
+
+                            <div className="row mt-4">
+                                <div className="col">
+                                    <table className="table">
+                                        <thead className="text-center">
+                                            <tr>
+                                                <th>사번</th>
+                                                <th>이름</th>
+
+                                            </tr>
+                                        </thead>
+                                        <tbody className="text-center">
+                                            {emps.map((emp, Index) => (
+                                                <tr key={Index} className='align-items-center'>
+                                                    <td>{emp.empNo}</td>
+                                                    <td>{emp.empName}</td>
+
+
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
                         </div>
                         <div className="modal-footer">
-                            <button className='btn btn-success me-2' onClick={e => saveInput()}>
-                                등록
-                            </button>
-                            <button className='btn btn-danger' onClick={e => cancelInput()}>
-                                취소
-                            </button>
+                            <button className="btn btn-success me-2" onClick={saveInput}>등록</button>
+                            <button className="btn btn-danger" onClick={cancelInput}>취소</button>
                         </div>
                     </div>
                 </div>
@@ -279,4 +325,4 @@ const Project = () => {
         </>
     );
 };
-export default Project;
+export default Project;''
