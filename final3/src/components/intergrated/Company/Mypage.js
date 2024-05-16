@@ -7,7 +7,7 @@ import defaultImage from "../../../assets/CompanyLogo.jpg"; // 기본 이미지 
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'; // React Bootstrap의 CSS를 불러옴
 import 'bootstrap/dist/js/bootstrap.bundle.min'; // React Bootstrap의 JavaScript를 불러옴
-import './CompanyMypage.css';
+import './Mypage.css';
 
 function CompanyMypage() {
   const [imagePreview, setImagePreview] = useState(null);
