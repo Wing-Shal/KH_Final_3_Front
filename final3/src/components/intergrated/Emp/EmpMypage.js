@@ -180,22 +180,22 @@ function EmpMypage() {
 
   const handleSave = async () => {
     try {
-      if (file) {
+      if (file && file.type.startsWith('image/')) { // 이미지 파일만 허용
         const formData = new FormData();
         formData.append('attach', file);
-
+  
         const response = await axios.post("/emp/upload/" + loginId, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
         }, [loginIdState]);
         console.log('파일 업로드 결과:', response.data);
-
+  
         console.log('DB에 저장되었습니다.');
         // 기본 이미지를 로컬 스토리지에 저장
         localStorage.setItem(`savedImage_${loginId}`, imagePreview);
       } else {
-        console.log('파일이 선택되지 않았습니다.');
+        console.log('이미지 파일을 선택해주세요.');
       }
     } catch (error) {
       console.error('파일 업로드 오류:', error);
@@ -222,7 +222,7 @@ return (
           <div>
             <label htmlFor="upload" className="custom-file-upload">이미지 수정</label>
             <input type="file" onChange={handleImageChange} className="form-control form-control-sm"
-              id="upload" aria-label="upload" style={{ display: 'none' }} />
+              id="upload" aria-label="upload" style={{ display: 'none' }} accept='image/gif, image/jpeg, image/png, image/jpg'/>
             <br />
             {imagePreview && (
               <img src={imagePreview} alt="사진 미리보기" style={{ width: '260px', height: '270px', marginBottom: '10px', marginTop: '15px' }} />
