@@ -252,9 +252,20 @@ const AdminCompany = () => {
                                             </td>
                                         </>
                                     )}
-                                    <td className='pointer' style={company.paymentStatus === 'INACTIVE' ? ({ color: 'red' }) : ({})}>
-                                        <p onClick={(e) => openStatusModal(company)}>{company.paymentStatus}</p>
-                                    </td>
+                                    {company.paymentStatus === 'INACTIVE' ? (
+                                        <>
+                                            <td style={{ color: 'red' }}>
+                                                <p>{company.paymentStatus}</p>
+                                            </td>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <td className='pointer'>
+                                                <p onClick={(e) => openStatusModal(company)}>{company.paymentStatus}</p>
+                                            </td>
+                                        </>
+                                    )}
+                                    
                                     <td>
                                         <FaPenToSquare className='text-warning me-2 pointer'
                                             onClick={(e) => openEditModal(company)} />
@@ -410,7 +421,7 @@ const AdminCompany = () => {
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h1 className="modal-title fs-5" id="staticBackdropLabel">회사 정보 수정</h1>
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">결제기록</h1>
                             <button type="button" className="btn-close" aria-label="Close" onClick={e => closeStatusModal()}></button>
                         </div>
                         <div className="modal-body">
