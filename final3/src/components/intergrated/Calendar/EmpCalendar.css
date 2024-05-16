@@ -12,6 +12,35 @@
   color: #333;
 }
 
+.fc-prev-button, .fc-next-button {
+  background-color: #fad8dd !important;
+  border-color: #f7ccd4 !important;
+}
+
+.fc-prev-button:hover, .fc-next-button:hover {
+  background-color: #f8c5d0 !important;
+  border-color: #f4b2bf !important;
+}
+
+.fc-prev-button:focus, .fc-next-button:focus {
+  box-shadow: 0 0 0 2px #facfd5 !important;
+}
+
+.fc-today-button {
+  background-color: #fad8dd !important;
+  border-color: #f7ccd4 !important;
+  color: #333 !important;
+}
+
+.fc-today-button:hover {
+  background-color: #f8c5d0 !important;
+  border-color: #f4b2bf !important;
+}
+
+.fc-today-button:focus {
+  box-shadow: 0 0 0 2px #facfd5 !important;
+}
+
 /* 일반 이벤트 스타일 */
 .fc-event {
   background-color: #fad8dd;
@@ -47,3 +76,27 @@
 .fc-event:hover {
   background-color: #f7ccd4; /* 호버 시 배경색 변경 */
 }
+
+.fc-event-time, .fc-event-title {
+  color: #333 !important;
+  font-weight: normal !important;
+}
+
+.custom-textarea {
+  resize: none; 
+}
+
+/* .custom-textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.custom-textarea:hover {
+  border-color: #66afe9;
+}
+
+.custom-textarea:disabled {
+  background-color: #f8f9fa;
+  color: #6c757d;
+} */
