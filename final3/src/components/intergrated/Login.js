@@ -11,7 +11,7 @@ import { loginIdState, loginLevelState, isPaidState } from "../utils/RecoilData"
 import axios from "../utils/CustomAxios";//개조 라이브러리
 import { useNavigate } from "react-router";
 import { Modal } from 'bootstrap';
-import postcodeHTML from './postcode.html';
+import DaumPostcode from 'react-daum-postcode';
 
 const Login = () => {
 
@@ -89,7 +89,7 @@ const Login = () => {
 
         window.localStorage.setItem("refreshToken", resp.data.refreshToken);
         navigator("/");
-        
+
     }, [input]);
 
     const companyLogin = useCallback(async () => {
@@ -119,27 +119,27 @@ const Login = () => {
     }, [bsModal]);
 
     //주소 입력
-    const openPostcodePopup = () => {
-        const popupWidth = 600;
-        const popupHeight = 600;
-        const popupX = (window.screen.width / 2) - (popupWidth / 2);
-        const popupY = (window.screen.height / 2) - (popupHeight / 2);
+    const [isOpen, setIsOpen] = useState(false);
+    const postCodeStyle = {
 
-        const blob = new Blob([postcodeHTML], { type: 'text/html' });
-        const url = URL.createObjectURL(blob);
-
-        const popup = window.open(url, '우편번호 찾기', 
-        `width=${popupWidth},height=${popupHeight},left=${popupX},top=${popupY}`);
-
-        window.addEventListener('message', event => {
-            const { zonecode, address } = event.data;
-            setJoin(prev => ({
-                ...prev,
-                companyZipcode: zonecode,
-                companyAddress1: address
-            }));
-            URL.revokeObjectURL(url);
-        }, { once: true });
+    };
+    const completeHandler = (data) => {
+        const { address, zonecode } = data;
+        setInput({
+            ...input,
+            companyAddress1: address,
+            companyZipcode: zonecode,
+        })
+    };
+    const closeHandler = (state) => {
+        if (state === 'FORCE_CLOSE') {
+            setIsOpen(false);
+        } else if (state === 'COMPLETE_CLOSE') {
+            setIsOpen(false);
+        }
+    };
+    const toggleHandler = () => {
+        setIsOpen((prevOpenState) => !prevOpenState);
     };
 
     return (
@@ -239,7 +239,16 @@ const Login = () => {
                                                 placeholder="zipcode" />
                                             <label>우편번호</label>
                                         </div>
-                                        <button className='btn btn-dark' type='button' onClick={openPostcodePopup}>우편번호 찾기</button>
+                                        <button className='btn btn-dark' type='button' onClick={() => toggleHandler()}>우편번호 찾기</button>
+                                        {isOpen && (
+                                            <div>
+                                                <DaumPostcode
+                                                    style={postCodeStyle}
+                                                    onComplete={completeHandler}
+                                                    onClose={closeHandler}
+                                                />
+                                            </div>
+                                        )}
                                         <div class="form-floating mb-3">
                                             <input type="text" name="companyAddress1"
                                                 value={input.companyAddress1}
@@ -256,6 +265,9 @@ const Login = () => {
                                                 placeholder="보완주소" />
                                             <label for="companyAddress2">보완주소</label>
                                         </div>
+                                    </div>
+                                    <div className="col-6">
+                                        
                                     </div>
                                 </div>
                             </div>
