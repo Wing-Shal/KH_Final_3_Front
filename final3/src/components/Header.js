@@ -11,36 +11,36 @@ import axios from "./utils/CustomAxios";
 //function
 function Header() {
 
-        //recoil state
-        const [loginId, setLoginId] = useRecoilState(loginIdState);
-        const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
-        const [isPaid, setIsPaid] = useRecoilState(isPaidState);
-    
-        //recoil value
-        const isLogin = useRecoilValue(isLoginState);
-    
-        //navigator
-        const navigator = useNavigate();
+    //recoil state
+    const [loginId, setLoginId] = useRecoilState(loginIdState);
+    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+    const [isPaid, setIsPaid] = useRecoilState(isPaidState);
 
-        //현재 주소
-        const location = useLocation();
-        //운영자 주소인지 확인
-        const isAdminPath = location.pathname.includes('/admin');
-        //동적 할당
-        const targetPath = isAdminPath ? '/' : '/admin/home';
-        const linkText = loginLevel === '운영자' && ( isAdminPath ? '메인으로' : '운영자 홈으로' );
+    //recoil value
+    const isLogin = useRecoilValue(isLoginState);
 
-        //callback
-        const logout = useCallback(() => {
-            //recoil 저장소에 대한 정리 + axios의 헤더 제거 + localStorage 청소
-            setLoginId('');
-            setLoginLevel('');
-            setIsPaid('');
-            delete axios.defaults.headers.common['Authorization'];
-            window.localStorage.removeItem("refreshToken");
-            // navigator(isAdminPath ? ("/admin/login") : ("/login"));
-            // navigator("/login");
-        }, [loginId, loginLevel]);        
+    //navigator
+    const navigator = useNavigate();
+
+    //현재 주소
+    const location = useLocation();
+    //운영자 주소인지 확인
+    const isAdminPath = location.pathname.includes('/admin');
+    //동적 할당
+    const targetPath = isAdminPath ? '/' : '/admin/home';
+    const linkText = loginLevel === '운영자' && (isAdminPath ? '메인으로' : '운영자 홈으로');
+
+    //callback
+    const logout = useCallback(() => {
+        //recoil 저장소에 대한 정리 + axios의 헤더 제거 + localStorage 청소
+        setLoginId('');
+        setLoginLevel('');
+        setIsPaid('');
+        delete axios.defaults.headers.common['Authorization'];
+        window.localStorage.removeItem("refreshToken");
+        // navigator(isAdminPath ? ("/admin/login") : ("/login"));
+        // navigator("/login");
+    }, [loginId, loginLevel]);
 
     return (
         <>
@@ -53,18 +53,29 @@ function Header() {
                 </div>
                 <div className="col-2 text-center">
                     <div className="row">
-                    <div className='col-4'>                        
-                        {isLogin && (
-                            <>
-                                <NavLink className="dropdown-item" to="#" onClick={e => logout()}>로그아웃</NavLink>
-                            </>
-                        )}
+                        <div className='col-4'>
+                            {isLogin && (
+                                <>
+                                    <NavLink className="dropdown-item" to="#" onClick={e => logout()}>로그아웃</NavLink>
+                                </>
+                            )}
                         </div>
                         <div className="col-4">
                             채팅
                         </div>
                         <div className="col-4">
-                                <NavLink className="dropdown-item" to="/empMypage">마이페이지</NavLink>
+                            {/* 회사 로그인 */}
+                            {loginLevel === '회사' && (
+                                <li>
+                                    <NavLink className="dropdown-item" to="/companyMypage">마이페이지</NavLink>
+                                </li>
+                            )}
+                            {/* 임원 또는 사원 로그인 */}
+                            {loginLevel === '임원' || loginLevel === '사원' && (
+                                <li>
+                                    <NavLink className="dropdown-item" to="/empMypage">마이페이지</NavLink>
+                                </li>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -73,7 +84,7 @@ function Header() {
     );
 
 
-    
+
 }
 
 //export

@@ -16,7 +16,12 @@ function EmpMypage() {
   const [projects, setProjects] = useState([]);
   const [empInfo, setEmpInfo] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showPwModal, setShowPwModal] = useState(false);
   const [editableInfo, setEditableInfo] = useState(null);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState('');
+  const [passwordError, setPasswordError] = useState('');
 
   // 모달 열기
   const openModal = () => {
@@ -25,9 +30,25 @@ function EmpMypage() {
     setShowModal(true);
   };
 
+    // 모달 열기
+    const openPwModal = () => {
+      // 모달이 열릴 때마다 현재 empInfo를 기반으로 editableInfo 설정
+      setEditableInfo({ ...empInfo });
+      setShowPwModal(true);
+    };
+
   // 모달 닫기
   const closeModal = () => {
     setShowModal(false);
+  };
+
+  const closePwModal = () => {
+    setShowPwModal(false);
+    // 모달이 닫힐 때 입력된 비밀번호들 초기화
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmNewPassword('');
+    setPasswordError('');
   };
 
   // 정보 수정
@@ -37,13 +58,23 @@ function EmpMypage() {
     setEditableInfo({ ...editableInfo, [name]: value });
   };
 
+  const handleCurrentPasswordChange = (e) => {
+    setCurrentPassword(e.target.value);
+  };
+
+  const handleNewPasswordChange = (e) => {
+    setNewPassword(e.target.value);
+  };
+
+  const handleConfirmNewPasswordChange = (e) => {
+    setConfirmNewPassword(e.target.value);
+  };
+
   // 저장 버튼 클릭 시
   const handleSaveInfo = async () => {
     try {
-      const url = `/emp/edit`;
-
-      // 수정된 정보를 서버로 전송
-      const response = await axios.patch(url, editableInfo);
+    const dataToSend = { ...editableInfo };
+    const response = await axios.patch("emp/edit", dataToSend);
       console.log('사원 정보 업데이트 결과:', response.data);
       // 모달 닫기
       closeModal();
@@ -53,6 +84,50 @@ function EmpMypage() {
       console.error('사원 정보 업데이트 오류:', error);
     }
   };
+
+  const handleSavePassword = async () => {
+    try {
+      // 현재 비밀번호가 empPw와 일치하지 않은 경우
+    if (currentPassword !== empInfo.empPw) {
+      setPasswordError('현재 비밀번호가 일치하지 않습니다.');
+      return;
+    }
+      if (currentPassword === '') {
+        setPasswordError('현재 비밀번호를 입력해주세요.');
+        return;
+      }
+      if (newPassword === '') {
+        setPasswordError('새로운 비밀번호를 입력해주세요.');
+        return;
+      } 
+      if (confirmNewPassword === '') {
+        setPasswordError('비밀번호 확인을 입력해주세요.');
+        return;
+      }
+      if (newPassword !== confirmNewPassword) {
+        setPasswordError('새로운 비밀번호와 비밀번호 확인이 일치하지 않습니다.');
+        return;
+      }
+      if (newPassword === currentPassword) {
+        setPasswordError('현재 비밀번호와 변경할 비밀번호가 동일합니다');
+        return;
+      }
+      const dataToSend = {
+        empNo: empInfo.empNo,
+        currentPassword: currentPassword,
+        empPw: newPassword
+      };
+      const response = await axios.patch("/emp/edit", dataToSend);
+      console.log('비밀번호 변경 결과:', response.data);
+      closePwModal();
+      // 비밀번호 변경이 완료되었다는 알람 표시
+    alert('비밀번호 변경이 완료되었습니다.');
+    } catch (error) {
+      console.error('비밀번호 변경 오류:', error);
+      setPasswordError('비밀번호 변경에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
 
   useEffect(() => {
     loadProjects();
@@ -70,8 +145,8 @@ function EmpMypage() {
 
   const loadEmpData = async () => {
     try {
-      const token = axios.defaults.headers.common['Authorization'];
-      const resp = await axios.get(`emp/${token}`);
+      const resp = await axios.get('/emp/');
+      console.log(resp.data);
       setEmpInfo(resp.data);
     } catch (error) {
       console.error('사원 정보 불러오기 오류:', error);
@@ -123,145 +198,178 @@ function EmpMypage() {
     } catch (error) {
       console.error('파일 업로드 오류:', error);
     }
+    setFile(null);
   };
 
-  // 기본 이미지 설정 함수
-  const setDefaultImage = () => {
-    setImagePreview(defaultImage);
-    setFile(null); // 이미지 파일을 선택한 것이 아니므로 파일 상태를 초기화합니다.
-  };
+// 기본 이미지 설정 함수
+const setDefaultImage = () => {
+  setImagePreview(defaultImage); // 이미지 미리보기를 기본 이미지로 설정
+  const defaultFile = new File([defaultImage], 'defaultImage.jpg', { type: 'image/jpeg' }); // 기본 이미지에 대한 파일 객체 생성
+  setFile(defaultFile); // 파일 상태를 기본 이미지 파일로 설정
 
-  return (
-    <>
-      <h1>마이페이지</h1>
-      <div className="container-sm border border-5 rounded p-3 mb-3">
-        <div className="row align-items-center">
-          {/* 사진 첨부 파일 */}
-          <div className="col-md-3">
-            <div>
-              <label htmlFor="upload" className="custom-file-upload">이미지 수정</label>
-              <input type="file" onChange={handleImageChange} className="form-control form-control-sm"
-                id="upload" aria-label="upload" style={{ display: 'none' }} />
-              <br />
-              {imagePreview && (
-                <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
+  // 기본 이미지를 로컬 스토리지에 저장
+  localStorage.setItem(`savedImage_${loginId}`, defaultImage);
+};
+
+return (
+  <>
+    <h1>마이페이지</h1>
+    <div className="container-sm border border-5 rounded p-3 mb-3">
+      <div className="row align-items-center">
+        <div className="col-md-3">
+          <div>
+            <label htmlFor="upload" className="custom-file-upload">이미지 수정</label>
+            <input type="file" onChange={handleImageChange} className="form-control form-control-sm"
+              id="upload" aria-label="upload" style={{ display: 'none' }} />
+            <br />
+            {imagePreview && (
+              <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
+            )}
+          </div>
+          <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button>
+          {file && (
+            <button onClick={handleSave} className="btn btn-sm btn-primary mt-2" style={{ maxWidth: '200px', maxHeight: '200px', marginLeft: 'auto' }}>내 이미지 저장</button>
+          )}
+        </div>
+        <div className="col-md-5">
+          <button onClick={openModal} className="btn btn-sm btn-secondary mb-3" style={{ marginRight: '10px' }}>내 정보 수정</button>
+          <button onClick={openPwModal} className="btn btn-sm btn-secondary mb-3">비밀번호 변경</button>
+          {empInfo && (
+            <table className="table">
+              <tbody>
+                <React.Fragment key={empInfo.empNo}>
+                  <tr>
+                    <td>사원명</td>
+                    <td>{empInfo.empName}</td>
+                  </tr>
+                  <tr>
+                    <td>사원번호</td>
+                    <td>{empInfo.empNo}</td>
+                  </tr>
+                  <tr>
+                    <td>소속부서</td>
+                    <td>{empInfo.empDept}</td>
+                  </tr>
+                  <tr>
+                    <td>연락처</td>
+                    <td>{empInfo.empContact}</td>
+                  </tr>
+                  <tr>
+                    <td>이메일</td>
+                    <td>{empInfo.empEmail}</td>
+                  </tr>
+                  <tr>
+                    <td>자기소개</td>
+                    <td>{empInfo.empPr}</td>
+                  </tr>
+                </React.Fragment>
+              </tbody>
+            </table>
+          )}
+        </div>
+        <div className="col-md-4">
+          <div className="container-sm border border-5 rounded p-3 mb-3">
+            <img className='calender' src={calender} alt="달력" style={{ maxWidth: '100%', height: 'auto' }} />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div className="container-sm border border-5 rounded p-3 mb-3">
+    {projects.map(project => (
+  <div key={project.projectNo} className="mb-2">
+    <Link to={`/document/project/${project.projectNo}`} style={{ textDecoration: 'none' }}>
+      <div className="card">
+        <div className="card-body">
+          <h5 className="card-title" style={{ color: '#FFC0CB' }}>{project.projectName}</h5>
+          <p className="card-text">프로젝트 설명 또는 추가 정보</p>
+        </div>
+      </div>
+    </Link>
+  </div>
+))}
+  </div>
+
+
+    <div className={`modal ${showModal ? 'show' : ''}`} tabIndex="-1" style={{ display: showModal ? 'block' : 'none' }}>
+      <div className="modal-dialog">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">내 정보 수정</h5>
+            <button type="button" className="btn-close" onClick={closeModal}></button>
+          </div>
+          <div className="modal-body">
+            <form>
+              <div className="mb-3">
+                <label htmlFor="empName" className="form-label">사원명</label>
+                <input type="text" className="form-control" id="empName" name="empName" value={editableInfo?.empName || ''} onChange={handleChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="empNo" className="form-label">사원번호</label>
+                <input type="text" className="form-control" id="empNo" name="empNo" value={editableInfo?.empNo || ''} onChange={handleChange} disabled />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="empDept" className="form-label">소속부서</label>
+                <input type="text" className="form-control" id="empDept" name="empDept" value={editableInfo?.empDept || ''} onChange={handleChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="empContact" className="form-label">연락처</label>
+                <input type="text" className="form-control" id="empContact" name="empContact" value={editableInfo?.empContact || ''} onChange={handleChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="empEmail" className="form-label">이메일</label>
+                <input type="email" className="form-control" id="empEmail" name="empEmail" value={editableInfo?.empEmail || ''} onChange={handleChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="empPr" className="form-label">자기소개</label>
+                <textarea className="form-control" id="empPr" name="empPr" value={editableInfo?.empPr || ''} onChange={handleChange} />
+              </div>
+            </form>
+          </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-primary" onClick={handleSaveInfo}>수정</button>
+            <button type="button" className="btn btn-secondary" onClick={closeModal}>취소</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div className={`modal ${showPwModal ? 'show' : ''}`} tabIndex="-1" style={{ display: showPwModal ? 'block' : 'none' }}>
+      <div className="modal-dialog">
+        <div className="modal-content">
+          <div className="modal-header">
+            <h5 className="modal-title">비밀번호 변경</h5>
+            <button type="button" className="btn-close" onClick={closePwModal}></button>
+          </div>
+          <div className="modal-body">
+            <form>
+              <div className="mb-3">
+                <label htmlFor="currentPassword" className="form-label">현재 비밀번호</label>
+                <input type="password" className="form-control" id="currentPassword" name="currentPassword" value={currentPassword} onChange={handleCurrentPasswordChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="newPassword" className="form-label">새로운 비밀번호</label>
+                <input type="password" className="form-control" id="newPassword" name="newPassword" value={newPassword} onChange={handleNewPasswordChange} />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="confirmNewPassword" className="form-label">비밀번호 확인</label>
+                <input type="password" className="form-control" id="confirmNewPassword" name="confirmNewPassword" value={confirmNewPassword} onChange={handleConfirmNewPasswordChange} />
+              </div>
+              {passwordError && (
+                <div className="alert alert-danger" role="alert">
+                  {passwordError}
+                </div>
               )}
-            </div>
-
-            {/* 기본 이미지 버튼 */}
-            <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button>
-
-            {/* 이미지가 선택되었을 때만 저장 버튼이 활성화되도록 설정 */}
-            {file && (
-              <button onClick={handleSave} className="btn btn-sm btn-primary mt-2" style={{ maxWidth: '200px', maxHeight: '200px', marginLeft: 'auto' }}>내 이미지 저장</button>
-            )}
+            </form>
           </div>
-
-          {/* 개인 정보 */}
-          <div className="col-md-5">
-            <button onClick={openModal} className="btn btn-sm btn-secondary mb-3">내 정보 수정</button>
-            {empInfo && (
-              <table className="table">
-                <tbody>
-                  <React.Fragment key={empInfo.empNo}>
-                    <tr>
-                      <td>사원명</td>
-                      <td>{empInfo.empName}</td>
-                    </tr>
-                    <tr>
-                      <td>사원번호</td>
-                      <td>{empInfo.empNo}</td>
-                    </tr>
-                    <tr>
-                      <td>소속부서</td>
-                      <td>{empInfo.empDept}</td>
-                    </tr>
-                    <tr>
-                      <td>연락처</td>
-                      <td>{empInfo.empContact}</td>
-                    </tr>
-                    <tr>
-                      <td>이메일</td>
-                      <td>{empInfo.empEmail}</td>
-                    </tr>
-                    <tr>
-                      <td>자기소개</td>
-                      <td>{empInfo.empPr}</td>
-                    </tr>
-                  </React.Fragment>
-                </tbody>
-              </table>
-            )}
-          </div>
-
-          {/* 달력 이미지 */}
-          <div className="col-md-4">
-            <div className="container-sm border border-5 rounded p-3 mb-3">
-              <img className='calender' src={calender} alt="달력" style={{ maxWidth: '100%', height: 'auto' }} />
-            </div>
+          <div className="modal-footer">
+            <button type="button" className="btn btn-primary" onClick={handleSavePassword}>변경</button>
+            <button type="button" className="btn btn-secondary" onClick={closePwModal}>취소</button>
           </div>
         </div>
       </div>
-
-      {/* 프로젝트 목록 */}
-      <div className="container-sm border border-5 rounded p-3 mb-3">
-        {/* 프로젝트 목록 렌더링 */}
-        <div><h2>내 프로젝트 목록</h2></div>
-        <br></br>
-        {projects.map(project => (
-          <div key={project.projectNo}>
-            <Link to={`/document/project/${project.projectNo}`}>
-              <p> - {project.projectName}</p>
-            </Link>
-          </div>
-        ))}
-      </div>
-
-      {/* 내 정보 수정 모달 */}
-      <div className={`modal ${showModal ? 'show' : ''}`} tabIndex="-1" style={{ display: showModal ? 'block' : 'none' }}>
-        <div className="modal-dialog">
-          <div className="modal-content">
-            <div className="modal-header">
-              <h5 className="modal-title">내 정보 수정</h5>
-              <button type="button" className="btn-close" onClick={closeModal}></button>
-            </div>
-            <div className="modal-body">
-              <form>
-                <div className="mb-3">
-                  <label htmlFor="empName" className="form-label">사원명</label>
-                  <input type="text" className="form-control" id="empName" name="empName" value={editableInfo?.empName || ''} onChange={handleChange} />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="empNo" className="form-label">사원번호</label>
-                  <input type="text" className="form-control" id="empNo" name="empNo" value={editableInfo?.empNo || ''} onChange={handleChange} disabled />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="empDept" className="form-label">소속부서</label>
-                  <input type="text" className="form-control" id="empDept" name="empDept" value={editableInfo?.empDept || ''} onChange={handleChange} />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="empContact" className="form-label">연락처</label>
-                  <input type="text" className="form-control" id="empContact" name="empContact" value={editableInfo?.empContact || ''} onChange={handleChange} />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="empEmail" className="form-label">이메일</label>
-                  <input type="email" className="form-control" id="empEmail" name="empEmail" value={editableInfo?.empEmail || ''} onChange={handleChange} />
-                </div>
-                <div className="mb-3">
-                  <label htmlFor="empPr" className="form-label">자기소개</label>
-                  <textarea className="form-control" id="empPr" name="empPr" value={editableInfo?.empPr || ''} onChange={handleChange} />
-                </div>
-              </form>
-            </div>
-            <div className="modal-footer">
-              <button type="button" className="btn btn-primary" onClick={handleSaveInfo}>저장</button>
-              <button type="button" className="btn btn-secondary" onClick={closeModal}>취소</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </>
-  );
+    </div>
+  </>
+);
 }
 
 export default EmpMypage;
