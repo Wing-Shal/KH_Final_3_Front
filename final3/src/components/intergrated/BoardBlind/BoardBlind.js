@@ -10,6 +10,8 @@ import { Link, useParams } from 'react-router-dom';
 import { FaEdit, FaTrash } from "react-icons/fa";
 import { IoMdHammer } from "react-icons/io";
 import { FaXmark } from "react-icons/fa6";
+import { FaSearch } from 'react-icons/fa';
+
 
 
 function BoardBlind() {
@@ -22,6 +24,53 @@ function BoardBlind() {
     const [companyInfo, setCompanyInfo] = useState({});
 
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
+
+    // 검색창
+    const [searchKeyword, setSearchKeyword] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+
+    // //통합 검색  
+    // performSearch 함수 정의
+    const performSearch = useCallback(async () => {
+        // 검색을 수행하는 로직을 구현합니다. searchKeyword 상태를 사용하여 검색합니다.
+        // 검색 결과를 searchResults 상태로 업데이트합니다.
+    }, [searchKeyword]);
+
+    // 검색 아이콘 클릭 핸들러 함수 정의
+    const handleSearchClick = useCallback(() => {
+        performSearch(); // 검색 아이콘이 클릭될 때 performSearch 함수 호출
+    }, [performSearch]);
+
+    // 검색 입력 변경 핸들러 함수 정의
+    const handleSearchChange = useCallback((e) => {
+        setSearchKeyword(e.target.value); // 입력이 변경될 때 searchKeyword 상태를 업데이트합니다.
+    }, []);
+
+    // 문서 필터링 함수 정의
+    const filterBoardBlinds = useCallback(() => {
+        return boardBlinds.filter(boardBlind =>
+            (boardBlind.blindNo && boardBlind.blindNo.toString().toLowerCase().includes(searchKeyword.toLowerCase())) ||
+            (boardBlind.blindTitle && typeof boardBlind.blindTitle === 'string' && boardBlind.blindTitle.toLowerCase().includes(searchKeyword.toLowerCase())) ||
+            (boardBlind.blindContent && typeof boardBlind.blindContent === 'string' && boardBlind.blindContent.toLowerCase().includes(searchKeyword.toLowerCase())) ||
+            (boardBlind.blindWriterNick && typeof boardBlind.blindWriterNick === 'string' && boardBlind.blindWriterNick.toLowerCase().includes(searchKeyword.toLowerCase()))
+            // Add other attributes for search here
+        );
+    }, [boardBlinds, searchKeyword]);
+
+    // 검색어에 따라 게시글 필터링
+    useEffect(() => {
+        const filteredBoardBlinds = boardBlinds.filter(boardBlind =>
+            boardBlind.blindTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ||
+            boardBlind.blindContent.toLowerCase().includes(searchKeyword.toLowerCase()) //||
+            // boardBlind.blindWriterNick.toLowerCase().includes(searchKeyword.toLowerCase())
+        );
+        setSearchResults(filteredBoardBlinds);
+    }, [boardBlinds, searchKeyword]);
+
+
+
+    // 검색 키워드에 따라 문서 필터링
+    const filteredBoardBlinds = filterBoardBlinds();
 
     const [input, setInput] = useState({
         // blindNo:"",
@@ -44,7 +93,7 @@ function BoardBlind() {
         blindNo: "" //게시글번호
     });
 
-  
+
 
     useEffect(() => {
         loadData();
@@ -278,13 +327,44 @@ function BoardBlind() {
         });
     }, [replyBlindInput]);
 
-    return (
+    const deleteReplyBlind = useCallback(async (target) => {
+        const choice = window.confirm("정말 삭제하시겠습니까?");
+        if (choice === false) return;
 
+        //target에 있는 내용을 서버에 지워달라고 요청하고 목록을 다시 불러온다
+        const resp = await axios.delete("/replyBlind/" + target.replyBlindNo);
+        removeReplyFromScreen(target.replyBlindNo)
+        loadData();
+    }, [replyBlinds]);
+
+    //화면에서 해당 댓글을 제거하는 함수
+    const removeReplyFromScreen = useCallback((replyBlindNo) => {
+        // 현재 상태의 댓글 목록에서 삭제된 댓글을 제외하고 새로운 목록을 만듭니다.
+        const updatedReplyBlinds = replyBlinds.filter(reply => reply.replyBlindNo !== replyBlindNo);
+        // 새로운 목록으로 상태를 업데이트합니다.
+        setReplyBlinds(updatedReplyBlinds);
+    }, [replyBlinds, setReplyBlinds]);
+
+    return (
         <div className="ListItem">
 
             <Jumbotron title="블라인드 게시판"></Jumbotron>
 
-            {/* 추가 버튼 */}
+            <div className="col-8 col-md-9 d-flex align-items-center">
+                <input
+                    style={{ border: '2.5px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}
+                    type="text"
+                    className="form-control me-2"
+                    placeholder="검색어를 입력하세요..."
+                    value={searchKeyword}
+                    onChange={handleSearchChange}
+                />
+                <button className="btn btn-outline-secondary" type="button" onClick={handleSearchClick}
+                    style={{ backgroundColor: 'rgb(255,192,203,0.5)' }}>
+                    <FaSearch />
+                </button>
+            </div>
+
             <div className="row mt-4">
                 <div className="col text-end">
                     <button className="btn btn-primary" onClick={openModal}>
@@ -296,97 +376,30 @@ function BoardBlind() {
 
             <Container className="d-flex" style={{ height: "500px", backgroundSize: "cover" }} fluid>
                 <Row xs={1} className="g-4 mt-4">
-                    {boardBlinds.map((boardBlind) => (
+                    {searchResults.map((boardBlind) => (
                         <Col key={boardBlind.blindNo}>
                             <Card style={{ overflowY: "auto" }}>
                                 <Card.Body style={{ display: "flex", flexDirection: "column" }}>
                                     <div className="d-flex justify-content-end mb-2">
-                                        {/* 로그인된 사용자와 게시글 작성자의 id가 일치할 경우 수정,삭제 버튼 표시 */}
                                         {loginId === boardBlind.blindEmpNo && (
-                                        <>
-                                        <button
-                                            className="btn btn-warning btn-sm me-2"
-                                            onClick={(e) => editBoardBlind(boardBlind)}
-                                        ><IoMdHammer />
+                                            <>
+                                                <button
+                                                    className="btn btn-warning btn-sm me-2"
+                                                    onClick={(e) => editBoardBlind(boardBlind)}
+                                                ><IoMdHammer />
 
-                                        </button>
-                                        <button
-                                            className="btn btn-danger btn-sm"
-                                            onClick={(e) => deleteBoardBlind(boardBlind)}
-                                        ><FaXmark />
+                                                </button>
+                                                <button
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={(e) => deleteBoardBlind(boardBlind)}
+                                                ><FaXmark />
 
-                                        </button>
-                                    </>
-                                    )}
-                                    </div>
-                                    <div style={{ border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px" }}>
-                                        <div>제목: {boardBlind.blindTitle}</div>
-                                    </div>
-                                    <hr></hr>
-                                    <div style={{ display: "flex", flexDirection: "row" }}>
-                                        <div style={{ border: "0px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "1px", flex: "1", marginRight: "10px", fontSize: "13px" }}>
-                                            <div><span style={{ fontWeight: "bold" }}>작성자:</span>{boardBlind.blindWriterNick ? boardBlind.blindWriterNick : 'ㅇㅇ'}</div>
-                                        </div>
-                                        <div style={{ border: "0px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "1px", flex: "1", marginRight: "10px", fontSize: "13px" }}>
-                                            <div><span style={{ fontWeight: "bold" }}>회사:</span> {boardBlind.blindWriterCompany}</div>
-                                        </div>
-                                        <div style={{ border: "0px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "1px", flex: "1", fontSize: "13px" }}>
-                                            <div><span style={{ fontWeight: "bold" }}>작성일:</span> {boardBlind.blindWtime}</div>
-                                        </div>
-                                    </div>
-                                    <hr></hr>
-                                    <div style={{ height: "300px", border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px" }}>
-                                        <div>내용: {boardBlind.blindContent}</div>
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
 
-                                    {/* 댓글 섹션 */}
-                                    <div style={{ height: "300px", border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px", overflowY: "auto" }}>
-                                        {/* 해당 게시글의 댓글 목록을 표시 */}
-                                        {replyBlinds.map((replyBlind, index) => {
-                                            // 해당 게시글에 속하는 댓글인지 확인
-                                            if (replyBlind.blindNo === boardBlind.blindNo) {
-                                                return (
-                                                    <div key={`${replyBlind.blindNo}_${replyBlind.replyBlindTime}_${index}`} style={{ marginBottom: "10px" }}>
-                                                        <div style={{ fontWeight: "bold" }}>작성자: {replyBlind.replyBlindNick ? replyBlind.replyBlindNick : 'ㅇㅇ'}</div>
-                                                        <div>내용: {replyBlind.replyBlindContent}</div>
-                                                        <div>작성 시각: {replyBlind.replyBlindTime}</div>
-                                                        <div>회사명: {replyBlind.replyBlindCompany}</div>
-                                                    </div>
-                                                );
-                                            }
-                                            return null; // 해당 게시글에 속하지 않는 댓글은 렌더링하지 않음
-                                        })}
-
-                                        <form>
-                                            <div className="row">
-                                                <div className="col">
-                                                    <label>닉네임</label>
-                                                    <input type="text" name="replyBlindNick" // 올바른 name 속성 추가
-                                                        value={replyBlindInput.replyBlindNick} // 상태와 연결된 값 설정
-                                                        onChange={e => changeReply(e)}
-                                                        className="form-control" placeholder="닉네임을 입력하지 않으면 'ㅇㅇ' 으로 자동 입력됩니다" />
-                                                </div>
-                                            </div>
-                                            <div className="row">
-                                                <div className="col">
-                                                    <label>댓글</label>
-                                                    <input type="text" name="replyBlindContent" // 올바른 name 속성 추가
-                                                        value={replyBlindInput.replyBlindContent} // 상태와 연결된 값 설정
-                                                        onChange={e => changeReply(e)}
-                                                        className="form-control" />
-                                                </div>
-                                            </div>
-                                        </form>
-                                    </div>
-
-                                    <div className="text-end">
-                                        <button className='btn btn-success me-2' onClick={e => saveReplyInput(boardBlind.blindNo)}>
-                                            댓글등록
-                                        </button>
-
-                                    </div>
-
-
+                                    {/* 수정 가능한 입력 상자 표시 */}
                                     {boardBlind.edit ? (
                                         <>
                                             <input
@@ -402,6 +415,13 @@ function BoardBlind() {
                                                 value={boardBlind.blindContent}
                                                 name="blindContent"
                                                 onChange={(e) => changeBoardBlinds(e, boardBlind)}
+                                                style={{
+                                                    height: "300px",
+                                                    border: "1px solid rgb(210, 210, 210)",
+                                                    borderRadius: "10px",
+                                                    padding: "10px",
+                                                    marginBottom: "10px"
+                                                }}
                                             />
 
                                             <button
@@ -417,11 +437,119 @@ function BoardBlind() {
                                                 취소
                                             </button>
                                         </>
+
                                     ) : (
                                         <>
+                                            {/* 수정 불가능한 텍스트로 표시 */}
+                                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">
+                                                제목: {boardBlind.blindTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                                                    <span>
+                                                        {boardBlind.blindTitle.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                                            ) : (
+                                                                <span key={index}>{text}</span>
+                                                            )
+                                                        ))}
+                                                    </span>
+                                                ) : (
+                                                    boardBlind.blindTitle
+                                                )}
+                                            </div>
 
+                                            <hr />
+
+                                            <div style={{ display: "flex", flexDirection: "row" }}>
+                                                <div style={{ border: "0px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "1px", flex: "1", marginRight: "10px", fontSize: "13px" }}>
+                                                    <div><span style={{ fontWeight: "bold" }}>작성자:</span>{boardBlind.blindWriterNick ? boardBlind.blindWriterNick : 'ㅇㅇ'}</div>
+                                                </div>
+                                                <div style={{ border: "0px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "1px", flex: "1", marginRight: "10px", fontSize: "13px" }}>
+                                                    <div><span style={{ fontWeight: "bold" }}>회사:</span> {boardBlind.blindWriterCompany}</div>
+                                                </div>
+                                                <div style={{ border: "0px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "1px", flex: "1", fontSize: "13px" }}>
+                                                    <div><span style={{ fontWeight: "bold" }}>작성일:</span> {boardBlind.blindWtime}</div>
+                                                </div>
+                                            </div>
+
+                                            <hr />
+
+                                            <div style={{ height: "300px", border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px" }}>
+                                                내용: {boardBlind.blindContent.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                                                    <span>
+                                                        {boardBlind.blindContent.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
+                                                            ) : (
+                                                                <span key={index}>{text}</span>
+                                                            )
+                                                        ))}
+                                                    </span>
+                                                ) : (
+                                                    boardBlind.blindContent
+                                                )}
+                                            </div>
                                         </>
                                     )}
+
+                                    {/* 댓글 섹션 */}
+                                    <div style={{ height: "300px", border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px", overflowY: "auto" }}>
+                                        {replyBlinds.map((replyBlind, index) => {
+                                            if (replyBlind.blindNo === boardBlind.blindNo) {
+                                                return (
+                                                    <div key={`${replyBlind.blindNo}_${replyBlind.replyBlindTime}_${index}`} style={{ marginBottom: "10px" }}>
+                                                        <div style={{ fontWeight: "bold" }}>작성자: {replyBlind.replyBlindNick ? replyBlind.replyBlindNick : 'ㅇㅇ'}
+                                                            {loginId === replyBlind.replyEmpNo && (
+                                                                <button
+                                                                    className="btn btn-danger btn-sm"
+                                                                    onClick={(e) => deleteReplyBlind(replyBlind)}
+                                                                ><FaXmark />
+
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <div>내용: {replyBlind.replyBlindContent}</div>
+                                                        <div>작성 시각: {replyBlind.replyBlindTime}</div>
+                                                        <div>회사명: {replyBlind.replyBlindCompany}</div>
+                                                    </div>
+                                                );
+                                            }
+                                            return null;
+                                        })}
+                                    </div>
+                                    <form>
+                                        <div className="row">
+                                            <div className="col">
+                                                <label>닉네임</label>
+                                                <input
+                                                    type="text"
+                                                    name="replyBlindNick"
+                                                    value={replyBlindInput.replyBlindNick}
+                                                    onChange={(e) => changeReply(e)}
+                                                    className="form-control"
+                                                    placeholder="닉네임을 입력하지 않으면 'ㅇㅇ' 으로 자동 입력됩니다"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="row">
+                                            <div className="col">
+                                                <label>댓글</label>
+                                                <input
+                                                    type="text"
+                                                    name="replyBlindContent"
+                                                    value={replyBlindInput.replyBlindContent}
+                                                    onChange={(e) => changeReply(e)}
+                                                    className="form-control"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="text-end">
+                                            <button className='btn btn-success me-2' onClick={(e) => saveReplyInput(boardBlind.blindNo)}>
+                                                댓글등록
+                                            </button>
+                                        </div>
+                                    </form>
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -429,10 +557,8 @@ function BoardBlind() {
                 </Row>
             </Container>
 
-
-            {/* Modal */}
-            {boardBlinds.map(document => (
-                <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+            {boardBlinds.map(boardBlind => (
+                <div key={boardBlind.blindNo} ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                     <div className="modal-dialog">
                         <div className="modal-content">
                             <div className="modal-header">
@@ -441,51 +567,59 @@ function BoardBlind() {
                                     onClick={e => cancelInput()}></button>
                             </div>
                             <div className="modal-body">
-                                {/* 등록 화면 */}
-                                {/* 프로젝트 정보 표시 */}
                                 <div>
                                     <p>사원 번호: {loginId}</p>
-                                    {/* <p>회사: {companyInfo.companyName}</p> */}
-                                    <p>회사: {boardBlinds.blindWriterCompany}</p>
+                                    <p>회사: {boardBlind.blindWriterCompany}</p>
                                 </div>
                                 <form>
                                     <div className="row">
                                         <div className="col">
                                             <label>제목</label>
-                                            <input type="text" name="blindTitle"
+                                            <input
+                                                type="text"
+                                                name="blindTitle"
                                                 value={input.blindTitle}
                                                 onChange={e => changeInput(e)}
-                                                className="form-control" />
+                                                className="form-control"
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="row">
                                         <div className="col">
                                             <label>내용</label>
-                                            <textarea name="blindContent"
+                                            <textarea
+                                                name="blindContent"
                                                 value={input.blindContent}
                                                 onChange={e => changeInput(e)}
-                                                className="form-control" />
+                                                className="form-control"
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="row">
                                         <div className="col">
                                             <label>작성자 닉네임</label>
-                                            <input type="text" name="blindWriterNick"
+                                            <input
+                                                type="text"
+                                                name="blindWriterNick"
                                                 value={input.blindWriterNick}
                                                 onChange={e => changeInput(e)}
-                                                className="form-control" />
+                                                className="form-control"
+                                            />
                                         </div>
                                     </div>
 
                                     <div className="row">
                                         <div className="col">
                                             <label>비밀번호</label>
-                                            <input type="password" name="blindPassword"
+                                            <input
+                                                type="password"
+                                                name="blindPassword"
                                                 value={input.blindPassword}
                                                 onChange={e => changeInput(e)}
-                                                className="form-control" />
+                                                className="form-control"
+                                            />
                                         </div>
                                     </div>
                                 </form>
@@ -498,23 +632,14 @@ function BoardBlind() {
                                 <button className='btn btn-danger' onClick={e => cancelInput()}>
                                     취소
                                 </button>
-
                             </div>
-
                         </div>
-
                     </div>
-
                 </div>
-
-
             ))}
-
-
-
         </div>
-
     );
 };
 
 export default BoardBlind;
+
