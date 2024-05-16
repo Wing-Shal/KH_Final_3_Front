@@ -38,11 +38,12 @@ const PurchaseTest = lazy(() => import("./components/intergrated/kakaopay/Purcha
 const PurchaseSuccess = lazy(() => import("./components/intergrated/kakaopay/PurchaseSuccess"));
 const PurchaseComplete = lazy(() => import("./components/intergrated/kakaopay/PurchaseComplete"));
 const SubScriptionInactive = lazy(() => import("./components/intergrated/kakaopay/SubsciptionInacitve"));
+const CompanyJoin = lazy(() => import("./components/intergrated/CompanyJoin2"));
 const EmpMypage = lazy(() => import("./components/intergrated/Emp/EmpMypage"));
 const CompanyHome = lazy(() => import('./components/intergrated/Company/Home'));
 const CompanyEmpList = lazy(() => import('./components/intergrated/Company/EmpList'));
 const CompanyAddEmp = lazy(() => import('./components/intergrated/Company/AddEmp'));
-const CompanyManagement = lazy(() => import('./components/intergrated/Company/Management'));
+const EmpCalendar = lazy(() => import('./components/intergrated/Calendar/EmpCalendar'));
 
 const App = () => {
   //recoil state
@@ -394,10 +395,12 @@ const App = () => {
                     <Route path="/" element={<Home />} />
                     <Route path="/NEL" element={<NEL />} />
                     <Route path="/chatroom" element={<ChatRoom />} />
+                    <Route path="/calendar" element={<EmpCalendar />} />
                     <Route path="/boardBlind" element={<BoardBlind />} />
                     <Route path="/project" element={<Project />} />
                     <Route path="/document/project/:projectNo" element={<Document />} />
                     <Route path='/login' element={<Login />} />
+                    <Route path="/company/join" element={<CompanyJoin />} />
                     <Route path='/empMypage' element={<EmpMypage />} />
                     <Route path="/kakaopay/purchaseTest" element={<PurchaseTest />} />
                     <Route path="/kakaopay/purchaseSuccess" element={<PurchaseSuccess />} />
@@ -407,7 +410,6 @@ const App = () => {
                       <Route path="home" element={<CompanyHome />} />  
                       <Route path='empList' element={<CompanyEmpList />} />
                       <Route path='addEmp' element={<CompanyAddEmp />} />
-                      <Route path="management" element={<CompanyManagement />} />
                     </Route> 
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
