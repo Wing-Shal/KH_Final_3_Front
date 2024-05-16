@@ -11,6 +11,7 @@ import SidebarSelector from './components/sidebar/SidebarSelector';
 import AdminRoute from './components/CustomRoute/AdminRoute';
 import LoginRoute from './components/CustomRoute/LoginRoute';
 import CompanyRoute from './components/CustomRoute/CompanyRoute';
+import BGI from './assets/bgImage.jpg';
 
 //토스티파이 알림용
 import SockJS from 'sockjs-client';
@@ -43,6 +44,7 @@ const CompanyHome = lazy(() => import('./components/intergrated/Company/Home'));
 const CompanyEmpList = lazy(() => import('./components/intergrated/Company/EmpList'));
 const CompanyAddEmp = lazy(() => import('./components/intergrated/Company/AddEmp'));
 const CompanyMypage = lazy(() => import("./components/intergrated/Company/Mypage"));
+const CompanyManagement = lazy(() => import("./components/intergrated/Company/Management"));
 const EmpCalendar = lazy(() => import('./components/intergrated/Calendar/EmpCalendar'));
 
 const App = () => {
@@ -379,12 +381,24 @@ const App = () => {
   return (
     <>
       {/* 메뉴 */}
-      <Header />
+      {isLoginPath || (
+        <>
+          <Header />
+        </>
+      )}
+
       <ToastContainer />
-      <div className='container-fluid d-flex py-0'>
+      <div className='container-fluid d-flex py-0' style={isLoginPath ? {
+        backgroundImage: `url(${BGI})`,
+        backgroundRepeat: 'no-repeat',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        width: '100vw',
+        height: '100vh'
+      } : {}}>
         <div className="sidebar">
-          <SidebarSelector isLoginPath={isLoginPath} isAdminPath={isAdminPath} 
-                                            isCompanyPath={isCompanyPath} isNELpath={isNELpath} />
+          <SidebarSelector isLoginPath={isLoginPath} isAdminPath={isAdminPath}
+            isCompanyPath={isCompanyPath} isNELpath={isNELpath} />
         </div>
         <div className='container'>
           <div className='row mt-4'>
@@ -405,12 +419,13 @@ const App = () => {
                     <Route path="/kakaopay/purchaseSuccess" element={<PurchaseSuccess />} />
                     <Route path="/kakaopay/subscriptionInactive" element={<SubScriptionInactive />} />
                     <Route path="/kakopay/purchaseComplete" element={<PurchaseComplete />} />
-                    <Route path="/company" element={<CompanyRoute refreshLogin={refreshLogin}/>} >
-                      <Route path="home" element={<CompanyHome />} />  
+                    <Route path="/company" element={<CompanyRoute refreshLogin={refreshLogin} />} >
+                      <Route path="home" element={<CompanyHome />} />
                       <Route path='empList' element={<CompanyEmpList />} />
                       <Route path='addEmp' element={<CompanyAddEmp />} />
                       <Route path="mypage" element={<CompanyMypage />} />
-                    </Route> 
+                      <Route path="management" element={<CompanyManagement />} />
+                    </Route>
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>
                       <Route path="company" element={<AdminCompany />} />

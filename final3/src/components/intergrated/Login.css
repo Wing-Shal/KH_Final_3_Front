@@ -1,3 +1,44 @@
-.btn {
-    width: 200px;
+.container.login-container {
+    margin-top: 25%;
+}
+.login-wrapper {
+    padding: 20px; /* 원하는 내부 여백 */
+    border-radius: 10px; /* 선택 사항: 둥근 모서리 */
+    background-color: #fff; /* 선택 사항: 배경색 */
+}
+.img-wrapper {
+    margin-bottom: 30px;
+}
+.table-wrapper {
+    padding: 10px;
+    margin: 10px;
+}
+.modal-footer {
+    background-color: white !important;
+}
+
+.scrollable-section {
+    max-height: 300px; /* 원하는 높이로 설정 */
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid #ddd; /* 선택 사항: 스크롤 영역의 경계를 구분 */
+    padding: 10px; /* 선택 사항: 스크롤 영역의 내부 여백 */
+}
+
+/* 스크롤바 스타일링 */
+.scrollable-section::-webkit-scrollbar {
+    width: 8px; /* 스크롤바 너비 */
+}
+
+.scrollable-section::-webkit-scrollbar-track {
+    background: transparent; /* 스크롤바 트랙 배경 */
+}
+
+.scrollable-section::-webkit-scrollbar-thumb {
+    background-color: #dddbdb; /* 스크롤바 색상 */
+    border-radius: 4px; /* 스크롤바 둥근 모서리 */
+}
+
+.scrollable-section::-webkit-scrollbar-thumb:hover {
+    background-color: #b4b1b1; /* 스크롤바 호버 색상 */
 }

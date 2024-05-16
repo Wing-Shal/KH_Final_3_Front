@@ -159,7 +159,7 @@ const EmpList = () => {
                             value={searchTerm}
                             onChange={handleSearchChange}
                         />
-                        <button onClick={clearSearch} className="btn btn-warning"><FaXmark /></button>
+                        <button onClick={clearSearch} className="btn btn-secondary"><FaXmark /></button>
                         <button onClick={handleSearch} className="btn btn-primary">검색</button>
                     </div>
                 </div>
