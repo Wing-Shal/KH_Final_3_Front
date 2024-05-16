@@ -73,7 +73,7 @@ const SideBar = () => {
                 </div>
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
-                    <MenuItem component={<Link to="/company/home" />}> 회사정보 </MenuItem>
+                    <MenuItem component={<Link to="/company/mypage" />}> 회사정보 </MenuItem>
                 </Menu>
                 <div className="logo-outline" />
                 <Menu>

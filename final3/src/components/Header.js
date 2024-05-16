@@ -66,15 +66,13 @@ function Header() {
                         <div className="col-4">
                             {/* 회사 로그인 */}
                             {loginLevel === '회사' && (
-                                <li>
-                                    <NavLink className="dropdown-item" to="/companyMypage">마이페이지</NavLink>
-                                </li>
+                                <></>
                             )}
                             {/* 임원 또는 사원 로그인 */}
                             {loginLevel === '임원' || loginLevel === '사원' && (
-                                <li>
+                                <>
                                     <NavLink className="dropdown-item" to="/empMypage">마이페이지</NavLink>
-                                </li>
+                                </>
                             )}
                         </div>
                     </div>
