@@ -71,16 +71,20 @@ const ChatRoom = () => {
 
     //메세지 읽었는지
     const sendReadMessageInfo = useCallback((messageNo) => {
+        const message = messages.find(msg => msg.messageNo === messageNo);
+        if (!message) return;  // 메시지를 찾지 못한 경우 함수를 종료
+    
         const readMessageRequest = {
             readMessageNo: messageNo,
             chatroomNo: chatroomNo,
-            token: axios.defaults.headers.common['Authorization']
+            token: axios.defaults.headers.common['Authorization'],
+            messageSender: message.messageSender,
         };
-
+    
         if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
             socketRef.current.send(JSON.stringify(readMessageRequest));
         }
-    }, [chatroomNo]);
+    }, [chatroomNo, messages]);
 
 
 
@@ -282,7 +286,7 @@ const ChatRoom = () => {
             if (messages.length === 0 || resp.data.list.length === messages.length) {
                 //console.log("처음 불러왔어요");
                 setTimeout(() => {
-                    console.log(scrollRef.current, scrollRef.current.scrollTop, scrollRef.current.scrollHeight);
+                    // console.log(scrollRef.current, scrollRef.current.scrollTop, scrollRef.current.scrollHeight);
                     scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
                 }, 200);
             }
@@ -489,7 +493,7 @@ const ChatRoom = () => {
                             <tr>
                                 <th>방번호</th>
                                 <th>방이름</th>
-                                <th>안읽메</th>
+                                {/* <th>안읽메</th> */}
                             </tr>
                         </thead>
                         <tbody>
@@ -506,14 +510,14 @@ const ChatRoom = () => {
                                                 {chatroom.recentMessageTime || ""}
                                             </span>
                                         </td>
-                                        <td>
+                                        {/* <td>
                                             {chatroom.unreadMessagesCount > 0 ?
                                                 <span className="badge bg-danger">
                                                     {chatroom.unreadMessagesCount}
                                                 </span>
                                                 : <span className="badge bg-secondary">0</span>
                                             }
-                                        </td>
+                                        </td> */}
                                     </tr>
                                 </React.Fragment>
                             ))}
@@ -578,6 +582,7 @@ const ChatRoom = () => {
                                             )}
                                             <div className="message-content">{message.messageContent}</div>
                                             <div className="message-time">{message.messageTimeMinute}</div>
+                                            {/* <div>{message.readCountForChatroom > 0 ? message.readCountForChatroom : ''}</div> */}
                                         </div>
                                     ))}
                                     <div className="last-area" ref={lastAreaRef}></div>
