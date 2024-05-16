@@ -3,7 +3,7 @@ import axios from "../../utils/CustomAxios";
 import { loginIdState } from '../../utils/RecoilData';
 import { useRecoilState } from 'recoil';
 import calender from "../../../assets/calender.png";
-import defaultImage from "../../../assets/user.png"; // 기본 이미지 경로를 추가해주세요
+import defaultImage from "../../../assets/userImage.png"; // 기본 이미지 경로를 추가해주세요
 import { Link } from 'react-router-dom';
 import 'bootstrap/dist/css/bootstrap.min.css'; // React Bootstrap의 CSS를 불러옴
 import 'bootstrap/dist/js/bootstrap.bundle.min'; // React Bootstrap의 JavaScript를 불러옴
@@ -172,7 +172,7 @@ function EmpMypage() {
       reader.onloadend = () => {
         setImagePreview(reader.result);
         // 이미지를 선택한 후 로컬 스토리지에 저장
-        localStorage.setItem(`savedImage_${loginId}`, reader.result);
+        //localStorage.setItem(`savedImage_${loginId}`, reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -192,6 +192,8 @@ function EmpMypage() {
         console.log('파일 업로드 결과:', response.data);
 
         console.log('DB에 저장되었습니다.');
+        // 기본 이미지를 로컬 스토리지에 저장
+        localStorage.setItem(`savedImage_${loginId}`, imagePreview);
       } else {
         console.log('파일이 선택되지 않았습니다.');
       }
@@ -208,7 +210,7 @@ const setDefaultImage = () => {
   setFile(defaultFile); // 파일 상태를 기본 이미지 파일로 설정
 
   // 기본 이미지를 로컬 스토리지에 저장
-  localStorage.setItem(`savedImage_${loginId}`, defaultImage);
+  //localStorage.setItem(`savedImage_${loginId}`, defaultImage);
 };
 
 return (
@@ -223,7 +225,7 @@ return (
               id="upload" aria-label="upload" style={{ display: 'none' }} />
             <br />
             {imagePreview && (
-              <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
+              <img src={imagePreview} alt="사진 미리보기" style={{ width: '260px', height: '270px', marginBottom: '10px', marginTop: '15px' }} />
             )}
           </div>
           <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button>
