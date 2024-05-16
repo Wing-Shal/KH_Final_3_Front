@@ -95,7 +95,7 @@ function CompanyMypage() {
       reader.onloadend = () => {
         setImagePreview(reader.result);
         // 이미지를 선택한 후 로컬 스토리지에 저장
-        localStorage.setItem(`savedImage_${loginId}`, reader.result);
+        // localStorage.setItem(`savedImage_${loginId}`, reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -116,6 +116,8 @@ function CompanyMypage() {
         console.log('파일 업로드 결과:', response.data);
 
         console.log('DB에 저장되었습니다.');
+        // 이미지를 선택한 후 로컬 스토리지에 저장
+        localStorage.setItem(`savedImage_${loginId}`, imagePreview);
       } else {
         console.log('파일이 선택되지 않았습니다.');
       }
@@ -132,7 +134,7 @@ const setDefaultImage = () => {
   setFile(defaultFile); // 파일 상태를 기본 이미지 파일로 설정
 
   // 기본 이미지를 로컬 스토리지에 저장
-  localStorage.setItem(`savedImage_${loginId}`, defaultImage);
+  // localStorage.setItem(`savedImage_${loginId}`, defaultImage);
 };
 
 return (
