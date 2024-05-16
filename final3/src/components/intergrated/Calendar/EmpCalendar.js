@@ -16,6 +16,7 @@ import './EmpCalendar.css';
 const EmpCalendar = () => {
 
 
+
   //recoil
   const [loginId, setLoginId] = useRecoilState(loginIdState);
 
@@ -96,9 +97,6 @@ const EmpCalendar = () => {
   }, [setEvents])
 
 
-
-
-
   const openInfo = (clickInfo) => {
     setSelectedEvent(clickInfo.event.extendedProps);
     openInfoModal();
@@ -108,7 +106,7 @@ const EmpCalendar = () => {
     const calendar = new FullCalendar(calendarRef.current, {
       plugins: [dayGridPlugin, interactionPlugin],
       initialView: 'dayGridMonth',
-      editable: true,
+      // editable: true,
       events: events,
       selectable: true,
       select: dateSelect,
@@ -150,7 +148,8 @@ const EmpCalendar = () => {
     clearInput();
     closeEditModal();
     loadCalendarEvents();
-    openInfoModal();
+    console.log(resp);
+    // openInfo(resp.data.calendarNo);
   }, [input]);
 
 
@@ -238,7 +237,6 @@ const EmpCalendar = () => {
   return (
     <>
       <div ref={calendarRef} />
-
       <div ref={bsInfoModal} className="modal fade" id="staticBackdrop infoModal" data-bs-backdrop="static" data-bs-keyboard="true" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
@@ -279,7 +277,7 @@ const EmpCalendar = () => {
             <div className="modal-footer">
               {selectedEvent && selectedEvent.calendarWriter === loginId && (
                 <>
-                  <button className="btn btn-primary me-2" onClick={openEditModal}>수정</button>
+                  <button className="btn btn-pink me-2" onClick={openEditModal}>수정</button>
                   <button className="btn btn-danger" onClick={() => deleteCalendar(selectedEvent)}>삭제</button>
                 </>
               )}
@@ -306,7 +304,9 @@ const EmpCalendar = () => {
               <div className="row mt-4">
                 <div className="col">
                   <label>내용</label>
-                  <textarea name="calendarContent" value={input.calendarContent} onChange={changeInput} className="form-control  custom-textarea" />
+                  <textarea name="calendarContent" value={input.calendarContent} 
+                  onChange={changeInput} 
+                  className="form-control  custom-textarea" />
                 </div>
               </div>
 
@@ -325,9 +325,7 @@ const EmpCalendar = () => {
                     className="form-control"
                   />
                 </div>
-              </div>
-
-              <div className="row mt-4">
+                  
                 <div className="col">
                   <label>종료일자</label><br />
                   <Flatpickr
@@ -347,7 +345,7 @@ const EmpCalendar = () => {
 
             </div>
             <div className="modal-footer">
-              <button className="btn btn-success me-2" onClick={saveInput}><IoSaveOutline /> 등록</button>
+              <button className="btn btn-pink me-2" onClick={saveInput}><IoSaveOutline /> 등록</button>
               <button className="btn btn-danger" onClick={closeInputModal}><MdCancel /> 취소</button>
             </div>
           </div>
@@ -372,7 +370,9 @@ const EmpCalendar = () => {
               <div className="row mt-4">
                 <div className="col">
                   <label>내용</label>
-                  <textarea name="calendarContent" value={input.calendarContent} onChange={changeInput} className="form-control  custom-textarea" />
+                  <textarea name="calendarContent" value={input.calendarContent} 
+                  onChange={changeInput} 
+                  className="form-control  custom-textarea" />
                 </div>
               </div>
 
@@ -392,8 +392,7 @@ const EmpCalendar = () => {
                     className="form-control"
                   />
                 </div>
-              </div>
-              <div className="row mt-4">
+
                 <div className="col">
                   <label>종료일자</label>
                   <Flatpickr
@@ -412,7 +411,7 @@ const EmpCalendar = () => {
               </div>
             </div>
             <div className="modal-footer">
-              <button type="button" className="btn btn-primary" onClick={editCalendar}><IoSaveOutline /> 수정</button>
+              <button type="button" className="btn btn-pink" onClick={editCalendar}><IoSaveOutline /> 수정</button>
               <button type="button" className="btn btn-danger" onClick={closeEditModal}><MdCancel /> 취소</button>
             </div>
           </div>

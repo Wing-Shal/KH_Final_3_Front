@@ -9,6 +9,7 @@ import { loginIdState } from "../../utils/RecoilData";
 import { PiGearSixDuotone } from "react-icons/pi";
 import { BsSend } from "react-icons/bs";
 import { GoPaperclip } from "react-icons/go";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 import './Chatroom.css';
 
 const ChatRoom = () => {
@@ -33,6 +34,73 @@ const ChatRoom = () => {
     const [isChatModalOpen, setChatModalOpen] = useState(false);
     const [isEmpListModalOpen, setEmpListModalOpen] = useState(false);
     const [showChatroomInfo, setChatroomInfo] = useState(false);
+
+    //채팅방 이름 검색
+    const [showSearch, setShowSearch] = useState(false);
+    const [searchInput, setSearchInput] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+
+    //채팅방 이름 검색 토글
+    const toggleSearch = () => {
+        setShowSearch(prev => !prev);
+        setSearchInput("");
+        setSearchResults([]);
+    };
+
+    //검색 입력
+    const handleSearchInput = (e) => {
+        const value = e.target.value;
+        setSearchInput(value);
+
+        if (value.trim() !== "") {
+            const results = chatrooms.filter(chatroom =>
+                chatroom.chatroomName.toLowerCase().includes(value.toLowerCase())
+            );
+            setSearchResults(results);
+        }
+        else {
+            setSearchResults([]);
+        }
+    };
+
+    //검색결과 하이라이팅
+    const highlightText = (text, highlight) => {
+        const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+        return parts.map((part, index) =>
+            part.toLowerCase() === highlight.toLowerCase() ? (
+                <span key={index} className="highlight">{part}</span>
+            ) : (
+                part
+            )
+        );
+    };
+
+    //사원 검색
+    const [showEmpSearch, setShowEmpSearch] = useState(false);
+    const [empSearchInput, setEmpSearchInput] = useState("");
+    const [empSearchResults, setEmpSearchResults] = useState([]);
+
+    // 사원 검색 토글
+    const toggleEmpSearch = () => {
+        setShowEmpSearch(prev => !prev);
+        setEmpSearchInput("");
+        setEmpSearchResults([]);
+    };
+
+    // 검색 입력 핸들러
+    const handleEmpSearchInput = (e) => {
+        const value = e.target.value;
+        setEmpSearchInput(value);
+
+        if (value.trim() !== "") {
+            const results = emps.filter(emp =>
+                emp.empName.toLowerCase().includes(value.toLowerCase())
+            );
+            setEmpSearchResults(results);
+        } else {
+            setEmpSearchResults([]);
+        }
+    };
 
 
 
@@ -70,21 +138,21 @@ const ChatRoom = () => {
     }, [messages]);
 
     //메세지 읽었는지
-    const sendReadMessageInfo = useCallback((messageNo) => {
-        const message = messages.find(msg => msg.messageNo === messageNo);
-        if (!message) return;  // 메시지를 찾지 못한 경우 함수를 종료
+    // const sendReadMessageInfo = useCallback((messageNo) => {
+    //     const message = messages.find(msg => msg.messageNo === messageNo);
+    //     if (!message) return;  // 메시지를 찾지 못한 경우 함수를 종료
 
-        const readMessageRequest = {
-            readMessageNo: messageNo,
-            chatroomNo: chatroomNo,
-            token: axios.defaults.headers.common['Authorization'],
-            messageSender: message.messageSender,
-        };
+    //     const readMessageRequest = {
+    //         readMessageNo: messageNo,
+    //         chatroomNo: chatroomNo,
+    //         token: axios.defaults.headers.common['Authorization'],
+    //         messageSender: message.messageSender,
+    //     };
 
-        if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
-            socketRef.current.send(JSON.stringify(readMessageRequest));
-        }
-    }, [chatroomNo, messages]);
+    //     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+    //         socketRef.current.send(JSON.stringify(readMessageRequest));
+    //     }
+    // }, [chatroomNo, messages]);
 
 
 
@@ -114,8 +182,6 @@ const ChatRoom = () => {
         }
 
     }, []);
-
-
 
 
 
@@ -274,9 +340,9 @@ const ChatRoom = () => {
             setMessages(prevMessages => [...resp.data.list, ...prevMessages]);
             setLast(resp.data.last);
 
-            resp.data.list.forEach(message => {
-                sendReadMessageInfo(message.messageNo);
-            });
+            // resp.data.list.forEach(message => {
+            //     sendReadMessageInfo(message.messageNo);
+            // });
 
             //최초에 불러온 경우는 스크롤을 아래로 이동
             //console.log(resp.data.list.length, messages.length);
@@ -488,18 +554,33 @@ const ChatRoom = () => {
                     <table className="table">
                         <thead className="text-center">
                             <tr>
-                                <th>방번호</th>
-                                <th>방이름</th>
-                                {/* <th>안읽메</th> */}
+                                <th>
+                                    내 채팅방
+                                    <span className="magnifyingGlass ms-2 clickable" onClick={toggleSearch}>
+                                        <HiMagnifyingGlass />
+                                    </span>
+                                </th>
                             </tr>
                         </thead>
+                        <div className={`chatroom-search-wrapper ${showSearch ? 'show' : ''}`}>
+                            {showSearch && (
+                                <input
+                                    type="text"
+                                    className="form-control mt-2"
+                                    placeholder="채팅방 이름 검색"
+                                    value={searchInput}
+                                    onChange={handleSearchInput}
+                                />
+                            )}
+                        </div>
                         <tbody>
-                            {chatrooms.map(chatroom => (
+                            {(searchResults.length > 0 ? searchResults : chatrooms).map(chatroom => (
                                 <React.Fragment key={chatroom.chatroomNo}>
                                     <tr onClick={() => openChatModal(chatroom.chatroomNo)}>
-                                        <td>{chatroom.chatroomNo}</td>
                                         <td>
-                                            {chatroom.chatroomName} <br />
+                                            <span className="chatroom-name">
+                                                {searchInput ? highlightText(chatroom.chatroomName, searchInput) : chatroom.chatroomName} <br />
+                                            </span>
                                             <span className="last-message mt-2">
                                                 {chatroom.recentMessage || ""}
                                             </span>
@@ -507,36 +588,46 @@ const ChatRoom = () => {
                                                 {chatroom.recentMessageTime || ""}
                                             </span>
                                         </td>
-                                        {/* <td>
-                                            {chatroom.unreadMessagesCount > 0 ?
-                                                <span className="badge bg-danger">
-                                                    {chatroom.unreadMessagesCount}
-                                                </span>
-                                                : <span className="badge bg-secondary">0</span>
-                                            }
-                                        </td> */}
                                     </tr>
                                 </React.Fragment>
                             ))}
                         </tbody>
                     </table>
                 </div>
-                <div className="col-md-6">
+
+                <div className="col-md-6 table-emp">
                     <table className="table">
                         <thead className="text-center">
                             <tr>
-                                <th>우리회사 사원 ♥</th>
+                                <th>
+                                    우리회사 사원 ♥
+                                    <span className="magnifyingGlass ms-2 clickable" onClick={toggleEmpSearch}>
+                                        <HiMagnifyingGlass />
+                                    </span>
+                                </th>
                             </tr>
                         </thead>
+                        <div className={`emp-search-wrapper ${showEmpSearch ? 'show' : ''}`}>
+                            {showEmpSearch && (
+                                <input
+                                    type="text"
+                                    className="form-control mt-2"
+                                    placeholder="사원 이름 검색"
+                                    value={empSearchInput}
+                                    onChange={handleEmpSearchInput}
+                                />
+                            )}
+                        </div>
                         <tbody className="text-center">
-                            {emps.map(emp => (
+                            {(empSearchResults.length > 0 ? empSearchResults : emps).map(emp => (
                                 <tr key={emp.empNo} onClick={() => openEmpModal(emp.empNo)}>
-                                    <td>{emp.empName} ({emp.empGrade})</td>
+                                    <td>{empSearchInput ? highlightText(emp.empName, empSearchInput) : emp.empName} ({emp.empGrade})</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
+
             </div>
 
 
@@ -578,7 +669,7 @@ const ChatRoom = () => {
                                                 </div>
                                             )}
                                             <div className="message-content">
-                                            <div dangerouslySetInnerHTML={{ __html: message.messageContent.replace(/\n/g, '<br />') }} />
+                                                <div dangerouslySetInnerHTML={{ __html: message.messageContent.replace(/\n/g, '<br />') }} />
                                             </div>
                                             <div className="message-time">{message.messageTimeMinute}</div>
                                             {/* <div>{message.readCountForChatroom > 0 ? message.readCountForChatroom : ''}</div> */}

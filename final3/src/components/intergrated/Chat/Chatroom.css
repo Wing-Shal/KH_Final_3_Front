@@ -185,6 +185,11 @@ tbody{
     align-items: center;
 }
 
+.magnifyingGlass{
+    color: #d68b98;
+    align-items: center;
+}
+
 .chatroom-name {
     width: 300px;
     white-space: nowrap;
@@ -238,4 +243,20 @@ tbody{
     color: #aaa;
     display: block; 
     text-align: right;
+}
+
+.chatroom-name{
+    font-size: 15px;
+}
+
+.chatroom-search-wrapper.show {
+    display: block;
+}
+
+.highlight {
+    background-color: #fcd6dc;
+}
+
+.table-emp{
+    max-width: 300px;
 }
