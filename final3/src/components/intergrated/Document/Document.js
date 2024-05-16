@@ -11,6 +11,7 @@ import axios from "../../utils/CustomAxios";
 import { Modal } from "bootstrap";
 import { Link, useParams } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
+import { FaCalendarAlt } from "react-icons/fa";
 
 
 
@@ -25,6 +26,8 @@ const Document = () => {
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [documents, setDocuments] = useState([]);
     const [project, setProjects] = useState([]);
+    //파일첨부
+    const [file, setFile] = useState(null);
     // 검색창
     const [searchKeyword, setSearchKeyword] = useState("");
     const [searchResults, setSearchResults] = useState([]);
@@ -34,6 +37,8 @@ const Document = () => {
 
     const [projectName, setProjectName] = useState(""); // projectName 상태 추가
 
+    const [emps, setEmps] = useState([]);
+
     const [input, setInput] = useState({
         documentTitle: "",
         documentContent: "",
@@ -41,7 +46,15 @@ const Document = () => {
         documentLimitTime: "",
         projectNo: projectNo,
         documentApprover: "",
+        documentFile: null,
+        empNo:"",
     });
+
+    const [selectedApprover, setSelectedApprover] = useState("");
+
+    //결재자 목록
+
+    
 
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
 
@@ -87,6 +100,7 @@ const Document = () => {
     useEffect(() => {
         loadData();
     }, []);
+    
 
     useEffect(() => {
         const fetchProjectInfo = async () => {
@@ -98,11 +112,22 @@ const Document = () => {
 
     const loadData = useCallback(async () => {
         let resp;
-
         resp = await axios.get("/document/" + projectNo);
         console.log(resp)
         setDocuments(resp.data);
+
+        const empNo = loginId;
+        const empList = await axios.get("/document/companyEmployees/" + empNo)
+        setEmps(empList.data);
+
     }, [projectNo, loginId]);
+
+    // const loadEmpData = useCallback(async () => {
+    
+    //     const empNo = loginId;
+    //     const empList = await axios.get("/document/companyEmployees/" + empNo)
+    //     setEmps(empList.data);
+    // }, [projectNo, loginId,empNo]);
 
     //삭제
     const deleteDocument = useCallback(async (target) => {
@@ -122,13 +147,18 @@ const Document = () => {
         });
     }, [input]);
 
-    //등록
+   
+
+    //기존 등록
     const saveInput = useCallback(async () => {
         const resp = await axios.post("/document/", input);
         loadData();
+        //loadEmpData();
         clearInput();
         closeModal();
     }, [input]);
+
+
 
     //등록 취소
     const cancelInput = useCallback(() => {
@@ -257,10 +287,11 @@ const Document = () => {
         setInput({
             ...input,
             empNo: loginId,
+            documentApprover: selectedApprover
             // projectName //모달 열릴때 플젝이름보이기
         });
         modal.show();
-    }, [bsModal, loginId]);
+    }, [bsModal, loginId, selectedApprover]);
     // }, [bsModal, loginId, projectName]);
 
     const closeModal = useCallback(() => {
@@ -268,12 +299,32 @@ const Document = () => {
         modal.hide();
     }, [bsModal]);
 
+    //파일첨부
+
+
+    // 이미지 파일을 업로드할 때의 핸들러
+    const handleSave = (event) => {
+        const file = event.target.files[0];
+        setInput({ ...input, documentFile: file }); // 입력 상태 업데이트
+    };
+
+    // 이미지를 표시할 때의 핸들러
+    const displayImage = (document) => {
+        if (document.documentFile) {
+            return (
+                <img
+                    src={URL.createObjectURL(document.documentFile)} // 이미지 URL 생성
+                    alt="첨부 이미지"
+                    style={{ maxWidth: "100%", maxHeight: "150px" }} // 이미지 크기 조절 가능
+                />
+            );
+        } else {
+            return null;
+        }
+    };
 
 
 
-    {/* 검색창 */ }
-
-    //view
     return (
         <>
             {/* 제목 */}
@@ -321,13 +372,19 @@ const Document = () => {
                                     </div>
                                     {/* 시작일, 마감일 */}
                                     <div className="d-flex justify-content-between">
-                                        <div className="rounded border p-2 shadow-sm bg-light" style={{ width: "250px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)' }}>프로젝트 이름: {document.projectName}</div>
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">시작일: {document.edit ? <input type="date" name="documentWriteTime" value={document.documentWriteTime} onChange={(e) => changeDocument(e, document)} /> : document.documentWriteTime}</div>
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
+                                        <div className="d-flex align-items-center">
+                                            <FaCalendarAlt style={{ fontSize: '20px', marginRight: '5px' }} />
+                                            <div className="rounded border p-2 mb-2 shadow-sm pink-border" >시작일: {document.edit ? <input type="date" name="documentWriteTime" value={document.documentWriteTime} onChange={(e) => changeDocument(e, document)} /> : document.documentWriteTime}</div>
+                                        </div>
+                                        <div className="d-flex align-items-center">
+                                            <FaCalendarAlt style={{ fontSize: '20px', marginRight: '5px' }} />
+                                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
+                                        </div>
                                     </div>
+
                                 </div>
                                 <div className="card-title" >
-                                    <div className="card-text" >
+                                    <div className="card-text" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }} >
                                         {/* 제목 */}
                                         {document.edit ? (
                                             <input
@@ -357,7 +414,7 @@ const Document = () => {
                                         )}
                                     </div>
                                 </div>
-                                <div className="card-text">
+                                <div className="card-text" style={{ border: '3px solid pink', boxShadow: '0 px 6px rgba(0, 0, 0.1, 0.2)' }}>
                                     {/* 내용 */}
                                     {document.edit ? (
                                         <textarea
@@ -386,13 +443,16 @@ const Document = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div className="card-title">
-                                    <div className="card-text d-flex justify-content-between">
+                                {/* <div className="card-body"style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
+                                {displayImage(document)}
+                                </div> */}
+                                <div className="card-title" >
+                                    <div className="card-text d-flex justify-content-between" >
                                         {/* 참조자, 결재자, 작성자 */}
 
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light ">
                                             {/* 참조자 */}
-                                            참조자: {document.documentApprover ? (
+                                            {/* 참조자: {document.documentApprover ? (
                                                 document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
                                                     <span>
                                                         {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
@@ -408,7 +468,7 @@ const Document = () => {
                                                 )
                                             ) : null}
                                         </div>
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light"> */}
                                             {/* 결재자 */}
 
                                             결재자: {document.documentApprover ? (
@@ -535,7 +595,7 @@ const Document = () => {
                                 </div>
                             </div>
 
-                            <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
+                            {/* <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
                                 <div className="col">
                                     <label>참조자</label>
                                     <div className="input-group">
@@ -552,30 +612,39 @@ const Document = () => {
 
                                     </div>
                                 </div>
-                            </div>
+                            </div> */}
                             <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
 
+                            <div className="row">
                                 <div className="col">
-                                    <label>결재자</label>
-                                    <div className="input-group">
-                                        <input
-                                            type="search"
-                                            name="documentApprover"
-                                            value={input.documentApprover}
-                                            onChange={e => changeInput(e)}
-                                            className="form-control"
-                                        /><button className="btn btn-outline-secondary" type="button" onClick={handleSearchClick}
-                                            style={{ backgroundColor: 'rgb(255,192,203,0.5)' }}>
-                                            <FaSearch /></button>
-                                    </div>
+                                    {/* <label>결재자</label><RiUserSearchFill /> */}
+
                                 </div>
+                            </div>
+
+                            <div className="row mt-4">
+                                <div className="col">
+                                <div className="row mt-4">
+    <div className="col">
+        <label htmlFor="approver">결재자 선택:</label>
+        <select id="approver" className="form-select" value={input.documentApprover} onChange={(e) => setInput({ ...input, documentApprover: e.target.value })}>
+    <option value="">결재자를 선택하세요</option>
+    {emps.map((emp) => (
+        <option key={emp.empNo} value={emp.empName}>{emp.empName}</option>
+    ))}
+</select>
+
+    </div>
+</div>
+                                </div>
+                            </div>
                             </div>
                             <div className="row">
                                 <div className="col">
                                     <label>첨부파일</label>
                                     <input type="file" name="attachment"
                                         value={input.documentFile}
-                                        // onChange={handleFileChange}
+                                        onClick={handleSave}
                                         className="form-control" />
 
                                 </div>
@@ -600,3 +669,4 @@ const Document = () => {
 };
 
 export default Document;
+
