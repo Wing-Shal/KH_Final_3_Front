@@ -56,8 +56,8 @@ const Project = () => {
     //현재 쓰고있는 코드
     const loadData = useCallback(async () => {
         const empNo = loginId;
-        const empList = await axios.get("/project/companyEmployees/" + empNo)
-        setEmps(empList.data);
+        // const empList = await axios.get("/project/companyEmployees/" + empNo)
+        // setEmps(empList.data);
        
         const resp = await axios.get("/project/" + empNo);
         setProjects(resp.data);
@@ -225,8 +225,6 @@ const Project = () => {
                                 <div className="card-text">작성자: {project.projectWriter}</div>
                                 <div className="card-date-picker">시작일: {project.edit ? <input type="date" name="projectStartTime" value={project.projectStartTime} onChange={(e) => changeProject(e, project)} /> : project.projectStartTime}</div>
                                 <div className="card-date-picker">마감일: {project.edit ? <input type="date" name="projectLimitTime" value={project.projectLimitTime} onChange={(e) => changeProject(e, project)} /> : project.projectLimitTime}</div>
-                                <div className="card-text">참조자: {project.referencePerson}</div>
-                                <div className="card-text">결재자: {project.approver}</div>
                                 <div className="text-end">
                                     {project.edit ? (
                                         <>
@@ -276,20 +274,7 @@ const Project = () => {
                                     <input type="date" name="projectLimitTime" value={input.projectLimitTime} onChange={changeInput} className="form-control" />
                                 </div>
                             </div>
-                            <div className="row">
-                                <div className="col">
-                                    <label>참조인</label><RiUserSearchFill />
-
-                                </div>
-                            </div>
-
-                            <div className="row">
-                                <div className="col">
-                                    <label>결재자</label><RiUserSearchFill />
-
-                                </div>
-                            </div>
-
+                         
                             <div className="row mt-4">
                                 <div className="col">
                                     <table className="table">
