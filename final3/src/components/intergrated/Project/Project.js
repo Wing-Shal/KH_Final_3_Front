@@ -233,8 +233,8 @@ const Project = () => {
                                         </>
                                     ) : (
                                         <>
-                                            <FaEdit className="text-warning me-2" onClick={() => editProject(project)} />
-                                            <FaSquareXmark className="text-danger" onClick={() => deleteProject(project)} />
+                                            {/* <FaEdit className="text-warning me-2" onClick={() => editProject(project)} />
+                                            <FaSquareXmark className="text-danger" onClick={() => deleteProject(project)} /> */}
                                         </>
                                     )}
                                 </div>
