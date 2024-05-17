@@ -138,7 +138,7 @@
     /* 확장됐을 때 보임 */
 }
 
-tbody{
+.chat-tbody {
     cursor: pointer;
 }
 
@@ -259,4 +259,15 @@ tbody{
 
 .table-emp{
     max-width: 300px;
+}
+
+.invite-search-wrapper {
+    display: none;
+    margin-bottom: 10px;
+    margin-left: 15px;
+    margin-right: 15px;
+}
+
+.invite-search-wrapper.show {
+    display: block;
 }

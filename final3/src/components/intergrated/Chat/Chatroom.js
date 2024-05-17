@@ -8,8 +8,8 @@ import { useRecoilState } from 'recoil';
 import { loginIdState } from "../../utils/RecoilData";
 import { PiGearSixDuotone } from "react-icons/pi";
 import { BsSend } from "react-icons/bs";
-import { GoPaperclip } from "react-icons/go";
 import { HiMagnifyingGlass } from "react-icons/hi2";
+import { SlEmotsmile } from "react-icons/sl";
 import './Chatroom.css';
 
 const ChatRoom = () => {
@@ -99,6 +99,33 @@ const ChatRoom = () => {
             setEmpSearchResults(results);
         } else {
             setEmpSearchResults([]);
+        }
+    };
+
+    //사원 초대 검색
+    const [inviteSearchInput, setInviteSearchInput] = useState("");
+    const [inviteSearchResults, setInviteSearchResults] = useState([]);
+    const [showInviteSearch, setShowInviteSearch] = useState(false);
+
+    //사원 초대 검색 토글
+    const toggleInviteSearch = () => {
+        setShowInviteSearch(prev => !prev);
+        setInviteSearchInput("");
+        setInviteSearchResults([]);
+    };
+
+    //초대 검색 입력 핸들러
+    const handleInviteSearchInput = (e) => {
+        const value = e.target.value;
+        setInviteSearchInput(value);
+
+        if (value.trim() !== "") {
+            const results = emps.filter(emp =>
+                emp.empName.toLowerCase().includes(value.toLowerCase())
+            );
+            setInviteSearchResults(results);
+        } else {
+            setInviteSearchResults([]);
         }
     };
 
@@ -230,24 +257,22 @@ const ChatRoom = () => {
         inviteEmp();
     }, [])
 
-    
 
-    //사원초대
     const inviteEmp = useCallback(async (empNo) => {
         if (!chatroomNo) return;
         const resp = await axios.post(`/chat/inviteEmp/${chatroomNo}/${empNo}`);
         // console.log(resp.data);
         if (resp.data) {
             const newChatroomNo = resp.data.chatroomNo;
-            
-            closeChatModal(); 
-            closeEmpListModal(); 
+
+            closeChatModal();
+            closeEmpListModal();
             loadChatroomData();
-            
+
             setTimeout(() => {
                 setChatroomNo(newChatroomNo);
                 openChatModal(newChatroomNo);
-            }, 300); 
+            }, 300);
         }
     }, [chatroomNo]);
 
@@ -435,6 +460,9 @@ const ChatRoom = () => {
         setMessages([]);
         setShowParticipants(false);
         setChatroomInfo(false);
+        setMessageInput("");
+        closeEmpListModal();
+        setShowInviteSearch(false);
     }, []);
 
     const modalScrollListener = useCallback(throttle(() => {
@@ -479,7 +507,6 @@ const ChatRoom = () => {
             const handleEscKeyPress = (event) => {
                 try {
                     if (event.key === 'Escape') {
-                        closeEmpListModal();
                         closeChatModal();
                         closeChatroomNameChangeModal();
                         closeOutChatroomModal();
@@ -571,7 +598,7 @@ const ChatRoom = () => {
                                 />
                             )}
                         </div>
-                        <tbody>
+                        <tbody className="chat-tbody">
                             {(searchResults.length > 0 ? searchResults : chatrooms).map(chatroom => (
                                 <React.Fragment key={chatroom.chatroomNo}>
                                     <tr onClick={() => openChatModal(chatroom.chatroomNo)}>
@@ -687,7 +714,7 @@ const ChatRoom = () => {
                                     onKeyDown={handleKeyDown}
                                 />
                                 <button className="btn btn-pink">
-                                    <GoPaperclip />
+                                    <SlEmotsmile />
                                 </button>
                                 <button className="btn btn-pink" onClick={sendMessage}>
                                     <BsSend />
@@ -708,7 +735,7 @@ const ChatRoom = () => {
                         </div>
                         <div className="modal-body">
                             <table className="table text-center">
-                                <tbody>
+                                <tbody className="chat-tbody">
                                     {empInfos.map(empInfo => (
                                         <React.Fragment key={empInfo.empNo}>
                                             <tr>
@@ -758,15 +785,29 @@ const ChatRoom = () => {
                     <div className="modal-content">
                         <div className="modal-header">
                             <h5 className="modal-title">☆ㅋㅋ사원 초대ㅋㅋ☆</h5>
+                            <span className="magnifyingGlass ms-2 clickable" onClick={toggleInviteSearch}>
+                                <HiMagnifyingGlass />
+                            </span>
                             <button type="button" className="btn-close" onClick={e => closeEmpListModal()}></button>
+                        </div>
+                        <div className={`invite-search-wrapper ${showInviteSearch ? 'show' : ''}`}>
+                            {showInviteSearch && (
+                                <input
+                                    type="text"
+                                    className="form-control mt-2"
+                                    placeholder="사원 이름 검색"
+                                    value={inviteSearchInput}
+                                    onChange={handleInviteSearchInput}
+                                />
+                            )}
                         </div>
                         <div className="modal-body">
                             <table className="table">
                                 <tbody>
-                                    {emps.filter(emp => !empInChatroom.some(e => e.empNo === emp.empNo)).map(emp => (
+                                    {(inviteSearchResults.length > 0 ? inviteSearchResults : emps).filter(emp => !empInChatroom.some(e => e.empNo === emp.empNo)).map(emp => (
                                         <tr key={emp.empNo}>
                                             <td onClick={() => inviteEmp(emp.empNo)}>
-                                                {emp.empName} ({emp.empGrade})
+                                                {inviteSearchInput ? highlightText(emp.empName, inviteSearchInput) : emp.empName} ({emp.empGrade})
                                             </td>
                                         </tr>
                                     ))}
@@ -776,6 +817,7 @@ const ChatRoom = () => {
                     </div>
                 </div>
             </div>
+
 
             <div ref={bsChatroomNameChangeModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
