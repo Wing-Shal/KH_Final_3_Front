@@ -6,6 +6,8 @@ import { useRecoilState } from "recoil";
 import { isPaidState, loginIdState, loginLevelState } from "../../utils/RecoilData";
 import axios from "../../utils/CustomAxios";
 import { useNavigate } from "react-router";
+import '../Login.css';
+import Logo from '../../../assets/PlanetLogo.png';
 
 const AdminLogin = () => {
 
@@ -44,40 +46,49 @@ const AdminLogin = () => {
 
             window.localStorage.setItem("refreshToken", resp.data.refreshToken);
         } catch (error) {
-            if (error.response && error.response.status === 401) {
+            if (error.response && ( error.response.status === 401 || error.response.status === 404)) {
                 window.alert("아이디 혹은 비밀번호가 일치하지 않습니다");
             } else {
-                console.log("로그인 중 오류가 발생했습니다:", error.message);
+                window.alert("로그인 중 오류가 발생했습니다:", error.message);
             }
         }
 
 
 
-        navigator("/admin/home");
+        navigator("/admin/company");
     }, [input]);
 
     return (
         <>
-            <Jumbotron title="로그인" />
-
-            <div className="row mt-4">
-                <div className="col">
-                    <label>아이디</label>
-                    <input type="text" name="id" className="form-control"
-                        value={input.id} onChange={e => changeInput(e)} />
-                </div>
-            </div>
-            <div className="row mt-4">
-                <div className="col">
-                    <label>비밀번호</label>
-                    <input type="password" name="pw" className="form-control"
-                        value={input.pw} onChange={e => changeInput(e)} />
-                </div>
-            </div>
-            <div className="row mt-4">
-                <div className="col">
-                    <button className="btn btn-success w-100"
-                        onClick={e => adminLogin()}>로그인</button>
+            <div className="container login-container">
+                <div className="row">
+                    <div className="col-6 offset-3">
+                        <div className="login-wrapper w-100">
+                            <div className="img-wrapper text-center mb-4">
+                                <img className="logo-image" src={Logo} alt="Logo" />
+                            </div>
+                            <div className="row mt-4">
+                                <div className="col">
+                                    <label>운영자 아이디</label>
+                                    <input type="text" name="id" className="form-control"
+                                        value={input.id} onChange={e => changeInput(e)} />
+                                </div>
+                            </div>
+                            <div className="row mt-4">
+                                <div className="col">
+                                    <label>비밀번호</label>
+                                    <input type="password" name="pw" className="form-control"
+                                        value={input.pw} onChange={e => changeInput(e)} />
+                                </div>
+                            </div>
+                            <div className="row mt-4">
+                                <div className="col">
+                                    <button className="btn btn-success w-100"
+                                        onClick={e => adminLogin()}>로그인</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </>

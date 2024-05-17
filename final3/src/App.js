@@ -25,7 +25,6 @@ import AdminUpload from './components/intergrated/Admin/AdminUpload';
 
 //lazy import
 const Header = lazy(() => import("./components/Header"));
-const Home = lazy(() => import("./components/Home"));
 const BoardBlind = lazy(() => import("./components/intergrated/BoardBlind/BoardBlind"));
 const Login = lazy(() => import("./components/intergrated/Login"));
 const ChatRoom = lazy(() => import("./components/intergrated/Chat/Chatroom"));
@@ -35,17 +34,24 @@ const AdminHome = lazy(() => import("./components/intergrated/Admin/AdminHome"))
 const AdminCompany = lazy(() => import("./components/intergrated/Admin/AdminCompany"));
 const AdminLogin = lazy(() => import("./components/intergrated/Admin/AdminLogin"));
 const NEL = lazy(() => import("./components/NEL"));
-const PurchaseTest = lazy(() => import("./components/intergrated/kakaopay/PurchaseTest"));
+const Purchase = lazy(() => import("./components/intergrated/kakaopay/Purchase"));
 const PurchaseSuccess = lazy(() => import("./components/intergrated/kakaopay/PurchaseSuccess"));
-const PurchaseComplete = lazy(() => import("./components/intergrated/kakaopay/PurchaseComplete"));
 const SubScriptionInactive = lazy(() => import("./components/intergrated/kakaopay/SubsciptionInacitve"));
 const EmpMypage = lazy(() => import("./components/intergrated/Emp/EmpMypage"));
-const CompanyHome = lazy(() => import('./components/intergrated/Company/Home'));
 const CompanyEmpList = lazy(() => import('./components/intergrated/Company/EmpList'));
 const CompanyAddEmp = lazy(() => import('./components/intergrated/Company/AddEmp'));
 const CompanyMypage = lazy(() => import("./components/intergrated/Company/Mypage"));
 const CompanyManagement = lazy(() => import("./components/intergrated/Company/Management"));
+const CompanyInValid = lazy(() => import('./components/intergrated/Company/InValid'));
+const CompanyInfo = lazy(() => import('./components/intergrated/Emp/CompanyInfo'));
 const EmpCalendar = lazy(() => import('./components/intergrated/Calendar/EmpCalendar'));
+const BoardNotice = lazy(() => import('./components/intergrated/BoardNotice/BoardNotice'));
+const BoardNoticeAdd = lazy(() => import('./components/intergrated/Company/BoardNoticeAdd'));
+const BoardNoticeDetail = lazy(() => import('./components/intergrated/BoardNotice/BoardNoticeDetail'));
+const BoardNoticeEdit = lazy(() => import('./components/intergrated/Company/BoardNoticeEdit'));
+const BoardNoticeDetailForCompany = lazy(() => import('./components/intergrated/Company/BoardNoticeDetailForCompany'));
+const BoardNoticeForCompany = lazy(() => import('./components/intergrated/Company/BoardNoticeForCompany'));
+
 
 const App = () => {
   //recoil state
@@ -54,6 +60,7 @@ const App = () => {
   const isLoginPath = location.pathname.includes("login");
   const isCompanyPath = location.pathname.includes("company");
   const isNELpath = location.pathname.includes("NEL");
+  const isInvliadPath = location.pathname.includes("invalid");
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
   const [isPaid, setIsPaid] = useRecoilState(isPaidState);
@@ -398,7 +405,7 @@ const App = () => {
       } : {}}>
         <div className="sidebar">
           <SidebarSelector isLoginPath={isLoginPath} isAdminPath={isAdminPath}
-            isCompanyPath={isCompanyPath} isNELpath={isNELpath} />
+            isCompanyPath={isCompanyPath} isNELpath={isNELpath} isInvliadPath={isInvliadPath} />
         </div>
         <div className='container'>
           <div className='row mt-4'>
@@ -406,25 +413,30 @@ const App = () => {
               <Suspense fallback={<LoadingScreen />}>
                 <Routes>
                   <Route element={<LoginRoute refreshLogin={refreshLogin} />}>
-                    <Route path="/" element={<Home />} />
                     <Route path="/NEL" element={<NEL />} />
                     <Route path="/chatroom" element={<ChatRoom />} />
                     <Route path="/calendar" element={<EmpCalendar />} />
-                    <Route path="/boardBlind" element={<BoardBlind />} />
+                    <Route path="/board/blind" element={<BoardBlind />} />
                     <Route path="/project" element={<Project />} />
                     <Route path="/document/project/:projectNo" element={<Document />} />
                     <Route path='/login' element={<Login />} />
-                    <Route path='/empMypage' element={<EmpMypage />} />
-                    <Route path="/kakaopay/purchaseTest" element={<PurchaseTest />} />
+                    <Route path='/emp/mypage' element={<EmpMypage />} />
+                    <Route path='/emp/companyInfo' element={<CompanyInfo />} />
+                    <Route path="/board/notice" element={<BoardNotice />} />
+                    <Route path="/board/notice/:noticeNo" element={<BoardNoticeDetail />} />
+                    <Route path="/kakaopay/purchase" element={<Purchase/>} />
                     <Route path="/kakaopay/purchaseSuccess" element={<PurchaseSuccess />} />
                     <Route path="/kakaopay/subscriptionInactive" element={<SubScriptionInactive />} />
-                    <Route path="/kakopay/purchaseComplete" element={<PurchaseComplete />} />
                     <Route path="/company" element={<CompanyRoute refreshLogin={refreshLogin} />} >
-                      <Route path="home" element={<CompanyHome />} />
                       <Route path='empList' element={<CompanyEmpList />} />
                       <Route path='addEmp' element={<CompanyAddEmp />} />
                       <Route path="mypage" element={<CompanyMypage />} />
                       <Route path="management" element={<CompanyManagement />} />
+                      <Route path='invalid' element={<CompanyInValid />} />
+                      <Route path="notice/add" element={<BoardNoticeAdd />} />
+                      <Route path="notice/:noticeNo" element={<BoardNoticeDetailForCompany />} />
+                      <Route path="notice" element={<BoardNoticeForCompany />} />
+                      <Route path="notice/edit/:noticeNo" element={<BoardNoticeEdit />} />
                     </Route>
                     <Route path="/admin/login" element={<AdminLogin />} />
                     <Route path="/admin" element={<AdminRoute refreshLogin={refreshLogin} />}>

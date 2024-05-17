@@ -1,6 +1,6 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { isLoginState, isPaidState, loginLevelState } from '../utils/RecoilData';
+import { isCheckedState, isLoginState, isPaidState, loginLevelState } from '../utils/RecoilData';
 import { useEffect, useMemo, useState } from 'react';
 
 const LoginRoute = ({ refreshLogin }) => {
@@ -9,19 +9,26 @@ const LoginRoute = ({ refreshLogin }) => {
     const isLoginPath = location.pathname.includes("login");
     const isPurchasePath = location.pathname.includes("purchase");
     const isJoinPath = location.pathname.includes("join");
+    const isInvliadPath = location.pathname.includes("invalid");
 
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [isPaid, setIsPaid] = useRecoilState(isPaidState);
+    const [isChecked, setIsChecked] = useRecoilState(isCheckedState);
     const isLogin = useRecoilValue(isLoginState);
     const [isLoading, setIsLoading] = useState(true);
 
     const checkPaid = useMemo(() => {
-        return loginLevel === '운영자' || isPaid === 'ACTIVE'
+        return loginLevel === '운영자' || isPaid === 'ACTIVE';
     }, [isPaid, loginLevel]);
 
     const isCompany = useMemo(() => {
-        return loginLevel === '회사'
+        return loginLevel === '회사';
     }, [loginLevel]);
+
+    const isValid = useMemo(() => {
+        return !isCompany || isChecked === 'Checked';
+    }, [isChecked, isCompany]);
+
 
     useEffect(() => {
         const load = async () => {
@@ -42,13 +49,21 @@ const LoginRoute = ({ refreshLogin }) => {
             <div>Loading...</div>
         ) : (
             isLogin ? (
-                checkPaid || isPurchasePath ? (
-                    <Outlet />
-                ) : (
-                    isCompany ? (
-                        <Navigate to="/kakaopay/purchaseTest" />
+                !isValid ? (
+                    isInvliadPath ? (
+                        <Outlet />
                     ) : (
-                        <Navigate to="/NEL" />
+                        <Navigate to="company/invalid" />
+                    )
+                ) : (
+                    checkPaid || isPurchasePath ? (
+                        <Outlet />
+                    ) : (
+                        isCompany ? (
+                            <Navigate to="/kakaopay/purchase" />
+                        ) : (
+                            <Navigate to="/NEL" />
+                        )
                     )
                 )
             ) : (
@@ -61,10 +76,9 @@ const LoginRoute = ({ refreshLogin }) => {
                         <Navigate to="/login" />
                     )
                 )
-                
             )
         )
-    );
+    )
 };
 
 

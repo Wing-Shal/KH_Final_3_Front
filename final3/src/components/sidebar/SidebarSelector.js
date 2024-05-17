@@ -2,9 +2,9 @@ import AdminSideBar from './AdminSidebar';
 import CompanySideBar from './CompanySidbar';
 import SideBar from './Sidebar';
 
-const SidebarSelector = ({ isLoginPath, isNELpath,  isAdminPath, isCompanyPath }) => {
+const SidebarSelector = ({ isLoginPath, isNELpath,  isAdminPath, isCompanyPath, isInvliadPath }) => {
     // 로그인 경로
-    if (isLoginPath || isNELpath) {
+    if (isLoginPath || isNELpath || isInvliadPath) {
       return null;
     }
   

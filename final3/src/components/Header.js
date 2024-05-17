@@ -4,7 +4,7 @@
 import './Header.css'
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useRecoilState, useRecoilValue } from "recoil";
-import { isLoginState, isPaidState, loginIdState, loginLevelState } from "./utils/RecoilData";
+import { isCheckedState, isLoginState, isPaidState, loginIdState, loginLevelState } from "./utils/RecoilData";
 import { useCallback } from "react";
 import axios from "./utils/CustomAxios";
 
@@ -15,6 +15,7 @@ function Header() {
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [isPaid, setIsPaid] = useRecoilState(isPaidState);
+    const [isChecked, setIsChecked] = useRecoilState(isCheckedState);
 
     //recoil value
     const isLogin = useRecoilValue(isLoginState);
@@ -24,11 +25,6 @@ function Header() {
 
     //현재 주소
     const location = useLocation();
-    //운영자 주소인지 확인
-    const isAdminPath = location.pathname.includes('/admin');
-    //동적 할당
-    const targetPath = isAdminPath ? '/' : '/admin/home';
-    const linkText = loginLevel === '운영자' && (isAdminPath ? '메인으로' : '운영자 홈으로');
 
     //callback
     const logout = useCallback(() => {
@@ -36,6 +32,7 @@ function Header() {
         setLoginId('');
         setLoginLevel('');
         setIsPaid('');
+        setIsChecked('');
         delete axios.defaults.headers.common['Authorization'];
         window.localStorage.removeItem("refreshToken");
         // navigator(isAdminPath ? ("/admin/login") : ("/login"));
@@ -45,11 +42,8 @@ function Header() {
     return (
         <>
             <div className="row header">
-                <div className="col-2 text-end">
-                    <NavLink className="dropdown-item" to={targetPath}>{linkText}</NavLink>
-                </div>
                 <div className="col-8 text-center">
-                    회사 로고 자리
+                    
                 </div>
                 <div className="col-2 text-center">
                     <div className="row">
@@ -57,21 +51,6 @@ function Header() {
                             {isLogin && (
                                 <>
                                     <NavLink className="dropdown-item" to="#" onClick={e => logout()}>로그아웃</NavLink>
-                                </>
-                            )}
-                        </div>
-                        <div className="col-4">
-                            채팅
-                        </div>
-                        <div className="col-4">
-                            {/* 회사 로그인 */}
-                            {loginLevel === '회사' && (
-                                <></>
-                            )}
-                            {/* 임원 또는 사원 로그인 */}
-                            {loginLevel === '임원' || loginLevel === '사원' && (
-                                <>
-                                    <NavLink className="dropdown-item" to="/empMypage">마이페이지</NavLink>
                                 </>
                             )}
                         </div>
