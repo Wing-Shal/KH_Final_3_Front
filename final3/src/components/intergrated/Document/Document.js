@@ -1,3 +1,4 @@
+
 import { useCallback, useEffect, useRef, useState } from "react";
 import { loginIdState, loginLevelState } from '../../../components/utils/RecoilData';
 import { useRecoilState } from 'recoil';
@@ -12,10 +13,8 @@ import { Modal } from "bootstrap";
 import { Link, useParams } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
-import defaultImage from "../../../assets/user.png"; // 기본 이미지 경로를 추가해주세요ny
 
-
-
+//dd
 const Document = () => {
     const { projectNo } = useParams();
     const [loginId, setLoginId] = useRecoilState(loginIdState);
@@ -28,11 +27,11 @@ const Document = () => {
     // 검색창
     const [searchKeyword, setSearchKeyword] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-
     const [isApprovalMode, setIsApprovalMode] = useState(false); // 결재 모드 여부 상태
     const [projectName, setProjectName] = useState(""); // projectName 상태 추가
     const [emps, setEmps] = useState([]);
-    const[invitations,setInvitations] = useState(false);
+    const [invitations, setInvitations] = useState(false);
+    const [selectedEmps, setSelectedEmps] = useState([]);
 
     const [input, setInput] = useState({
         documentTitle: "",
@@ -41,9 +40,17 @@ const Document = () => {
         documentLimitTime: "",
         projectNo: projectNo,
         documentApprover: "",
-        file: null,
         empNo: "",
     });
+
+    const [empInput, setEmpInput] = useState({
+        projectNo: "",
+        empNo: "",
+        empName: "",
+        deptName: "",
+        gradeName: ""
+    });
+
     //결재자 사원 목록
     const [selectedApprover, setSelectedApprover] = useState("");
 
@@ -82,40 +89,25 @@ const Document = () => {
     }, [documents, searchKeyword]);
 
 
-
     // 검색 키워드에 따라 문서 필터링
     const filteredDocuments = filterDocuments();
-
-
 
     //effect && 파일첨부
     useEffect(() => {
         loadData();
-        // 해당 게시글의 documentNo를 기반으로 이미지를 로컬 스토리지에서 가져와 설정
-        const savedImage = localStorage.getItem(`savedImage_${document.documentNo}`);
-    if (savedImage) {
-        setImagePreview(savedImage);
-    } else {
-        // 만약 저장된 이미지가 없다면 기본 이미지로 설정
-        setImagePreview(defaultImage);
-    }
-    }, [document.documentNo]); // documentNo가 변경될 때만 실행되도록 useEffect의 의존성 배열을 설정
+    }, []); 
 
-    // useEffect(() -> {
-    //     //결제자 목록 불러오기
-    //     //dept, grade  가져오기(project 안에서 관리자등급만 grade, dept, emp, project join)
-
-    // }, []);
 
     const handleImageChange = e => {
         const file = e.target.files[0];
         if (file) {
             setFile(file);
             const reader = new FileReader();
+
             reader.onloadend = () => {
                 setImagePreview(reader.result);
-                // 이미지를 선택한 후 로컬 스토리지에 해당 documentNo를 기반으로 저장
-            localStorage.setItem(`savedImage_${document.documentNo}`, reader.result);
+                // // 이미지를 선택한 후 로컬 스토리지에 해당 documentNo를 기반으로 저장
+                // localStorage.setItem(`savedImage_${document.documentNo}`, reader.result);
             };
             reader.readAsDataURL(file);
         }
@@ -141,14 +133,8 @@ const Document = () => {
         } catch (error) {
             console.error('파일 업로드 오류:', error);
         }
+        setFile(null);
     };
-
-    // 기본 이미지 설정 함수
-    const setDefaultImage = () => {
-        setImagePreview(defaultImage);
-        setFile(null); // 이미지 파일을 선택한 것이 아니므로 파일 상태를 초기화합니다.
-    };
-
 
 
     useEffect(() => {
@@ -160,16 +146,16 @@ const Document = () => {
     }, [projectNo]);
 
     const loadData = useCallback(async () => {
-        let resp;
-        resp = await axios.get("/document/" + projectNo);
-        console.log(resp)
+        const resp = await axios.get("/document/" + projectNo);
         setDocuments(resp.data);
 
-        const empNo = loginId;
-        const empList = await axios.get("/document/companyEmployees/" + empNo)
-        setEmps(empList.data);
+    }, [projectNo]);
 
-    }, [projectNo, loginId]);
+    //프로젝트 참여자 목록 (구현중)
+    const projectEmpLoadData = useCallback(async () => {
+        const response = await axios.post("/project/projectEmp");
+        //state에 추가
+    }, []);
 
 
 
@@ -191,17 +177,31 @@ const Document = () => {
         });
     }, [input]);
 
+    const changeEmpInput = useCallback((e) => {
+        setEmpInput({
+            ...empInput,
+            [e.target.name]: e.target.value
+        });
+
+    }, [empInput]);
+
+
+
 
 
     //기존 등록
     const saveInput = useCallback(async () => {
         const resp = await axios.post("/document/", input);
         loadData();
-        //loadEmpData();
         clearInput();
         closeModal();
     }, [input]);
 
+    // //프로젝트 참여 사원 목록 저장 
+    // const saveEmpProjectInput = useCallback(async () => {
+    //     const resp2 = await axios.post("/project/projectEmp/", empInput);
+    //     projectEmpLoadData();
+    // }, [empInput]);
 
 
     //등록 취소
@@ -225,6 +225,52 @@ const Document = () => {
         });
     }, [input]);
 
+    //사원 초대
+    const [checkedState, setCheckedState] = useState({});
+    const [allChecked, setAllChecked] = useState(false);
+
+ // 프로젝트 초대 버튼 클릭 시 선택된 직원 이름 표시
+ const handleCheckAll = useCallback(() => {
+    const newState = !allChecked;
+    setAllChecked(newState);
+    setCheckedState(emps.reduce((state, emp, index) => ({
+        ...state,
+        [index]: newState
+    }), {}));
+    if (newState) {
+        setSelectedEmps(emps.map(emp =>emp.empName));
+    } else {
+        setSelectedEmps([]);
+    }
+}, [allChecked, emps]);
+
+const handleCheck = useCallback((index) => {
+    setCheckedState(prev => ({
+        ...prev,
+        [index]: !prev[index]
+    }));
+    console.log(setSelectedEmps);
+    if (checkedState[index]) {
+        setSelectedEmps(prev => prev.filter((_, i) => i !== index));
+    } else {
+        setSelectedEmps(prev => [...prev, emps[index].empName]);
+    }
+}, [checkedState, emps]);
+
+//초대할 사원 선택
+const uploadSelected = useCallback(async () => {
+    const selectedEmps = emps.filter((emp, index) => checkedState[index]);
+    if (selectedEmps.length === 0) {
+        return;
+    }
+    const resp = await axios.post("/project/projectEmp", selectedEmps);
+    const newEmps = emps.filter((emp, index) => !checkedState[index]);
+    setEmps(newEmps);
+    setCheckedState({});
+    setAllChecked(false);
+}, [checkedState, emps]);
+
+
     useEffect(() => {
         const fetchProjectInfo = async () => {
             const response = await axios.get(`/project/getProjectName/${projectNo}`); // 서버에서 프로젝트 정보 가져오기
@@ -235,7 +281,17 @@ const Document = () => {
         fetchProjectInfo(); // 프로젝트 정보 가져오는 함수 호출
     }, [projectNo]); // projectNo가 변경될 때마다 useEffect가 실행됨
 
+    //사원목록
+    useEffect(() => {
+        const empList = async () => {
+            const resp = await axios.get("/project/companyEmployees");
+            setEmps(resp.data);
+        };
+        empList();
+    }, [invitations]);
+    useEffect(() => {
 
+    }, [emps]);
     //수정
     const editDocument = useCallback((target) => {
         //복제
@@ -320,7 +376,6 @@ const Document = () => {
     const bsModal = useRef();
     const openModal = useCallback(() => {
         const modal = new Modal(bsModal.current);
-        console.log(modal);
         setInput({
             ...input,
             empNo: loginId,
@@ -342,8 +397,8 @@ const Document = () => {
         <>
             {/* 제목 */}
             <Jumbotron title={`${projectNo} 번 프로젝트`} style={{ backgroundColor: 'rgb(255, 192, 203)' }} />
-            <label>프로젝트 참여자</label> 
-            
+            <label>프로젝트 참여자: {selectedEmps.join(", ")}</label>
+
             <div className="row mt-4 justify-content-center"> {/* justify-content-center를 추가하여 가로 가운데 정렬 */}
                 <div className="col-8 col-md-9 d-flex align-items-center"> {/* col-md-6으로 변경, d-flex와 align-items-center를 추가하여 내용을 세로 중앙 정렬 */}
                     <input
@@ -366,63 +421,63 @@ const Document = () => {
                     </button>
                 </div>
             </div>
-            
-{/* 프로젝트 초대 목록 */}
-<div className="row mt-4">
-    <div className="col-md-3 text-end"> 
-        {invitations ? (
-            <>
-              
-                <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={openModal}>
-                    등록
-                </button>
-                &nbsp; &nbsp;
-                <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(false)}>
-                    취소
-                </button>
-            </>
-        ) : (
-            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(true)}>
-                프로젝트 초대하기
-            </button>
-        )}
-    </div>
-</div>
-{invitations && (
-    <div className="row mt-4">
-        <div className="col-md-3 text-end">
-            {/* 직원 목록을 닫는 버튼 추가 */}
-          
-        </div>
-        <div className="row">
-            {emps.map((emp) => (
-                <div key={emp.empNo} className="form-check">
-                    <input 
-                        className="form-check-input" 
-                        type="checkbox" 
-                        value={emp.empName} 
-                        id={emp.empNo} 
-                        checked={input.documentApprover.includes(emp.empName)}
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setInput({ ...input, documentApprover: [...input.documentApprover, e.target.value] });
-                            } else {
-                                setInput({ ...input, documentApprover: input.documentApprover.filter(name => name !== e.target.value) });
-                            }
-                        }} 
-                    />
-                    <label className="form-check-label" htmlFor={emp.empNo}>
-                        {emp.empName}
-                    </label>
-                </div>
-            ))}
-        </div>
-    </div>
-)}
 
-                  
-                            
-                    
+            {/* 프로젝트 초대 목록 */}
+            <div className="row mt-4">
+                <div className="col-md-3 text-end">
+                    {invitations ? (
+                        <>
+
+                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={uploadSelected}>
+                                등록
+                            </button>
+                            &nbsp; &nbsp;
+                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(false)}>
+                                취소
+                            </button>
+                        </>
+                    ) : (
+                        <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(true)}>
+                            프로젝트 초대하기
+                        </button>
+                    )}
+                </div>
+            </div>
+            {invitations && (
+            <div className="row mt-4">
+                <div className="col-md-3 text-end">
+                    {/* 직원 목록을 닫는 버튼 추가 */}
+                </div>
+                <div className="row">
+                    <div className="col">
+                        <table className="table">
+                            <thead className="text-center">
+                                <tr>
+                                    <th><input type="checkbox" checked={allChecked} onChange={handleCheckAll} /></th>
+                                    <th>이름</th>
+                                    <th>부서</th>
+                                    <th>직급</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {emps.map((emp, index) => (
+                                    <tr key={emp.empNo} className='align-items-center'>
+                                        <td><input type="checkbox" checked={checkedState[index] || false} onChange={() => handleCheck(index)} /></td>
+                                        <td>{emp.empName}</td>
+                                        <td>{emp.deptName}</td>
+                                        <td>{emp.gradeName}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        )}
+
+
+
+
 
             {/* 문서목록... */}
             {filteredDocuments.map(document => (
@@ -510,10 +565,10 @@ const Document = () => {
                                     )}
                                 </div>
                                 <div>
-                                {/* 첨부사진 */}
-                                {imagePreview && (
-                                <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
-                                        )}
+                                    {/* 첨부사진 */}
+                                    {imagePreview && (
+                                        <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
+                                    )}
                                 </div>
                                 <div className="card-title" >
                                     <div className="card-text d-flex justify-content-between" >
@@ -645,7 +700,7 @@ const Document = () => {
                                         <select id="approver" className="form-select" value={input.documentApprover} onChange={(e) => setInput({ ...input, documentApprover: e.target.value })}>
                                             <option value="">결재자를 선택하세요</option>
                                             {emps.map((emp) => (
-                                                <option key={emp.empNo} value={emp.empName}>{emp.empName}</option>
+                                                <option key={emp.empNo} value={emp.empName}>{emp.empNo}  {emp.empName}  {emp.deptName}   {emp.gradeName}</option>
                                             ))}
                                         </select>
 
@@ -657,9 +712,7 @@ const Document = () => {
                                         <input type="file" onChange={handleImageChange} className="form-control form-control-sm"
                                             id="upload" aria-label="upload" style={{ display: 'none' }} />
                                         <br />
-                                        {imagePreview && (
-                                            <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
-                                        )}
+    
                                     </div>
                                     <label htmlFor="upload" className="custom-file-upload" style={{
                                         display: 'inline-block',
@@ -670,14 +723,8 @@ const Document = () => {
                                         cursor: 'pointer',
                                     }}>
                                         파일첨부
-                                    </label>
-        
+                                    </label><button onClick={handleSave}>사진저장</button>
 
-                                    {/* 기본 이미지 버튼
-                                <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button> */}
-
-                                    {/* 이미지가 선택되었을 때만 저장 버튼이 활성화되도록 설정 */}
-                                  
                                 </div>
                             </div>
                         </div>
@@ -700,3 +747,5 @@ const Document = () => {
 }
 
 export default Document;
+
+
