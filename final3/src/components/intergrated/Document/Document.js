@@ -12,9 +12,6 @@ import { Modal } from "bootstrap";
 import { Link, useParams } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
-import defaultImage from "../../../assets/user.png"; // 기본 이미지 경로를 추가해주세요ny
-
-
 
 const Document = () => {
     const { projectNo } = useParams();
@@ -28,11 +25,11 @@ const Document = () => {
     // 검색창
     const [searchKeyword, setSearchKeyword] = useState("");
     const [searchResults, setSearchResults] = useState([]);
-
     const [isApprovalMode, setIsApprovalMode] = useState(false); // 결재 모드 여부 상태
     const [projectName, setProjectName] = useState(""); // projectName 상태 추가
     const [emps, setEmps] = useState([]);
-    const[invitations,setInvitations] = useState(false);
+    const [invitations, setInvitations] = useState(false);
+    const [selectedEmps, setSelectedEmps] = useState([]);
 
     const [input, setInput] = useState({
         documentTitle: "",
@@ -41,33 +38,35 @@ const Document = () => {
         documentLimitTime: "",
         projectNo: projectNo,
         documentApprover: "",
-        file: null,
         empNo: "",
     });
+
+    const [empInput, setEmpInput] = useState({
+        projectNo: "",
+        empNo: "",
+        empName: "",
+        deptName: "",
+        gradeName: ""
+    });
+
     //결재자 사원 목록
     const [selectedApprover, setSelectedApprover] = useState("");
 
-
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
 
-    // //통합 검색  
-    // performSearch 함수 정의
     const performSearch = useCallback(async () => {
         // 검색을 수행하는 로직을 구현합니다. searchKeyword 상태를 사용하여 검색합니다.
         // 검색 결과를 searchResults 상태로 업데이트합니다.
     }, [searchKeyword]);
 
-    // 검색 아이콘 클릭 핸들러 함수 정의
     const handleSearchClick = useCallback(() => {
         performSearch(); // 검색 아이콘이 클릭될 때 performSearch 함수 호출
     }, [performSearch]);
 
-    // 검색 입력 변경 핸들러 함수 정의
     const handleSearchChange = useCallback((e) => {
         setSearchKeyword(e.target.value); // 입력이 변경될 때 searchKeyword 상태를 업데이트합니다.
     }, []);
 
-    // 문서 필터링 함수 정의
     const filterDocuments = useCallback(() => {
         return documents.filter(document =>
             (document.documentNo && document.documentNo.toString().toLowerCase().includes(searchKeyword.toLowerCase())) ||
@@ -81,109 +80,47 @@ const Document = () => {
         );
     }, [documents, searchKeyword]);
 
-
-
-    // 검색 키워드에 따라 문서 필터링
     const filteredDocuments = filterDocuments();
 
-
-
-    //effect && 파일첨부
     useEffect(() => {
         loadData();
-        // 해당 게시글의 documentNo를 기반으로 이미지를 로컬 스토리지에서 가져와 설정
-        const savedImage = localStorage.getItem(`savedImage_${document.documentNo}`);
-    if (savedImage) {
-        setImagePreview(savedImage);
-    } else {
-        // 만약 저장된 이미지가 없다면 기본 이미지로 설정
-        setImagePreview(defaultImage);
-    }
-    }, [document.documentNo]); // documentNo가 변경될 때만 실행되도록 useEffect의 의존성 배열을 설정
+    }, []);
 
-    // useEffect(() -> {
-    //     //결제자 목록 불러오기
-    //     //dept, grade  가져오기(project 안에서 관리자등급만 grade, dept, emp, project join)
+    const fileInputRef = useRef();
 
-    // }, []);
-
-    const handleImageChange = e => {
-        const file = e.target.files[0];
-        if (file) {
-            setFile(file);
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setImagePreview(reader.result);
-                // 이미지를 선택한 후 로컬 스토리지에 해당 documentNo를 기반으로 저장
-            localStorage.setItem(`savedImage_${document.documentNo}`, reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
+    const handleUploadClick = () => {
+        fileInputRef.current.click();
     };
 
-    const handleSave = async () => {
-        try {
-            if (file) {
-                const formData = new FormData();
-                formData.append('attach', file);
-
-                const response = await axios.post("/document/upload/" + document.documentNo, formData, {
-                    headers: {
-                        'Content-Type': 'multipart/form-data'
-                    }
-                }, [loginIdState]);
-                console.log('파일 업로드 결과:', response.data);
-
-                console.log('DB에 저장되었습니다.');
-            } else {
-                console.log('파일이 선택되지 않았습니다.');
-            }
-        } catch (error) {
-            console.error('파일 업로드 오류:', error);
-        }
+    const handleFileChange = (e) => {
+        setFile(e.target.files[0]);
     };
-
-    // 기본 이미지 설정 함수
-    const setDefaultImage = () => {
-        setImagePreview(defaultImage);
-        setFile(null); // 이미지 파일을 선택한 것이 아니므로 파일 상태를 초기화합니다.
-    };
-
-
 
     useEffect(() => {
         const fetchProjectInfo = async () => {
-            const response = await axios.get(`/project/${projectNo}`); // 서버에서 프로젝트 정보 가져오기
+            const response = await axios.get(`/project/${projectNo}`);
             setProjectName(response.data.projectName);
-        };// 가져온 프로젝트 정보 중에서 프로젝트 이름 설정
+        };
         fetchProjectInfo();
     }, [projectNo]);
 
     const loadData = useCallback(async () => {
-        let resp;
-        resp = await axios.get("/document/" + projectNo);
-        console.log(resp)
+        const resp = await axios.get("/document/" + projectNo);
         setDocuments(resp.data);
+    }, [projectNo]);
 
-        const empNo = loginId;
-        const empList = await axios.get("/document/companyEmployees/" + empNo)
-        setEmps(empList.data);
+    const projectEmpLoadData = useCallback(async () => {
+        const response = await axios.post("/project/projectEmp");
+    }, []);
 
-    }, [projectNo, loginId]);
-
-
-
-    //삭제
     const deleteDocument = useCallback(async (target) => {
         const choice = window.confirm("정말 삭제하시겠습니까?");
         if (choice === false) return;
 
-        //target에 있는 내용을 서버에 지워달라고 요청하고 목록을 다시 불러온다
         const resp = await axios.delete("/document/" + target.documentNo);
         loadData();
     }, [documents]);
 
-    //신규 등록 화면 입력값 변경
     const changeInput = useCallback((e) => {
         setInput({
             ...input,
@@ -191,28 +128,29 @@ const Document = () => {
         });
     }, [input]);
 
+    const changeEmpInput = useCallback((e) => {
+        setEmpInput({
+            ...empInput,
+            [e.target.name]: e.target.value
+        });
+    }, [empInput]);
 
+    const bsModal = useRef();
+    const openModal = useCallback(() => {
+        const modal = new Modal(bsModal.current);
+        setInput({
+            ...input,
+            empNo: loginId,
+            documentApprover: selectedApprover
+        });
+        modal.show();
+    }, [bsModal, loginId, selectedApprover]);
 
-    //기존 등록
-    const saveInput = useCallback(async () => {
-        const resp = await axios.post("/document/", input);
-        loadData();
-        //loadEmpData();
-        clearInput();
-        closeModal();
-    }, [input]);
+    const closeModal = useCallback(() => {
+        const modal = Modal.getInstance(bsModal.current);
+        modal.hide();
+    }, [bsModal]);
 
-
-
-    //등록 취소
-    const cancelInput = useCallback(() => {
-        const choice = window.confirm("작성을 취소하시겠습니까?");
-        if (choice === false) return;
-        clearInput();
-        closeModal();
-    }, [input]);
-
-    //입력값 초기화
     const clearInput = useCallback(() => {
         setInput({
             projectNo: "",
@@ -225,127 +163,167 @@ const Document = () => {
         });
     }, [input]);
 
+    const saveInput = useCallback(async () => {
+        try {
+            const resp = await axios.post("/document/", input);
+            const savedDocument = resp.data;
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('attach', file);
+                const uploadResp = await axios.post(`/document/upload/${savedDocument.documentNo}`, formData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                });
+                console.log('파일 업로드 결과:', uploadResp.data);
+            }
+
+            loadData();
+            clearInput();
+            closeModal();
+        } catch (error) {
+            console.error('문서 저장 또는 파일 업로드 중 오류 발생:', error);
+        } finally {
+            setFile(null);
+        }
+    }, [input, file, loadData, clearInput, closeModal]);
+
+    const cancelInput = useCallback(() => {
+        const choice = window.confirm("작성을 취소하시겠습니까?");
+        if (choice === false) return;
+        clearInput();
+        closeModal();
+    }, [input]);
+
+    const [checkedState, setCheckedState] = useState({});
+    const [allChecked, setAllChecked] = useState(false);
+
+    const handleCheckAll = useCallback(() => {
+        const newState = !allChecked;
+        setAllChecked(newState);
+        setCheckedState(emps.reduce((state, emp, index) => ({
+            ...state,
+            [index]: newState
+        }), {}));
+        if (newState) {
+            setSelectedEmps(emps.map(emp => emp.empName));
+        } else {
+            setSelectedEmps([]);
+        }
+    }, [allChecked, emps]);
+
+    const handleCheck = useCallback((index) => {
+        setCheckedState(prev => ({
+            ...prev,
+            [index]: !prev[index]
+        }));
+        if (checkedState[index]) {
+            setSelectedEmps(prev => prev.filter((_, i) => i !== index));
+        } else {
+            setSelectedEmps(prev => [...prev, emps[index].empName]);
+        }
+    }, [checkedState, emps]);
+
+    const uploadSelected = useCallback(async () => {
+        const selectedEmps = emps.filter((emp, index) => checkedState[index]);
+        if (selectedEmps.length === 0) {
+            return;
+        }
+        const resp = await axios.post("/project/projectEmp", {
+            projectNo: projectNo,
+            empNoList: selectedEmps.map(emp => emp.empNo)
+        });
+        const newEmps = emps.filter((emp, index) => !checkedState[index]);
+        setEmps(newEmps);
+        setCheckedState({});
+        setAllChecked(false);
+    }, [checkedState, emps]);
+
     useEffect(() => {
         const fetchProjectInfo = async () => {
-            const response = await axios.get(`/project/getProjectName/${projectNo}`); // 서버에서 프로젝트 정보 가져오기
-            setProjects(response.data); // 가져온 프로젝트 정보 설정
-
+            const response = await axios.get(`/project/getProjectName/${projectNo}`);
+            setProjects(response.data);
         };
+        fetchProjectInfo();
+    }, [projectNo]);
 
-        fetchProjectInfo(); // 프로젝트 정보 가져오는 함수 호출
-    }, [projectNo]); // projectNo가 변경될 때마다 useEffect가 실행됨
+    useEffect(() => {
+        const empList = async () => {
+            const resp = await axios.get("/project/companyEmployees");
+            setEmps(resp.data);
+        };
+        empList();
+    }, [invitations]);
 
+    useEffect(() => { }, [emps]);
 
-    //수정
     const editDocument = useCallback((target) => {
-        //복제
         const copy = [...documents];
-
-
         const recover = copy.map(document => {
-            if (document.edit === true) {//수정중인 항목을 발견하면
-                return { ...backup, edit: false };//백업으로 갱신 + 수정모드 취소
-            }
-            else {
-                return { ...document };//그대로
+            if (document.edit === true) {
+                return { ...backup, edit: false };
+            } else {
+                return { ...document };
             }
         });
-        setBackup({ ...target }); //백업
-
+        setBackup({ ...target });
         const copy2 = recover.map(document => {
-            if (target.documentNo === document.documentNo) {//원하는 정보일 경우
+            if (target.documentNo === document.documentNo) {
                 return {
-                    ...document,//나머지 정보는 유지하되
-                    edit: true,//edit 관련된 처리를 추가하여 반환
+                    ...document,
+                    edit: true,
                 };
-            }
-            else {//원하는 정보가 아닐 경우
-                return { ...document };//데이터를 그대로 복제하여 반환
+            } else {
+                return { ...document };
             }
         });
-
-
-
         setDocuments(copy2);
     }, [documents]);
 
     const cancelEditDocument = useCallback((target) => {
-        //1. 복제한다
-        const copy = [...documents];
-
-        const copy2 = copy.map(document => {
-
-            if (target.documentNo === document.documentNo) {//원하는 정보일 경우
-                return {
-                    ...backup,//백업 정보를 전달
-                    edit: false,//edit 관련된 처리를 추가하여 반환
-                };
-            }
-            else {//원하는 정보가 아닐 경우
-                return { ...document };//데이터를 그대로 복제하여 반환
-            }
-        });
-
-        //덮어씌우기
-        setDocuments(copy2);
-    }, [documents]);
-
-    const changeDocument = useCallback((e, target) => {
-
         const copy = [...documents];
         const copy2 = copy.map(document => {
             if (target.documentNo === document.documentNo) {
                 return {
-                    ...document,//나머지 정보는 유지
-                    [e.target.name]: e.target.value//단, 입력항목만 교체
+                    ...backup,
+                    edit: false,
                 };
-            }
-            else {
-                return { ...document };//현상유지
+            } else {
+                return { ...document };
             }
         });
         setDocuments(copy2);
     }, [documents]);
 
-    //수정된 결과를 저장 + 목록갱신 + 수정모드 해제
+    const changeDocument = useCallback((e, target) => {
+        const copy = [...documents];
+        const copy2 = copy.map(document => {
+            if (target.documentNo === document.documentNo) {
+                return {
+                    ...document,
+                    [e.target.name]: e.target.value
+                };
+            } else {
+                return { ...document };
+            }
+        });
+        setDocuments(copy2);
+    }, [documents]);
+
     const saveEditDocument = useCallback(async (target) => {
-        //서버에 target을 전달하여 수정 처리
         const resp = await axios.put("/document/", target);
-        //목록 갱신
         loadData();
     }, [documents]);
 
 
-    //ref + modal
-    const bsModal = useRef();
-    const openModal = useCallback(() => {
-        const modal = new Modal(bsModal.current);
-        console.log(modal);
-        setInput({
-            ...input,
-            empNo: loginId,
-            documentApprover: selectedApprover
-            // projectName //모달 열릴때 플젝이름보이기
-        });
-        modal.show();
-    }, [bsModal, loginId, selectedApprover]);
-    // }, [bsModal, loginId, projectName]);
-
-    const closeModal = useCallback(() => {
-        const modal = Modal.getInstance(bsModal.current);
-        modal.hide();
-    }, [bsModal]);
-
-
-
     return (
         <>
-            {/* 제목 */}
             <Jumbotron title={`${projectNo} 번 프로젝트`} style={{ backgroundColor: 'rgb(255, 192, 203)' }} />
-            <label>프로젝트 참여자</label> 
-            
-            <div className="row mt-4 justify-content-center"> {/* justify-content-center를 추가하여 가로 가운데 정렬 */}
-                <div className="col-8 col-md-9 d-flex align-items-center"> {/* col-md-6으로 변경, d-flex와 align-items-center를 추가하여 내용을 세로 중앙 정렬 */}
+            <label>프로젝트 참여자: {selectedEmps.join(", ")}</label>
+
+            <div className="row mt-4 justify-content-center">
+                <div className="col-8 col-md-9 d-flex align-items-center">
                     <input
                         style={{ border: '2.5px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}
                         type="text"
@@ -359,85 +337,74 @@ const Document = () => {
                         <FaSearch />
                     </button>
                 </div>
-                <div className="col-md-3 text-end"> {/* 새 문서 버튼을 새로운 col-md-6으로 배치 */}
+                <div className="col-md-3 text-end">
                     <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={e => openModal()}>
                         <IoMdAdd />
                         새 문서
                     </button>
                 </div>
             </div>
-            
-{/* 프로젝트 초대 목록 */}
-<div className="row mt-4">
-    <div className="col-md-3 text-end"> 
-        {invitations ? (
-            <>
-              
-                <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={openModal}>
-                    등록
-                </button>
-                &nbsp; &nbsp;
-                <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(false)}>
-                    취소
-                </button>
-            </>
-        ) : (
-            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(true)}>
-                프로젝트 초대하기
-            </button>
-        )}
-    </div>
-</div>
-{invitations && (
-    <div className="row mt-4">
-        <div className="col-md-3 text-end">
-            {/* 직원 목록을 닫는 버튼 추가 */}
-          
-        </div>
-        <div className="row">
-            {emps.map((emp) => (
-                <div key={emp.empNo} className="form-check">
-                    <input 
-                        className="form-check-input" 
-                        type="checkbox" 
-                        value={emp.empName} 
-                        id={emp.empNo} 
-                        checked={input.documentApprover.includes(emp.empName)}
-                        onChange={(e) => {
-                            if (e.target.checked) {
-                                setInput({ ...input, documentApprover: [...input.documentApprover, e.target.value] });
-                            } else {
-                                setInput({ ...input, documentApprover: input.documentApprover.filter(name => name !== e.target.value) });
-                            }
-                        }} 
-                    />
-                    <label className="form-check-label" htmlFor={emp.empNo}>
-                        {emp.empName}
-                    </label>
+
+            <div className="row mt-4">
+                <div className="col-md-3 text-end">
+                    {invitations ? (
+                        <>
+                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={uploadSelected}>
+                                등록
+                            </button>
+                            &nbsp; &nbsp;
+                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(false)}>
+                                취소
+                            </button>
+                        </>
+                    ) : (
+                        <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(true)}>
+                            프로젝트 초대하기
+                        </button>
+                    )}
                 </div>
-            ))}
-        </div>
-    </div>
-)}
+            </div>
+            {invitations && (
+                <div className="row mt-4">
+                    <div className="col-md-3 text-end"></div>
+                    <div className="row">
+                        <div className="col">
+                            <table className="table">
+                                <thead className="text-center">
+                                    <tr>
+                                        <th><input type="checkbox" checked={allChecked} onChange={handleCheckAll} /></th>
+                                        <th>이름</th>
+                                        <th>부서</th>
+                                        <th>직급</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {emps.map((emp, index) => (
+                                        <tr key={emp.empNo} className='align-items-center'>
+                                            <td><input type="checkbox" checked={checkedState[index] || false} onChange={() => handleCheck(index)} /></td>
+                                            <td>{emp.empName}</td>
+                                            <td>{emp.deptName}</td>
+                                            <td>{emp.gradeName}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-                  
-                            
-                    
-
-            {/* 문서목록... */}
             {filteredDocuments.map(document => (
                 <div key={document.documentNo} className="row mt-4">
                     <div className="col">
                         <div className="card mb-3" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
                             <div className="card-body" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
                                 <div className="card-body d-flex flex-wrap justify-content-between">
-                                    {/* 플젝 번호, 문서 번호, 상태 */}
                                     <div className="d-flex justify-content-between" style={{ marginBottom: "10px" }} >
                                         <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)', border: 'none' }}>플젝 번호: {document.projectNo}</div>
                                         <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)' }}>문서 번호: {document.documentNo}</div>
                                         <div className="rounded border p-2 shadow-sm bg-light" style={{ width: "150px" }}>상태: {document.documentStatus}</div>
                                     </div>
-                                    {/* 시작일, 마감일 */}
                                     <div className="d-flex justify-content-between">
                                         <div className="d-flex align-items-center">
                                             <FaCalendarAlt style={{ fontSize: '20px', marginRight: '5px' }} />
@@ -449,9 +416,8 @@ const Document = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="card-title" >
-                                    <div className="card-text" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }} >
-                                        {/* 제목 */}
+                                <div className="card-title">
+                                    <div className="card-text" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
                                         {document.edit ? (
                                             <input
                                                 type="text"
@@ -462,7 +428,6 @@ const Document = () => {
                                             />
                                         ) : (
                                             <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                                {/* 검색어 강조 */}
                                                 제목: {document.documentTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
                                                     <span>
                                                         {document.documentTitle.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
@@ -481,7 +446,6 @@ const Document = () => {
                                     </div>
                                 </div>
                                 <div className="card-text" style={{ border: '3px solid pink', boxShadow: '0 px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                                    {/* 내용 */}
                                     {document.edit ? (
                                         <textarea
                                             value={document.documentContent}
@@ -492,7 +456,6 @@ const Document = () => {
                                         />
                                     ) : (
                                         <div className="rounded border p-2 mb-2 shadow-sm bg-light" style={{ height: "200px" }}>
-                                            {/* 검색어 강조 */}
                                             {document.documentContent.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
                                                 <span>
                                                     {document.documentContent.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
@@ -509,17 +472,9 @@ const Document = () => {
                                         </div>
                                     )}
                                 </div>
-                                <div>
-                                {/* 첨부사진 */}
-                                {imagePreview && (
-                                <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
-                                        )}
-                                </div>
-                                <div className="card-title" >
-                                    <div className="card-text d-flex justify-content-between" >
-                                        {/* 참조자, 결재자, 작성자 */}
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light ">
-                                            {/* 결재자 */}
+                                <div className="card-title">
+                                    <div className="card-text d-flex justify-content-between">
+                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
                                             결재자: {document.documentApprover ? (
                                                 document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
                                                     <span>
@@ -537,7 +492,6 @@ const Document = () => {
                                             ) : null}
                                         </div>
                                         <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                            {/* 작성자 */}
                                             작성자: {document.documentWriter ? (
                                                 document.documentWriter.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
                                                     <span>
@@ -555,7 +509,6 @@ const Document = () => {
                                             ) : null}
                                         </div>
                                         <div className="text-end">
-                                            {/* 편집 및 삭제 버튼 */}
                                             {document.edit ? (
                                                 <>
                                                     <FaCheck className="text-success me-2" onClick={() => saveEditDocument(document)} style={{ fontSize: "40px" }} />
@@ -576,17 +529,14 @@ const Document = () => {
                 </div>
             ))}
 
-            {/* Modal */}
             <div ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
                             <h1 className="modal-title fs-5" id="staticBackdropLabel">내문서</h1>
-                            <button type="button" className="btn-close" aria-label="Close"
-                                onClick={e => cancelInput()}></button>
+                            <button type="button" className="btn-close" aria-label="Close" onClick={cancelInput}></button>
                         </div>
                         <div className="modal-body">
-                            {/* 등록 화면 */}
                             <button className={`btn btn-secondary me-2`} style={{ backgroundColor: !isApprovalMode ? 'white' : 'pink' }} onClick={() => setIsApprovalMode(true)}>일반</button>
                             <button className={`btn btn-secondary me-2`} style={{ backgroundColor: isApprovalMode ? 'white' : 'pink' }} onClick={() => setIsApprovalMode(false)}>결재</button>
                             <div>
@@ -595,23 +545,21 @@ const Document = () => {
                             <div>
                                 <p>사원 번호: {input.empNo}</p>
                             </div>
-
                             <div className="row">
                                 <div className="col">
                                     <label>시작일</label>
                                     <input type="date" name="documentWriteTime"
                                         value={input.documentWriteTime}
-                                        onChange={e => changeInput(e)}
+                                        onChange={changeInput}
                                         className="form-control" />
                                 </div>
                             </div>
-
                             <div className="row">
                                 <div className="col">
                                     <label>마감일</label>
                                     <input type="date" name="documentLimitTime"
                                         value={input.documentLimitTime}
-                                        onChange={e => changeInput(e)}
+                                        onChange={changeInput}
                                         className="form-control" />
                                 </div>
                             </div>
@@ -620,72 +568,48 @@ const Document = () => {
                                     <label>문서 제목</label>
                                     <input type="text" name="documentTitle"
                                         value={input.documentTitle}
-                                        onChange={e => changeInput(e)}
+                                        onChange={changeInput}
                                         className="form-control" />
                                 </div>
                             </div>
-
                             <div className="row">
                                 <div className="col">
                                     <label>내용</label>
                                     <textarea name="documentContent"
                                         value={input.documentContent}
-                                        onChange={e => changeInput(e)}
+                                        onChange={changeInput}
                                         className="form-control"
                                         rows={5} />
                                 </div>
                             </div>
-
                             <div className="row" style={{ display: isApprovalMode ? 'none' : 'block' }}>
-
-
                                 <div className="row mt-4">
                                     <div className="col">
                                         <label htmlFor="approver">결재자 선택:</label>
                                         <select id="approver" className="form-select" value={input.documentApprover} onChange={(e) => setInput({ ...input, documentApprover: e.target.value })}>
                                             <option value="">결재자를 선택하세요</option>
                                             {emps.map((emp) => (
-                                                <option key={emp.empNo} value={emp.empName}>{emp.empName}</option>
+                                                <option key={emp.empNo} value={emp.empName}>{emp.empNo}  {emp.empName}  {emp.deptName}   {emp.gradeName}</option>
                                             ))}
                                         </select>
-
                                     </div>
                                 </div>
                                 <div className="col-md-3">
                                     <div>
-                                        {/* 파일첨부 */}
-                                        <input type="file" onChange={handleImageChange} className="form-control form-control-sm"
-                                            id="upload" aria-label="upload" style={{ display: 'none' }} />
+                                        <input type="file" className="form-control form-control-sm"
+                                            id="upload" aria-label="upload" style={{ display: 'none' }} ref={fileInputRef}
+                                            onChange={handleFileChange} />
                                         <br />
-                                        {imagePreview && (
-                                            <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
-                                        )}
                                     </div>
-                                    <label htmlFor="upload" className="custom-file-upload" style={{
-                                        display: 'inline-block',
-                                        padding: '15px 20px',
-                                        backgroundColor: '#f0f0f0',
-                                        border: '1px solid #ccc',
-                                        borderRadius: '5px',
-                                        cursor: 'pointer',
-                                    }}>
-                                        파일첨부
-                                    </label>
-        
-
-                                    {/* 기본 이미지 버튼
-                                <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button> */}
-
-                                    {/* 이미지가 선택되었을 때만 저장 버튼이 활성화되도록 설정 */}
-                                  
+                                    <button onClick={handleUploadClick}>파일 선택</button>
                                 </div>
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className='btn btn-success me-2' onClick={e => saveInput()}>
+                            <button className='btn btn-success me-2' onClick={saveInput}>
                                 등록
                             </button>
-                            <button className='btn btn-danger' onClick={e => cancelInput()}>
+                            <button className='btn btn-danger' onClick={cancelInput}>
                                 취소
                             </button>
                         </div>
@@ -694,9 +618,6 @@ const Document = () => {
             </div>
         </>
     );
-
-
-
 }
 
 export default Document;
