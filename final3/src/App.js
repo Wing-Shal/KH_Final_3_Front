@@ -3,7 +3,7 @@
 import { Route, Routes, useLocation } from 'react-router';
 import './App.css';
 import { useRecoilState, useRecoilValue } from 'recoil';
-import { isLoginState, isPaidState, loginIdState, loginLevelState, socketConnectState } from './components/utils/RecoilData';
+import { isCheckedState, isLoginState, isPaidState, loginIdState, loginLevelState, socketConnectState } from './components/utils/RecoilData';
 import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import axios from "./components/utils/CustomAxios";
 import LoadingScreen from './components/LoadingScreen';
@@ -43,7 +43,7 @@ const CompanyAddEmp = lazy(() => import('./components/intergrated/Company/AddEmp
 const CompanyMypage = lazy(() => import("./components/intergrated/Company/Mypage"));
 const CompanyManagement = lazy(() => import("./components/intergrated/Company/Management"));
 const CompanyInValid = lazy(() => import('./components/intergrated/Company/InValid'));
-const CompanyInfo = lazy(() => import('./components/intergrated/Emp/CompanyInfo'));
+const CompInfo = lazy(() => import('./components/intergrated/Emp/CompInfo'));
 const EmpCalendar = lazy(() => import('./components/intergrated/Calendar/EmpCalendar'));
 const BoardNotice = lazy(() => import('./components/intergrated/BoardNotice/BoardNotice'));
 const BoardNoticeAdd = lazy(() => import('./components/intergrated/Company/BoardNoticeAdd'));
@@ -64,6 +64,7 @@ const App = () => {
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
   const [isPaid, setIsPaid] = useRecoilState(isPaidState);
+  const [isChecked, setIsChecked] = useRecoilState(isCheckedState);
 
   const [socket, setSocket] = useRecoilState(socketConnectState)
   const [userChatroomNos, setUserChatroomNos] = useState([]);
@@ -90,6 +91,7 @@ const App = () => {
       setLoginId(resp.data.loginId);
       setLoginLevel(resp.data.loginLevel);
       setIsPaid(resp.data.isPaid);
+      setIsChecked(resp.data.isChecked);
       axios.defaults.headers.common["Authorization"] = resp.data.accessToken;
       window.localStorage.setItem("refreshToken", resp.data.refreshToken);
     }
@@ -421,7 +423,7 @@ const App = () => {
                     <Route path="/document/project/:projectNo" element={<Document />} />
                     <Route path='/login' element={<Login />} />
                     <Route path='/emp/mypage' element={<EmpMypage />} />
-                    <Route path='/emp/companyInfo' element={<CompanyInfo />} />
+                    <Route path='/emp/CompInfo' element={<CompInfo />} />
                     <Route path="/board/notice" element={<BoardNotice />} />
                     <Route path="/board/notice/:noticeNo" element={<BoardNoticeDetail />} />
                     <Route path="/kakaopay/purchase" element={<Purchase/>} />

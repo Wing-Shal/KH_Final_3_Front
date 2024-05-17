@@ -76,7 +76,7 @@ const SideBar = () => {
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
                     <MenuItem component={<Link to="/emp/mypage" />}> 대시보드 </MenuItem>
-                    <MenuItem component={<Link to="/emp/companyInfo" />}> 회사정보 </MenuItem>
+                    <MenuItem component={<Link to="/emp/compInfo" />}> 회사정보 </MenuItem>
                     <MenuItem component={<Link to="/board/notice" />}> 공지사항 </MenuItem>
                 </Menu>
                 <div className="logo-outline" />
@@ -84,7 +84,6 @@ const SideBar = () => {
                     <SubMenu label="프로젝트" defaultOpen>
                         <Menu menuItemStyles={subItemStyles}>
                             <MenuItem component={<Link to="/project" />}> 내 프로젝트 목록 </MenuItem>
-                            <MenuItem component={<Link to="/document" />}> 내 문서 목록 </MenuItem>
                         </Menu>
                     </SubMenu>
                 </Menu>

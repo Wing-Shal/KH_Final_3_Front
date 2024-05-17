@@ -259,7 +259,7 @@ const EmpCalendar = () => {
                     <tr>
                       <td>내용</td>
                       <td>
-                        <div dangerouslySetInnerHTML={{ __html: selectedEvent.calendarContent.replace(/\n/g, '<br />') }} />
+                        <div dangerouslySetInnerHTML={{ __html: (selectedEvent.calendarContent || '').replace(/\n/g, '<br />') }} />
                       </td>
                     </tr>
                     <tr>
