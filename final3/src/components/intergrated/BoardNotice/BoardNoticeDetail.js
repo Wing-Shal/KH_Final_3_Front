@@ -39,10 +39,10 @@ const BoardNoticeDetail = () => {
                                 <td>작성시간</td>
                                 <td>
                                     {notice.noticeWtimeWithMinute}
-                                    {notice.boardEtime && " (수정됨)"}
+                                    {notice.noticeEtime && " (수정됨)"}
                                 </td>
                             </tr>
-                            {notice.boardEtime && (
+                            {notice.noticeEtime && (
                                 <tr>
                                     <td>수정시간</td>
                                     <td>{notice.noticeEtimeWithMinute}</td>
@@ -50,6 +50,12 @@ const BoardNoticeDetail = () => {
                             )}
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <div className="row mt-4">
+                <div className="col text-end">
+                    <Link to={`/board/notice`} className='btn btn-primary'>목록</Link>
                 </div>
             </div>
         </>
