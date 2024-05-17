@@ -148,7 +148,7 @@ const EmpCalendar = () => {
     clearInput();
     closeEditModal();
     loadCalendarEvents();
-    console.log(resp);
+    // console.log(resp);
     // openInfo(resp.data.calendarNo);
   }, [input]);
 
@@ -304,9 +304,9 @@ const EmpCalendar = () => {
               <div className="row mt-4">
                 <div className="col">
                   <label>내용</label>
-                  <textarea name="calendarContent" value={input.calendarContent} 
-                  onChange={changeInput} 
-                  className="form-control  custom-textarea" />
+                  <textarea name="calendarContent" value={input.calendarContent}
+                    onChange={changeInput}
+                    className="form-control  custom-textarea" />
                 </div>
               </div>
 
@@ -325,7 +325,7 @@ const EmpCalendar = () => {
                     className="form-control"
                   />
                 </div>
-                  
+
                 <div className="col">
                   <label>종료일자</label><br />
                   <Flatpickr
@@ -370,9 +370,9 @@ const EmpCalendar = () => {
               <div className="row mt-4">
                 <div className="col">
                   <label>내용</label>
-                  <textarea name="calendarContent" value={input.calendarContent} 
-                  onChange={changeInput} 
-                  className="form-control  custom-textarea" />
+                  <textarea name="calendarContent" value={input.calendarContent}
+                    onChange={changeInput}
+                    className="form-control  custom-textarea" />
                 </div>
               </div>
 
