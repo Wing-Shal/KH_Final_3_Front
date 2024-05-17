@@ -559,9 +559,8 @@ const ChatRoom = () => {
     }, [bsEmpModal]);
 
     const startChatWithEmp = async (selectedEmpNo) => {
-        const token = axios.defaults.headers.common['Authorization'];
 
-        const resp = await axios.post(`chat/findOrCreate/${token}/${selectedEmpNo}`);
+        const resp = await axios.post(`chat/findOrCreate/${selectedEmpNo}`);
         if (resp.data) {
             closeEmpModal();
             openChatModal(resp.data.chatroomNo);
@@ -643,7 +642,7 @@ const ChatRoom = () => {
                                 />
                             )}
                         </div>
-                        <tbody className="text-center">
+                        <tbody className="text-center chat-tbody">
                             {(empSearchResults.length > 0 ? empSearchResults : emps).map(emp => (
                                 <tr key={emp.empNo} onClick={() => openEmpModal(emp.empNo)}>
                                     <td>{empSearchInput ? highlightText(emp.empName, empSearchInput) : emp.empName} ({emp.empGrade})</td>
