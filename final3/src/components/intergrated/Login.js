@@ -224,6 +224,7 @@ const Login = () => {
             setLoginId(parseInt(resp.data.loginId));
             setLoginLevel(resp.data.loginLevel);
             setIsPaid(resp.data.isPaid);
+            setIsChecked(resp.data.isChecked);
 
             axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
             window.localStorage.setItem("refreshToken", resp.data.refreshToken);
@@ -242,19 +243,15 @@ const Login = () => {
 
         try {
             const resp = await axios.post("/company/login", input);
+            console.log(resp.data);
             setLoginId(parseInt(resp.data.loginId));
             setLoginLevel(resp.data.loginLevel);
             setIsPaid(resp.data.isPaid);
+            setIsChecked(resp.data.isChecked);
 
             axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
             window.localStorage.setItem("refreshToken", resp.data.refreshToken);
 
-            try {
-                const check = await axios.get("/company/isChecked");
-                setIsChecked(check.data);
-            } catch (checkError) {
-                setIsChecked("UnChecked");
-            }
             navigator("/company/mypage");
         } catch (error) {
             if (error.response && (error.response.status === 401 || error.response.status === 404)) {

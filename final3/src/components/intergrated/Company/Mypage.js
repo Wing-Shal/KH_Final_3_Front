@@ -8,7 +8,7 @@ import './Mypage.css';
 import { Modal } from 'bootstrap';
 
 function CompanyMypage() {
-  const [imagePreview, setImagePreview] = useState();
+  const [image, setImage] = useState();
   const [file, setFile] = useState(null);
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [companyInfo, setCompanyInfo] = useState();
@@ -46,17 +46,21 @@ function CompanyMypage() {
     }
   };
 
+  const loadAttachNo = useCallback(async () => {
+    const resp = await axios.get('/company/companyImage');
+    console.log(resp.data);
+    const attachNo = resp.data;
+
+    if (attachNo) {
+      setImage(`http://localhost:8080/download/${attachNo}`);
+    } else {
+      setImage(defaultImage);
+    }
+}, []);  
+
   useEffect(() => {
     loadCompanyData();
-
-    // 페이지가 렌더링될 때 로컬 스토리지에서 이미지를 가져와서 설정
-    const savedImage = localStorage.getItem(`savedImage_${loginId}`);
-    if (savedImage) {
-      setImagePreview(savedImage);
-    } else {
-      // 만약 저장된 이미지가 없다면 기본 이미지로 설정
-      setImagePreview(defaultImage);
-    }
+    loadAttachNo();
   }, []);
 
   const loadCompanyData = useCallback(async () => {
@@ -74,7 +78,7 @@ function CompanyMypage() {
       setFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result);
+        setImage(reader.result);
         // 이미지를 선택한 후 로컬 스토리지에 저장
         // localStorage.setItem(`savedImage_${loginId}`, reader.result);
       };
@@ -95,7 +99,7 @@ function CompanyMypage() {
           }
         }, [loginIdState]);
 
-        localStorage.setItem(`savedImage_${loginId}`, imagePreview);
+        localStorage.setItem(`savedImage_${loginId}`, image);
       }
     } catch (error) {
       //console.error('파일 업로드 오류:', error);
@@ -105,12 +109,9 @@ function CompanyMypage() {
 
 // 기본 이미지 설정 함수
 const setDefaultImage = () => {
-  setImagePreview(defaultImage); // 이미지 미리보기를 기본 이미지로 설정
+  setImage(defaultImage); // 이미지 미리보기를 기본 이미지로 설정
   const defaultFile = new File([defaultImage], 'defaultImage.jpg', { type: 'image/jpeg' }); // 기본 이미지에 대한 파일 객체 생성
   setFile(defaultFile); // 파일 상태를 기본 이미지 파일로 설정
-
-  // 기본 이미지를 로컬 스토리지에 저장
-  // localStorage.setItem(`savedImage_${loginId}`, defaultImage);
 };
 
 return (
@@ -124,14 +125,19 @@ return (
             <input type="file" onChange={handleImageChange} className="form-control form-control-sm"
               id="upload" aria-label="upload" style={{ display: 'none' }} accept='image/gif, image/jpeg, image/png, image/jpg' />
             <br />
-            {imagePreview && (
-              <img src={imagePreview} alt="사진 미리보기" style={{ width: '230px', height: '300px', marginBottom: '10px' }} />
+            {loginId && (
+                <img
+                  src={image}
+                  alt="사진 미리보기"
+                  style={{ width: '150px', height: '150px', marginBottom: '10px' }}
+                  onError={(e) => { e.target.src = defaultImage; }} // 이미지 로드 실패 시 기본 이미지로 대체
+                />
+              )}
+            </div>
+            <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button>
+            {file && (
+              <button onClick={handleSave} className="btn btn-sm btn-primary mt-2" style={{ maxWidth: '200px', maxHeight: '200px', marginLeft: 'auto' }}>내 이미지 저장</button>
             )}
-          </div>
-          <button onClick={setDefaultImage} className="btn btn-sm btn-secondary mt-2">기본 이미지</button>
-          {file && (
-            <button onClick={handleSave} className="btn btn-sm btn-primary mt-2" style={{ maxWidth: '200px', maxHeight: '200px', marginLeft: 'auto' }}>내 이미지 저장</button>
-          )}
         </div>
         <div className="col-md-5">
           <button onClick={e => openEditModal(companyInfo)} className="btn btn-sm btn-secondary mb-3" style={{ marginRight: '10px' }}>회사 정보 수정</button>
