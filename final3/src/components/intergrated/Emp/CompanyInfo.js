@@ -4,10 +4,10 @@ import { loginIdState } from '../../utils/RecoilData';
 import { useRecoilState } from 'recoil';
 import calender from "../../../assets/calender.png";
 import defaultImage from "../../../assets/CompanyLogo.jpg"; // 기본 이미지 경로를 추가해주세요
-import './Mypage.css';
+import '../Company/Mypage.css';
 import { Modal } from 'bootstrap';
 
-function CompanyMypage() {
+function EmpCompanyInfo() {
   const [imagePreview, setImagePreview] = useState();
   const [file, setFile] = useState(null);
   const [loginId, setLoginId] = useRecoilState(loginIdState);
@@ -45,28 +45,46 @@ function CompanyMypage() {
       //console.error('회사 정보 업데이트 오류:', error);
     }
   };
-
-  useEffect(() => {
-    loadCompanyData();
-
-    // 페이지가 렌더링될 때 로컬 스토리지에서 이미지를 가져와서 설정
-    const savedImage = localStorage.getItem(`savedImage_${loginId}`);
-    if (savedImage) {
-      setImagePreview(savedImage);
-    } else {
-      // 만약 저장된 이미지가 없다면 기본 이미지로 설정
-      setImagePreview(defaultImage);
-    }
-  }, []);
-
   const loadCompanyData = useCallback(async () => {
     try {
-      const resp = await axios.get('/company/');
+      const resp = await axios.get('/company/info');
       setCompanyInfo(resp.data);
     } catch (error) {
       //console.error('회사 정보 불러오기 오류:', error);
     }
   }, []);
+
+  const loadImage = async () => {
+    const download = await axios.get(`/download/${loginId}`);
+    console.log(download.data);
+    return download.data;
+};
+
+useEffect(() => {
+    const loadData = async () => {
+      try {
+        // 회사 정보 불러오기
+        await loadCompanyData();
+  
+        // 이미지 불러오기
+        const savedImage = await loadImage();
+        if (savedImage) {
+          setImagePreview(savedImage);
+        } else {
+          // 만약 저장된 이미지가 없다면 기본 이미지로 설정
+          setImagePreview(defaultImage);
+        }
+      } catch (error) {
+        console.error('데이터 로드 오류:', error);
+        // 데이터 로드에 실패하면 기본 이미지로 설정
+        setImagePreview(defaultImage);
+      }
+    };
+  
+    // 페이지가 처음 렌더링될 때 데이터 로드
+    loadData();
+  }, []);
+
 
   const handleImageChange = e => {
     const file = e.target.files[0];
@@ -75,8 +93,6 @@ function CompanyMypage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImagePreview(reader.result);
-        // 이미지를 선택한 후 로컬 스토리지에 저장
-        // localStorage.setItem(`savedImage_${loginId}`, reader.result);
       };
       reader.readAsDataURL(file);
     }
@@ -109,8 +125,6 @@ const setDefaultImage = () => {
   const defaultFile = new File([defaultImage], 'defaultImage.jpg', { type: 'image/jpeg' }); // 기본 이미지에 대한 파일 객체 생성
   setFile(defaultFile); // 파일 상태를 기본 이미지 파일로 설정
 
-  // 기본 이미지를 로컬 스토리지에 저장
-  // localStorage.setItem(`savedImage_${loginId}`, defaultImage);
 };
 
 return (
@@ -242,4 +256,4 @@ return (
 );
 }
 
-export default CompanyMypage;
+export default EmpCompanyInfo;
