@@ -11,6 +11,8 @@ import { FaEdit, FaTrash } from "react-icons/fa";
 import { IoMdHammer } from "react-icons/io";
 import { FaXmark } from "react-icons/fa6";
 import { FaSearch } from 'react-icons/fa';
+import throttle from "lodash/throttle";
+import debounce from "lodash/debounce";
 
 
 
@@ -93,6 +95,17 @@ function BoardBlind() {
         blindNo: "" //게시글번호
     });
 
+    //무한스크롤
+    const [page, setPage] = useState(1); //현재 페이지 번호
+    const [size, setSize] = useState(5); //가져올 데이터 개수
+    const [count, setCount] = useState(0);
+    const [last, setLast] = useState(false);
+
+    //ref의 변형된 사용법
+    // - ref는 주로 화면을 제어할 때 사용
+    // - ref는 state와 다르게 블로킹(blocking)이 된다는 특징이 있어서 state 대신도 사용
+    const loading = useRef(false);//목록을 불러오는 중이면 true, 아니면 false
+
 
 
     useEffect(() => {
@@ -101,13 +114,77 @@ function BoardBlind() {
     }, [blindWriterCompany]);
 
     // blind_emp
-
+    
     const loadData = useCallback(async () => {
         const blindEmpNo = loginId;
         const blindWriterCompany = companyInfo;
-        const resp = await axios.get("/boardBlind/");
-        setBoardBlinds(resp.data);
-    }, [loginId, companyInfo]);
+        // const resp = await axios.get("/boardBlind/");
+        const resp = await axios.get(`/boardBlind/page/${page}/size/${size}`);
+        setBoardBlinds([...boardBlinds, ...resp.data.list]);
+        setCount(resp.data.count);
+        setLast(resp.data.last);
+    }, [loginId, companyInfo, boardBlinds, page]);
+
+//effect
+    // - 페이지 번호가 증가하면 loadData를 부르도록 연결
+    useEffect(()=>{
+        loading.current = true;//로딩이 시작했음을 기록
+        console.log("로딩 시작");
+        loadData();
+        loading.current = false;//로딩이 종료했음을 기록
+        console.log("로딩 종료");
+    }, [page]);
+
+    ////////////////////////////////////////////////////////////////
+    // 스크롤 이벤트(Scroll Event)
+    // - 최초 화면 로드 시 윈도우에 스크롤 이벤트를 설정
+    // - 스크롤 이벤트는 너무 민감하기 때문에 (1회 굴리면 약 12번 실행) 억제
+    // - lodash 라이브러리를 사용하여 억제
+    //      - throttle 
+    //              - 지정한 시간 간격으로만 이벤트가 실행(250ms마다 실행)
+    //              - throttle(함수, 간격)
+    //      - debounce - 지정한 시간동안 작업이 이어지지 않으면 이벤트가 실행
+    //              - debounce(함수, 간격)
+    ////////////////////////////////////////////////////////////////
+    const listener = useCallback(throttle((e)=>{
+        if(loading.current === true) {//로딩이 진행중이라면
+            return;//스크롤 감지고 뭐고 때려쳐!
+        }
+
+        //console.log("우와 스크롤이 굴러가요");
+        const scrollableHeight = document.documentElement.scrollHeight - window.innerHeight;
+        const scrollTop = window.scrollY;
+        const scrollPercent = (scrollTop / scrollableHeight) * 100;
+        console.log(`last = ${last} , 퍼센트 = ${scrollPercent.toFixed(2)}%`);
+
+        //조건 
+        // - 마지막 데이터가 아닐 것 (last === false)
+        // - 스크롤이 75% 이상 내려갔1을 것 (scrollPercent >= 75)
+        if(last === false && scrollPercent >= 75) {
+            console.log("더보기 작업을 시작합니다");
+            setPage(page+1);//페이지1증가 --> effect 발생 --> loadData 실행
+        }
+    }, 750), [page]);
+
+    //useEffect를 사용해서 필요한 순간에 이벤트를 설정 또는 제거
+    //- loading에 저장된 값을 활용
+    //- useEffect에 항목을 제거하면 화면이 갱신될 때마다 실행된다(모든 state 변화에 반응)
+    useEffect(()=>{
+        if(loading.current === true) {//로딩이 진행중이라면
+            return;//이벤트 설정이고 뭐고 때려쳐!
+        }
+
+        //로딩중이 아니라면
+        window.addEventListener("scroll", listener);//미리 준비한 이벤트 설정
+        console.log("스크롤 이벤트 설정 완료!");
+
+        //화면 해제 시 진행할 작업
+        return ()=>{
+            window.removeEventListener("scroll", listener);//이벤트 제거
+            console.log("스크롤 이벤트 제거 완료!");
+        };
+    }, [page]);
+
 
     //신규 등록 화면 입력값 변경
     const changeInput = useCallback((e) => {
@@ -556,6 +633,8 @@ function BoardBlind() {
                     ))}
                 </Row>
             </Container>
+
+           
 
             {boardBlinds.map(boardBlind => (
                 <div key={boardBlind.blindNo} ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
