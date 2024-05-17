@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "../../utils/CustomAxios";
 import { isPaidState } from "../../utils/RecoilData";
 import { useRecoilState } from "recoil";
-const PurchaseTest = ()=> {
+const Purchase = ()=> {
     const navigator = useNavigate();
 
     const [partnerOrderId, setPartnerOrderId] = useState("");
@@ -33,7 +33,7 @@ const PurchaseTest = ()=> {
         const resp = await axios.post("/kakaopay/purchase/success", postData);
         setIsPaid("ACTIVE");
 
-        navigator("/company/home");
+        navigator("/company/mypage");
     });
 
     useEffect(()=> {
@@ -59,4 +59,4 @@ const PurchaseTest = ()=> {
     );
 };
 
-export default PurchaseTest;
+export default Purchase;

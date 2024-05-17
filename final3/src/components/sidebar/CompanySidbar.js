@@ -67,13 +67,14 @@ const SideBar = () => {
         <>
             <Sidebar rootStyles={sidebarStyles}>
                 <div className="text-center py-4">
-                    <Link to="/company/home">
+                    <Link to="/company/mypage">
                         <img className="logo-image" src={Logo} />
                     </Link>
                 </div>
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
                     <MenuItem component={<Link to="/company/mypage" />}> 회사정보 </MenuItem>
+                    <MenuItem component={<Link to="/company/notice" />}> 공지사항 </MenuItem>
                 </Menu>
                 <div className="logo-outline" />
                 <Menu>

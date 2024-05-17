@@ -67,14 +67,12 @@ const SideBar = () => {
         <>
             <Sidebar rootStyles={sidebarStyles}>
                 <div className="text-center py-4">
-                    <Link to="/admin/home">
+                    <Link to="/admin/company">
                         <img className="logo-image" src={Logo} />
                     </Link>
                 </div>
                 <div className="logo-outline" />
-                <Menu menuItemStyles={menuItemStyles}>
-                    <MenuItem component={<Link to="/admin/home" />}> 홈으로 </MenuItem>
-                    <div className="logo-outline" />
+                <Menu menuItemStyles={menuItemStyles}>  
                     <MenuItem component={<Link to="/admin/company" />}> 회사 관리 </MenuItem>
                 </Menu>
             </Sidebar >
