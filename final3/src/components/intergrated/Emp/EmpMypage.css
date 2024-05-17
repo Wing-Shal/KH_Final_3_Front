@@ -1,40 +1,4 @@
 
-/* 모달 스타일 */
-.modal {
-  display: none; /* 초기에는 모달을 숨김 */
-  position: fixed;
-  z-index: 1;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-}
-
-/* 모달 컨텐츠 */
-.modal-content {
-  background-color: #fefefe;
-  margin: 15% auto;
-  padding: 20px;
-  border: 1px solid #888;
-  width: 80%;
-}
-
-/* 모달 닫기 버튼 */
-.close {
-  color: #aaa;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 /* CSS */
 .custom-file-upload {
 border: 1px solid #e4dddd;
@@ -50,3 +14,31 @@ margin-bottom: 16px;
 .custom-file-upload:hover {
 background-color: #e0e0e0;
 }
+
+.card:hover {
+    background-color: #f0f8ff; /* 원하는 색상으로 변경 */
+  }
+
+  /* 웹킷 브라우저용 스크롤바 스타일 */
+.scrollable-container::-webkit-scrollbar {
+    width: 12px;
+  }
+  
+  .scrollable-container::-webkit-scrollbar-track {
+    background: #FFC0CB;
+  }
+  
+  .scrollable-container::-webkit-scrollbar-thumb {
+    background: #FFC0CB;
+    border-radius: 10px;
+  }
+  
+  .scrollable-container::-webkit-scrollbar-thumb:hover {
+    background: #FFC0CB;
+  }
+  
+  /* Firefox용 스크롤바 스타일 */
+  .scrollable-container {
+    scrollbar-color: #FFC0CB #f5abb7;
+    width: 12px;
+  }
