@@ -69,14 +69,15 @@ const SideBar = () => {
         <>
             <Sidebar rootStyles={sidebarStyles}>
                 <div className="text-center py-4">
-                    <Link to="/">
+                    <Link to="/emp/mypage">
                         <img className="logo-image" src={Logo} />
                     </Link>
                 </div>
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
-                    <MenuItem component={<Link to="/" />}> 대시보드 </MenuItem>
-                    <MenuItem component={<Link to="/" />}> 회사정보 </MenuItem>
+                    <MenuItem component={<Link to="/emp/mypage" />}> 대시보드 </MenuItem>
+                    <MenuItem component={<Link to="/emp/companyInfo" />}> 회사정보 </MenuItem>
+                    <MenuItem component={<Link to="/board/notice" />}> 공지사항 </MenuItem>
                 </Menu>
                 <div className="logo-outline" />
                 <Menu>
@@ -90,7 +91,7 @@ const SideBar = () => {
                 <div className="logo-outline" />
                 <Menu menuItemStyles={menuItemStyles}>
                     <MenuItem component={<Link to="/calendar" />}> 캘린더 </MenuItem>
-                    <MenuItem component={<Link to="/boardBlind" />}> 블라인드 </MenuItem>
+                    <MenuItem component={<Link to="/board/blind" />}> 블라인드 </MenuItem>
                     <MenuItem component={<Link to="/chatroom" />}> 채팅 </MenuItem>
                 </Menu>
             </Sidebar >
