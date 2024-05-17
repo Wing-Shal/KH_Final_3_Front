@@ -33,7 +33,7 @@ const BoardNotice = () => {
 
     const handleSearch = (e) => {
         e.preventDefault();
-        setPage(1); // 검색 시 페이지를 1로 초기화
+        setPage(1); //검색 시 페이지를 1로 초기화
         loadNoticeData();
     }
 

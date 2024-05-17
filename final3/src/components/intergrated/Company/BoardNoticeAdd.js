@@ -34,7 +34,7 @@ const BoardNoticeAdd = () => {
         const resp = await axios.post("/boardNotice/", input);
         clearInput();
 
-        navigate(`/board/notice/${resp.data.noticeNo}`);
+        navigate(`/company/notice/${resp.data.noticeNo}`);
     }, [input]);
 
     //등록 취소
@@ -42,7 +42,7 @@ const BoardNoticeAdd = () => {
         const choice = window.confirm("ㄹㅇ작성 취소?");
         if (choice === false) return;
         clearInput();
-        navigate("/board/notice");
+        navigate("/company/notice");
     }, [input]);
 
     //입력값 초기화
