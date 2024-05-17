@@ -3,7 +3,7 @@
 import { useCallback, useState } from "react";
 import Jumbotron from "../../Jumbotron";
 import { useRecoilState } from "recoil";
-import { isPaidState, loginIdState, loginLevelState } from "../../utils/RecoilData";
+import { isCheckedState, isPaidState, loginIdState, loginLevelState } from "../../utils/RecoilData";
 import axios from "../../utils/CustomAxios";
 import { useNavigate } from "react-router";
 import '../Login.css';
@@ -20,6 +20,7 @@ const AdminLogin = () => {
     const [loginId, setLoginId] = useRecoilState(loginIdState);
     const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [isPaid, setIsPaid] = useRecoilState(isPaidState);
+    const [isChecked, setIsChecked] = useRecoilState(isCheckedState);
 
     //callback
     const changeInput = useCallback(e => {
@@ -41,6 +42,7 @@ const AdminLogin = () => {
             setLoginId(parseInt(resp.data.loginId));
             setLoginLevel(resp.data.loginLevel);
             setIsPaid(resp.data.isPaid);
+            setIsChecked(resp.data.isChecked);
 
             axios.defaults.headers.common['Authorization'] = resp.data.accessToken;
 
