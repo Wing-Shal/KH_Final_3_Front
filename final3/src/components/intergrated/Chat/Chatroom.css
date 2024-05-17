@@ -271,3 +271,13 @@
 .invite-search-wrapper.show {
     display: block;
 }
+
+/* 채팅방 테두리 스타일 */
+.chat-goods table {
+    border-radius: 15px;
+    border: 3px solid #FFC0CB;
+    background: transparent;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    margin: 10px;
+}
+
