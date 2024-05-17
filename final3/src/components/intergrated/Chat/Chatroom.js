@@ -230,29 +230,26 @@ const ChatRoom = () => {
         inviteEmp();
     }, [])
 
+    
 
+    //사원초대
     const inviteEmp = useCallback(async (empNo) => {
-        // console.log(empNo)
-        // console.log(chatroomNo);
         if (!chatroomNo) return;
         const resp = await axios.post(`/chat/inviteEmp/${chatroomNo}/${empNo}`);
         // console.log(resp.data);
         if (resp.data) {
-            //참여자 목록 갱신
-            setEmpInChatroom(prevEmps => [...prevEmps, resp.data.empName]);
-
-            //시스템 메시지 추가
-            // const notificationMessage = {
-            //     messageContent: `${resp.data.empName}님이 초대되었습니다`,
-            //     messageType: 'system'
-            // };
-            // setMessages(prevMessages => [...prevMessages, notificationMessage]);
-
-            // 모달 닫기
-            closeEmpListModal();
+            const newChatroomNo = resp.data.chatroomNo;
+            
+            closeChatModal(); 
+            closeEmpListModal(); 
+            loadChatroomData();
+            
+            setTimeout(() => {
+                setChatroomNo(newChatroomNo);
+                openChatModal(newChatroomNo);
+            }, 300); 
         }
-    }
-        , [chatroomNo]);
+    }, [chatroomNo]);
 
 
     //채팅방 이름 수정 함수
@@ -372,7 +369,7 @@ const ChatRoom = () => {
         if (chatroomNo) {
             const connectWebSocket = () => {
                 if (socketRef.current) {
-                    // socketRef.current.close();
+                    socketRef.current.close();
                 }
                 const newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
                 newSocket.onopen = () => {
@@ -389,7 +386,7 @@ const ChatRoom = () => {
 
             return () => {
                 if (socketRef.current) {
-                    // socketRef.current.close();
+                    socketRef.current.close();
                 }
             };
         }
@@ -482,6 +479,7 @@ const ChatRoom = () => {
             const handleEscKeyPress = (event) => {
                 try {
                     if (event.key === 'Escape') {
+                        closeEmpListModal();
                         closeChatModal();
                         closeChatroomNameChangeModal();
                         closeOutChatroomModal();
@@ -765,10 +763,11 @@ const ChatRoom = () => {
                         <div className="modal-body">
                             <table className="table">
                                 <tbody>
-                                    {emps.map(emp => (
+                                    {emps.filter(emp => !empInChatroom.some(e => e.empNo === emp.empNo)).map(emp => (
                                         <tr key={emp.empNo}>
                                             <td onClick={() => inviteEmp(emp.empNo)}>
-                                                {emp.empName} ({emp.empGrade})</td>
+                                                {emp.empName} ({emp.empGrade})
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
