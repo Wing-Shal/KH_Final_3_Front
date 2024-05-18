@@ -334,7 +334,7 @@ function EmpMypage() {
     const resp = await axios.patch("/calendar/", formattedInput);
     await loadCalendarEvents();
     clearInput();
-    closeEditCModal();
+    closeEditCalendarModal();
     loadCalendarEvents();
     // openInfo(resp.data.calendarNo);
   }, [input]);
@@ -353,8 +353,8 @@ function EmpMypage() {
   }, []);
 
   //수정 모달
-  const bsEditModal = useRef();
-  const openEditCModal = useCallback(() => {
+  const bsEditCalendarModal = useRef();
+  const openEditCalendarModal = useCallback(() => {
     if (selectedEvent) {
       closeInfoModal();
       setInput({
@@ -365,16 +365,16 @@ function EmpMypage() {
         calendarStart: selectedEvent.start,
         calendarEnd: selectedEvent.end,
       });
-      const modal = new Modal(bsEditModal.current);
+      const modal = new Modal(bsEditCalendarModal.current);
       modal.show();
     }
   }, [selectedEvent]);
 
-  const closeEditCModal = useCallback(() => {
-    const modal = Modal.getInstance(bsEditModal.current);
+  const closeEditCalendarModal = useCallback(() => {
+    const modal = Modal.getInstance(bsEditCalendarModal.current);
     clearInput();
     modal.hide();
-  }, []);
+  }, [bsEditCalendarModal]);
 
 
   //일정 등록 모달
@@ -622,7 +622,7 @@ function EmpMypage() {
             <div className="modal-footer">
               {selectedEvent && selectedEvent.calendarWriter === loginId && (
                 <>
-                  <button className="btn btn-pink me-2" onClick={openEditModal}>수정</button>
+                  <button className="btn btn-pink me-2" onClick={openEditCalendarModal}>수정</button>
                   <button className="btn btn-danger" onClick={() => deleteCalendar(selectedEvent)}>삭제</button>
                 </>
               )}
@@ -666,7 +666,7 @@ function EmpMypage() {
                       static: true,
                       minuteIncrement: 30,
                     }}
-                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: formatDate(date) }))}
+                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarStart: formatDate(date) }))}
                     className="form-control"
                   />
                 </div>
@@ -697,12 +697,12 @@ function EmpMypage() {
         </div>
       </div>
 
-      <div ref={bsEditModal} className="modal fade" id="staticBackdrop editModal" data-bs-backdrop="static" data-bs-keyboard="true" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div ref={bsEditCalendarModal} className="modal fade" id="staticBackdrop editModal" data-bs-backdrop="static" data-bs-keyboard="true" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <div className="modal-dialog">
           <div className="modal-content">
             <div className="modal-header">
               <h1 className="modal-title fs-5" id="staticBackdropLabel">일정수정</h1>
-              <button type="button" className="btn-close" aria-label="Close" onClick={closeEditCModal}></button>
+              <button type="button" className="btn-close" aria-label="Close" onClick={closeEditCalendarModal}></button>
             </div>
             <div className="modal-body">
               <div className="row mt-4">
@@ -733,7 +733,7 @@ function EmpMypage() {
                       static: true,
                       minuteIncrement: 30,
                     }}
-                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: formatDate(date) }))}
+                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarStart: formatDate(date) }))}
                     className="form-control"
                   />
                 </div>
@@ -757,7 +757,7 @@ function EmpMypage() {
             </div>
             <div className="modal-footer">
               <button type="button" className="btn btn-pink" onClick={editCalendar}><IoSaveOutline /> 수정</button>
-              <button type="button" className="btn btn-danger" onClick={closeEditCModal}><MdCancel /> 취소</button>
+              <button type="button" className="btn btn-danger" onClick={closeEditCalendarModal}><MdCancel /> 취소</button>
             </div>
           </div>
         </div>
