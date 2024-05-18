@@ -1,6 +1,6 @@
 //import
 
-import { Route, Routes, useLocation } from 'react-router';
+import { Route, Routes, useLocation, Navigate } from 'react-router';
 import './App.css';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { isCheckedState, isLoginState, isPaidState, loginIdState, loginLevelState, socketConnectState } from './components/utils/RecoilData';
@@ -51,6 +51,7 @@ const BoardNoticeDetail = lazy(() => import('./components/intergrated/BoardNotic
 const BoardNoticeEdit = lazy(() => import('./components/intergrated/Company/BoardNoticeEdit'));
 const BoardNoticeDetailForCompany = lazy(() => import('./components/intergrated/Company/BoardNoticeDetailForCompany'));
 const BoardNoticeForCompany = lazy(() => import('./components/intergrated/Company/BoardNoticeForCompany'));
+const ErrorPage = lazy(() => import('./components/ErrorPage'));
 
 
 const App = () => {
@@ -60,7 +61,9 @@ const App = () => {
   const isLoginPath = location.pathname.includes("login");
   const isCompanyPath = location.pathname.includes("company");
   const isNELpath = location.pathname.includes("NEL");
-  const isInvliadPath = location.pathname.includes("invalid");
+  const isInvalidPath = location.pathname.includes("invalid");
+  const isErrorPath = location.pathname.includes("error");
+  const isPurchasePath = location.pathname.includes("purchase");
   const [loginId, setLoginId] = useRecoilState(loginIdState);
   const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
   const [isPaid, setIsPaid] = useRecoilState(isPaidState);
@@ -389,12 +392,6 @@ const App = () => {
 
   return (
     <>
-      {/* 메뉴 */}
-      {isLoginPath || (
-        <>
-          <Header />
-        </>
-      )}
 
       <ToastContainer />
       <div className='container-fluid d-flex py-0' style={isLoginPath ? {
@@ -406,8 +403,8 @@ const App = () => {
         height: '100vh'
       } : {}}>
         <div className="sidebar">
-          <SidebarSelector isLoginPath={isLoginPath} isAdminPath={isAdminPath}
-            isCompanyPath={isCompanyPath} isNELpath={isNELpath} isInvliadPath={isInvliadPath} />
+          <SidebarSelector isLoginPath={isLoginPath} isAdminPath={isAdminPath} isErrorPath={isErrorPath}
+            isCompanyPath={isCompanyPath} isNELpath={isNELpath} isInvalidPath={isInvalidPath} isPurchasePath={isPurchasePath} />
         </div>
         <div className='container'>
           <div className='row mt-4'>
@@ -446,6 +443,8 @@ const App = () => {
                       <Route path='home' element={<AdminHome />} />
                       <Route path="upload" element={<AdminUpload />} />
                     </Route>
+                    <Route path="/error" element={<ErrorPage />} />
+                    <Route path="*" element={<Navigate to="/error" />} />
                   </Route>
                 </Routes>
               </Suspense>

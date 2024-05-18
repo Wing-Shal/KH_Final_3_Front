@@ -7,7 +7,7 @@ import { isCheckedState, isPaidState, loginIdState, loginLevelState } from "../.
 import axios from "../../utils/CustomAxios";
 import { useNavigate } from "react-router";
 import '../Login.css';
-import Logo from '../../../assets/PlanetLogo.png';
+import Logo from '../../../assets/BlackLogo.png';
 
 const AdminLogin = () => {
 
@@ -57,7 +57,7 @@ const AdminLogin = () => {
 
 
 
-        navigator("/admin/company");
+        navigator("/admin/home");
     }, [input]);
 
     return (
@@ -85,7 +85,7 @@ const AdminLogin = () => {
                             </div>
                             <div className="row mt-4">
                                 <div className="col">
-                                    <button className="btn btn-success w-100"
+                                    <button className="btn btn-dark w-100"
                                         onClick={e => adminLogin()}>로그인</button>
                                 </div>
                             </div>

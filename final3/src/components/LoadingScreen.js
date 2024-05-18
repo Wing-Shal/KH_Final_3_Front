@@ -1,21 +1,12 @@
-import Jumbotron from "./Jumbotron";
-import "./LoadingScreen.css";
-import ClimingBoxLoader from "react-spinners/ClimbingBoxLoader";
+import React from 'react';
+import LoadingImage from '../assets/Loading.png';
+import './LoadingScreen.css';
 
-const LoadingScreen = ()=>{
-
+const LoadingScreen = () => {
     return (
-        <>
-            <Jumbotron title="Lorem ipsum"/>
-
-            <div className="row mt-4">
-                <div className="col">
-                    <div className="loading-wrapper">
-                        <ClimingBoxLoader/>
-                    </div>
-                </div>
-            </div>
-        </>
+        <div className="loading-container">
+            <img src={LoadingImage} alt="Loading" className="loading-image" />
+        </div>
     );
 };
 

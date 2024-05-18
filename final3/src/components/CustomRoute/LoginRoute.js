@@ -49,11 +49,11 @@
                 <div>Loading...</div>
             ) : (
                 !isLogin ? (
-                    isAdminPath ? (
-                        <Navigate to="/admin/login" />
+                    isLoginPath || isJoinPath? (
+                        <Outlet />
                     ) : (
-                        isLoginPath || isJoinPath ? (
-                            <Outlet />
+                        isAdminPath ? (
+                            <Navigate to="/admin/login" />
                         ) : (
                             <Navigate to="/login" />
                         )
@@ -66,7 +66,7 @@
                             <Navigate to="/company/invalid" />
                         )
                     ) : (
-                        isPaid || isPurchasePath ? (
+                        checkPaid || isPurchasePath ? (
                             <Outlet />
                         ) : (
                             isCompany ? (

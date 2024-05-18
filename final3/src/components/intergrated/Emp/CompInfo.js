@@ -11,6 +11,8 @@ function CompInfo() {
   const [loginId] = useRecoilState(loginIdState);
   const [companyInfo, setCompanyInfo] = useState();
 
+  const baseURL = process.env.REACT_APP_BASE_URL;
+
   const loadCompanyData = useCallback(async () => {
     try {
       const resp = await axios.get('/company/info');
@@ -21,14 +23,13 @@ function CompInfo() {
   }, [companyInfo]);
 
   const loadAttachNo = useCallback(async () => {
+    try {
       const resp = await axios.get('/emp/company/image');
       const attachNo = resp.data;
-
-      if (attachNo) {
-        setImage(`http://localhost:8080/download/${attachNo}`);
-      } else {
-        setImage(defaultImage);
-      }
+      setImage(`${baseURL}/download/${attachNo}`);
+    } catch(error) {
+      setImage(defaultImage);
+    }
   }, []);
 
   useEffect(() => {

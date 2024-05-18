@@ -5,10 +5,12 @@ import {
     SubMenu
 } from "react-pro-sidebar";
 
-import { Link } from 'react-router-dom';
-
+import { Link} from 'react-router-dom';
+import { isCheckedState, isPaidState, loginIdState, loginLevelState } from "../utils/RecoilData";
+import { useRecoilState} from "recoil";
+import { useCallback } from "react";
+import axios from "../utils/CustomAxios";
 import Logo from "../../assets/PlanetLogo.png";
-
 import './Sidebar.css';
 
 const basicTheme = {
@@ -62,6 +64,35 @@ const SideBar = () => {
             }
         }
     }
+    const logoutStyles = {
+        root: {
+            fontSize: '11px',
+            color: '#DB4455',
+            backgroundColor: basicTheme.subMenu.menuContent
+        },
+        button: {
+            '&:hover': {
+                backgroundColor: basicTheme.subMenu.hover.backgroundColor,
+                color: 'red'
+            }
+        }
+    }
+    const [loginId, setLoginId] = useRecoilState(loginIdState);
+    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
+    const [isPaid, setIsPaid] = useRecoilState(isPaidState);
+    const [isChecked, setIsChecked] = useRecoilState(isCheckedState);
+
+    const logout = useCallback(() => {
+        //recoil 저장소에 대한 정리 + axios의 헤더 제거 + localStorage 청소
+        setLoginId('');
+        setLoginLevel('');
+        setIsPaid('');
+        setIsChecked('');
+        delete axios.defaults.headers.common['Authorization'];
+        window.localStorage.removeItem("refreshToken");
+        // navigator(isAdminPath ? ("/admin/login") : ("/login"));
+        // navigator("/login");
+    }, [loginId, loginLevel]);
 
     return (
         <>
@@ -88,6 +119,10 @@ const SideBar = () => {
                 <div className="logo-outline" />
                 <Menu>
                     <MenuItem component={<Link to="/company/management" />}> 부서/직급 관리 </MenuItem>
+                </Menu>
+                <div className="logo-outline" />
+                <Menu menuItemStyles={logoutStyles}>
+                    <MenuItem onClick={e => logout()}> 로그아웃 </MenuItem>
                 </Menu>
             </Sidebar >
         </>

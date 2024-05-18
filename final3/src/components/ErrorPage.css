@@ -1,0 +1,14 @@
+.error-container {
+    text-align: center;
+    margin-top: 50px;
+}
+
+.error-container h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+}
+
+.error-container p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+}

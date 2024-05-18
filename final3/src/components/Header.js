@@ -20,12 +20,6 @@ function Header() {
     //recoil value
     const isLogin = useRecoilValue(isLoginState);
 
-    //navigator
-    const navigator = useNavigate();
-
-    //현재 주소
-    const location = useLocation();
-
     //callback
     const logout = useCallback(() => {
         //recoil 저장소에 대한 정리 + axios의 헤더 제거 + localStorage 청소
@@ -35,8 +29,6 @@ function Header() {
         setIsChecked('');
         delete axios.defaults.headers.common['Authorization'];
         window.localStorage.removeItem("refreshToken");
-        // navigator(isAdminPath ? ("/admin/login") : ("/login"));
-        // navigator("/login");
     }, [loginId, loginLevel]);
 
     return (
