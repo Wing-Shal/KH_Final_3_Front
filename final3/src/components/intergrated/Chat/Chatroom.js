@@ -299,41 +299,6 @@ const ChatRoom = () => {
 
     }, [chatroomNo, newChatroomName]);
 
-    const closeOutChatroomModal = useCallback(() => {
-        const modal = Modal.getInstance(bsOutChatroomModal.current)
-        modal.hide();
-    }, [bsOutChatroomModal]);
-
-    //채팅방 나가기
-    const outChatroom = useCallback(async (chatroomNo) => {
-        if (!chatroomNo) return;
-
-
-        const resp = await axios.delete(`/chat/outChatroom/${chatroomNo}`);
-        if (resp.status === 200) {
-            setChatrooms(chatrooms => chatrooms.filter(c => c.chatroomNo !== chatroomNo));
-            closeOutChatroomModal();
-            loadChatroomData();
-            loadEmpInChatroomData();
-            closeChatModal();
-        }
-
-    }, [setChatrooms, closeOutChatroomModal]);
-
-    const openOutChatroomModal = useCallback((chatroomNo) => {
-        if (!chatroomNo) return;
-        const modal = new Modal(bsOutChatroomModal.current);
-        modal.show();
-    }, [bsOutChatroomModal]);
-
-
-    // useEffect(() => {
-    //     if (scrollRef.current) {
-    //         scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    //     }
-    // }, [messages]);
-
-
     //채팅방 이름 수정 모달
     const openChatroomNameChangeModal = useCallback((chatroomNo) => {
         if (!chatroomNo) return;
@@ -461,8 +426,14 @@ const ChatRoom = () => {
         setShowParticipants(false);
         setChatroomInfo(false);
         setMessageInput("");
-        closeEmpListModal();
+        setInviteSearchInput("");
         setShowInviteSearch(false);
+        if (bsEmpListModal.current) {
+            const empListModal = Modal.getInstance(bsEmpListModal.current);
+            if (empListModal) {
+                empListModal.hide();
+            }
+        }
     }, []);
 
     const modalScrollListener = useCallback(throttle(() => {
@@ -479,28 +450,70 @@ const ChatRoom = () => {
         }
     }, 300), [last]);
 
+    const closeOutChatroomModal = useCallback(() => {
+        if (bsOutChatroomModal.current) {
+            const modal = Modal.getInstance(bsOutChatroomModal.current);
+            if (modal) {
+                modal.hide();
+            }
+        }
+    }, [bsOutChatroomModal]);
+
+    const outChatroom = useCallback(async (chatroomNo) => {
+        if (!chatroomNo) return;
+
+        try {
+            const resp = await axios.delete(`/chat/outChatroom/${chatroomNo}`);
+            if (resp.status === 200) {
+                setChatrooms(chatrooms => chatrooms.filter(c => c.chatroomNo !== chatroomNo));
+                closeOutChatroomModal();
+                closeChatModal();
+                loadEmpInChatroomData();
+                loadChatroomData();
+            }
+        } 
+        catch (error) {
+            if (error.response && error.response.status === 404) {
+                //채팅방이 이미 삭제된 경우
+                setChatrooms(chatrooms => chatrooms.filter(c => c.chatroomNo !== chatroomNo));
+                closeOutChatroomModal();
+                closeChatModal();
+                loadEmpInChatroomData();
+                loadChatroomData();
+            } else {
+                console.error("Error leaving chatroom:", error);
+            }
+        }
+    }, [setChatrooms, closeOutChatroomModal, closeChatModal, loadEmpInChatroomData, loadChatroomData]);
+
+    const openOutChatroomModal = useCallback((chatroomNo) => {
+        if (!chatroomNo) return;
+        if (bsOutChatroomModal.current) {
+            const modal = new Modal(bsOutChatroomModal.current);
+            modal.show();
+        }
+    }, [bsOutChatroomModal]);
 
     //모달오픈
     const openChatModal = useCallback((chatroomNo) => {
-        const modal = new Modal(bsModal.current);
-        setChatroomNo(chatroomNo);
+        if (bsModal.current) {
+            const modal = new Modal(bsModal.current);
+            setChatroomNo(chatroomNo);
 
-
-        const selectedChatroom = chatrooms.find(chatroom => chatroom.chatroomNo === chatroomNo);
-        if (selectedChatroom) {
-            setChatroomName(selectedChatroom.chatroomName);
-            // console.log("채팅방 이름 : ", selectedChatroom.chatroomName);
-            modal.show();
-            setPage(1);
-            loadMessageData();
+            const selectedChatroom = chatrooms.find(chatroom => chatroom.chatroomNo === chatroomNo);
+            if (selectedChatroom) {
+                setChatroomName(selectedChatroom.chatroomName);
+                modal.show();
+                setPage(1);
+                loadMessageData();
+            }
         }
-        else {
-            // console.log("채팅방을 찾을 수 없습니다.");
-        }
+    }, [bsModal, chatrooms, loadMessageData]);
 
 
+    useEffect(() => {
+        const modalContent = bsModal.current ? bsModal.current.querySelector('.modal-body') : null;
 
-        const modalContent = bsModal.current.querySelector('.modal-body');
         if (modalContent) {
             modalContent.addEventListener("scroll", modalScrollListener);
 
@@ -510,22 +523,21 @@ const ChatRoom = () => {
                         closeChatModal();
                         closeChatroomNameChangeModal();
                         closeOutChatroomModal();
+                    }} catch (error) {
+                        console.error('Error handling Escape key press:', error);
                     }
-                }
-                catch (error) {
-
-                }
+                
             };
 
             // document.addEventListener('mousedown', handleOutsideModalClick);
             document.addEventListener('keydown', handleEscKeyPress);
 
             return () => {
-                // document.removeEventListener('mousedown', handleOutsideModalClick);
+                modalContent.removeEventListener("scroll", modalScrollListener);
                 document.removeEventListener('keydown', handleEscKeyPress);
             };
         }
-    }, [bsModal, closeChatModal, loadMessageData, modalScrollListener]);
+    }, [bsModal, closeChatModal, closeChatroomNameChangeModal, closeOutChatroomModal, loadMessageData, modalScrollListener]);
 
     //모달 스크롤 이벤트제어
     useEffect(() => {
@@ -712,9 +724,6 @@ const ChatRoom = () => {
                                     onChange={handleInputChange}
                                     onKeyDown={handleKeyDown}
                                 />
-                                <button className="btn btn-pink">
-                                    <SlEmotsmile />
-                                </button>
                                 <button className="btn btn-pink" onClick={sendMessage}>
                                     <BsSend />
                                 </button>
@@ -734,7 +743,7 @@ const ChatRoom = () => {
                         </div>
                         <div className="modal-body">
                             <table className="table text-center">
-                                <tbody className="chat-tbody">
+                                <tbody className="">
                                     {empInfos.map(empInfo => (
                                         <React.Fragment key={empInfo.empNo}>
                                             <tr>
