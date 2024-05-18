@@ -85,6 +85,7 @@ const Login = () => {
     const [input, setInput] = useState({ id: "", pw: "" });
     const [join, setJoin] = useState({
         companyPw: "",
+        companyPwConfirm: "",
         companyName: "",
         companyBn: "",
         companyContact: "",
@@ -93,7 +94,8 @@ const Login = () => {
         companyAddress1: "",
         companyAddress2: ""
     });
-    const [validity, setValidity] = useState({ companyPw: true, companyEmail: true });
+    const [validity, setValidity] = useState({ companyPw: true, companyPwConfirm: true, companyEmail: true });
+
     const [isCertValid, setIsCertValid] = useState(false);
     const [showCertInput, setShowCertInput] = useState(false);
     const [showSendCertButton, setShowSendCertButton] = useState(true);
@@ -123,11 +125,16 @@ const Login = () => {
             setValidity({ ...validity, companyEmail: validateEmail(value) });
         } else if (name === 'companyPw') {
             setValidity({ ...validity, companyPw: validatePassword(value) });
+        } else if (name === 'companyPwConfirm') { // 비밀번호 확인 유효성 검사 추가
+            setValidity({ ...validity, companyPwConfirm: validatePasswordConfirm(value) });
         }
     }, [join, validity]);
 
     const validateEmail = email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
     const validatePassword = password => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(password);
+    const validatePasswordConfirm = passwordConfirm => {
+        return passwordConfirm === join.companyPw;
+    };
 
     const clearJoin = useCallback(() => {
         setJoin({
@@ -184,15 +191,27 @@ const Login = () => {
     const saveJoin = useCallback(async () => {
         const isEmailValid = validateEmail(join.companyEmail);
         const isPasswordValid = validatePassword(join.companyPw);
+        const isPasswordConfirmValid = validatePasswordConfirm(join.companyPwConfirm); // 비밀번호 확인 유효성 검사 추가
 
-        setValidity({ companyPw: isPasswordValid, companyEmail: isEmailValid });
+        setValidity({ companyPw: isPasswordValid, companyPwConfirm: isPasswordConfirmValid, companyEmail: isEmailValid });
 
-        if (!isEmailValid || !isPasswordValid || !isCertValid) {
-            window.alert("이메일 또는 비밀번호가 유효하지 않거나, 인증번호가 확인되지 않았습니다.");
+        if (!isEmailValid || !isPasswordValid || !isPasswordConfirmValid || !isCertValid) {
+            window.alert("이메일 또는 비밀번호가 유효하지 않거나, 비밀번호 확인이 일치하지 않거나, 인증번호가 확인되지 않았습니다.");
             return;
         }
 
-        const joinData = { ...join, grades: state.grades, depts: state.depts };
+        const joinData = {
+            companyPw: join.companyPw,
+            companyName: join.companyName,
+            companyBn: join.companyBn,
+            companyContact: join.companyContact,
+            companyEmail: join.companyEmail,
+            companyZipcode: join.companyZipcode,
+            companyAddress1: join.companyAddress1,
+            companyAddress2: join.companyAddress2,
+            grades: state.grades,
+            depts: state.depts
+        };
 
         try {
             const resp = await axios.post("/company/join", joinData);
@@ -372,6 +391,17 @@ const Login = () => {
                                             <div className="invalid-feedback">
                                                 비밀번호는 최소 8자, 대문자, 소문자, 숫자, 특수문자를 포함해야 합니다.<br />
                                                 <strong>사용 불가 특수문자: ' " + / \ ; : - _ ^ ( ) &lt; &gt;</strong>
+                                            </div>
+                                        </div>
+                                        <div className="form-floating mb-3">
+                                            <input type="password" name="companyPwConfirm"
+                                                value={join.companyPwConfirm}
+                                                onChange={changeJoinInput}
+                                                className={`form-control ${validity.companyPwConfirm ? '' : 'is-invalid'}`}
+                                                placeholder="*********" />
+                                            <label>비밀번호 확인</label>
+                                            <div className="invalid-feedback">
+                                                비밀번호가 일치하지 않습니다.
                                             </div>
                                         </div>
                                         <div className="form-floating mb-3">
