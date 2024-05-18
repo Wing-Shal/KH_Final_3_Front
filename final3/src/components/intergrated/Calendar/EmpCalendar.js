@@ -321,7 +321,7 @@ const EmpCalendar = () => {
                       static: true,
                       minuteIncrement: 30,
                     }}
-                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: formatDate(date) }))}
+                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarStart: formatDate(date) }))}
                     className="form-control"
                   />
                 </div>
@@ -388,7 +388,7 @@ const EmpCalendar = () => {
                       static: true,
                       minuteIncrement: 30,
                     }}
-                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarEnd: formatDate(date) }))}
+                    onChange={([date]) => setInput(prevInput => ({ ...prevInput, calendarStart: formatDate(date) }))}
                     className="form-control"
                   />
                 </div>
