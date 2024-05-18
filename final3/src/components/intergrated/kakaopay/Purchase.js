@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../../utils/CustomAxios";
-import { isPaidState } from "../../utils/RecoilData";
+import { isCheckedState, isPaidState, loginIdState, loginLevelState } from "../../utils/RecoilData";
 import { useRecoilState } from "recoil";
 import Logo from '../../../assets/PlanetLogo.png';
 import './Purchase.css';
@@ -12,7 +12,10 @@ const Purchase = ()=> {
     const [partnerOrderId, setPartnerOrderId] = useState("");
     const [partnerUserId, setPartnerUserId] = useState("");
     const [tid, setTid] = useState("");
+    const [loginId, setLoginId] = useRecoilState(loginIdState);
+    const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
     const [isPaid, setIsPaid] = useRecoilState(isPaidState);
+    const [isChecked, setIsChecked] = useRecoilState(isCheckedState);
 
     const purchase = useCallback(async() => {
         const resp = await axios.get("/kakaopay/purchase");
@@ -52,6 +55,15 @@ const Purchase = ()=> {
             window.removeEventListener('message', handleMessage);
         }
     }, [purchaseApprove]);
+
+    const logout = useCallback(() => {
+        setLoginId('');
+        setLoginLevel('');
+        setIsPaid('');
+        setIsChecked('');
+        delete axios.defaults.headers.common['Authorization'];
+        window.localStorage.removeItem("refreshToken");
+    }, [loginId, loginLevel]);
     
 
     return (
@@ -67,6 +79,9 @@ const Purchase = ()=> {
                 </div>
                 <div className="button-container">
                     <button onClick={purchase} className="purchase-button btn btn-secondary">Planet 이용 시작하기</button>
+                </div>
+                <div className="logout-container">
+                    <a className="text-danger" onClick={() => logout()}>로그아웃</a>
                 </div>
             </div>
 

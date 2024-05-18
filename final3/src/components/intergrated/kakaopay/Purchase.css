@@ -40,3 +40,9 @@
     color: #2D3436;
     
 }
+
+.logout-container a {
+    cursor: pointer;
+    font-size: 12px;
+    margin-top: 5px;
+}
