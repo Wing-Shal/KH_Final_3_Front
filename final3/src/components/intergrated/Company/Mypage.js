@@ -14,6 +14,8 @@ function CompanyMypage() {
   const [companyInfo, setCompanyInfo] = useState();
   const [editableInfo, setEditableInfo] = useState({});
 
+  const baseURL = process.env.REACT_APP_BASE_URL;
+
   const editModal = useRef();
   const openEditModal = useCallback((companyInfo) => {
       const modal = new Modal(editModal.current);
@@ -47,13 +49,11 @@ function CompanyMypage() {
   };
 
   const loadAttachNo = useCallback(async () => {
-    const resp = await axios.get('/company/companyImage');
-    console.log(resp.data);
-    const attachNo = resp.data;
-
-    if (attachNo) {
-      setImage(`http://localhost:8080/download/${attachNo}`);
-    } else {
+    try {
+      const resp = await axios.get('/company/companyImage');
+      const attachNo = resp.data;
+      setImage(`${baseURL}/download/${attachNo}`);
+    } catch(error) {
       setImage(defaultImage);
     }
 }, []);  
@@ -79,8 +79,6 @@ function CompanyMypage() {
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result);
-        // 이미지를 선택한 후 로컬 스토리지에 저장
-        // localStorage.setItem(`savedImage_${loginId}`, reader.result);
       };
       reader.readAsDataURL(file);
     }

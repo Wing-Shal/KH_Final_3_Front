@@ -151,8 +151,8 @@ const AdminCompany = () => {
     //주소 입력
     const [isOpen, setIsOpen] = useState(false);
     const postCodeStyle = {
-        
-      };
+
+    };
     const completeHandler = (data) => {
         const { address, zonecode } = data;
         setInput({
@@ -173,63 +173,63 @@ const AdminCompany = () => {
     };
     return (
         <>
-            <Jumbotron title="회사 목록/관리" />
-
-            <div className="form-check">
-                <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="showUnauthenticatedOnly"
-                    checked={showUnauthenticatedOnly}
-                    onChange={handleUnauthenticatedChange}
-                />
-                <label className="form-check-label" htmlFor="showUnauthenticatedOnly">
-                    인증되지 않은 회사만 보기
-                </label>
-                <br />
-                <input
-                    type="checkbox"
-                    className="form-check-input"
-                    id="showInactiveOnly"
-                    checked={showInactiveOnly}
-                    onChange={handleInactiveChange}
-                />
-                <label className="form-check-label" htmlFor="showInactiveOnly">
-                    결제 중이지 않은 회사만 보기
-                </label>
-            </div>
-
-            <div className="search-container mt-3">
-                <select
-                    className="form-select"
-                    onChange={handleColumnChange}
-                    value={searchColumn}
-                >
-                    <option value="companyName">사명</option>
-                    <option value="companyContact">전화번호</option>
-                    <option value="companyEmail">이메일</option>
-                </select>
-                <input
-                    type="text"
-                    className="form-control"
-                    placeholder="검색어 입력"
-                    value={searchKeyword}
-                    onChange={handleKeywordChange}
-                />
-            </div>
-
             <div className='row mt-4'>
                 <div className='col'>
-                    <table className='table'>
+                    <table className='table admin-table'>
                         <thead className='text-center'>
                             <tr>
                                 <th className='tw-1'>구분번호</th>
                                 <th className='tw-2'>사명</th>
                                 <th className='tw-2'>전화번호</th>
-                                <th className='tw-2'>이메일</th>
+                                <th className='tw-3'>이메일</th>
                                 <th className='tw-2'>인증여부</th>
                                 <th className='tw-2'>결제상태</th>
                                 <th className='tw-1'>관리</th>
+                            </tr>
+                            <tr>
+                                <td colSpan="7" className='text-start'>
+                                    <div className="search-container mt-3">
+                                        <select
+                                            className="form-select"
+                                            onChange={handleColumnChange}
+                                            value={searchColumn}
+                                        >
+                                            <option value="companyName">사명</option>
+                                            <option value="companyContact">전화번호</option>
+                                            <option value="companyEmail">이메일</option>
+                                        </select>
+                                        <input
+                                            type="text"
+                                            className="form-control"
+                                            placeholder="검색어 입력"
+                                            value={searchKeyword}
+                                            onChange={handleKeywordChange}
+                                        />
+                                    </div>
+                                    <div className="form-check form-check-inline ">
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            id="showUnauthenticatedOnly"
+                                            checked={showUnauthenticatedOnly}
+                                            onChange={handleUnauthenticatedChange}
+                                        />
+                                        <label className="form-check-label" htmlFor="showUnauthenticatedOnly">
+                                            인증되지 않은 회사만 보기
+                                        </label>
+                                        <br />
+                                        <input
+                                            type="checkbox"
+                                            className="form-check-input"
+                                            id="showInactiveOnly"
+                                            checked={showInactiveOnly}
+                                            onChange={handleInactiveChange}
+                                        />
+                                        <label className="form-check-label" htmlFor="showInactiveOnly">
+                                            결제 중이지 않은 회사만 보기
+                                        </label>
+                                    </div>
+                                </td>
                             </tr>
                         </thead>
                         <tbody className='text-center'>
@@ -265,7 +265,7 @@ const AdminCompany = () => {
                                             </td>
                                         </>
                                     )}
-                                    
+
                                     <td>
                                         <FaPenToSquare className='text-warning me-2 pointer'
                                             onClick={(e) => openEditModal(company)} />
@@ -348,7 +348,7 @@ const AdminCompany = () => {
                             </div>
                             <button className='btn btn-dark' type='button' onClick={() => toggleHandler()}>우편번호 찾기</button>
                             {isOpen && (
-                                <div>                                    
+                                <div>
                                     <DaumPostcode
                                         style={postCodeStyle}
                                         onComplete={completeHandler}

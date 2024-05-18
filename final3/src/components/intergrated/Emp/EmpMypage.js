@@ -131,14 +131,14 @@ function EmpMypage() {
     }
   };
 
-  const loadAttachNo = useCallback(async () => {
-    const resp = await axios.get('/emp/image');
-    console.log(resp.data);
-    const attachNo = resp.data;
+  const baseURL = process.env.REACT_APP_BASE_URL;
 
-    if (attachNo) {
-      setImage(`http://localhost:8080/download/${attachNo}`);
-    } else {
+  const loadAttachNo = useCallback(async () => {
+    try {
+      const resp = await axios.get('/emp/image');
+      const attachNo = resp.data;
+      setImage(`${baseURL}/download/${attachNo}`);
+    } catch(error) {
       setImage(defaultImage);
     }
   }, []);
