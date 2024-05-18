@@ -24,8 +24,8 @@ const Dept = () => {
     };
 
     const saveDepts = async () => {
-        console.log(depts);
         const resp = await axios.post("/company/dept", depts);
+        loadData();
     };
 
     const changeInput = (index, e) => {

@@ -25,6 +25,7 @@ const Grade = () => {
 
     const saveGrades = async () => {
         const resp = await axios.post("/company/grade", grades);
+        loadData();
     };
 
     const changeInput = (index, e) => {
