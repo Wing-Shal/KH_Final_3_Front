@@ -574,7 +574,7 @@ const ChatRoom = () => {
     return (
         <>
             <div className="row mt-4">
-                <div className="col-md-6">
+                <div className="col-md-6 chat-goods">
                     <table className="table">
                         <thead className="text-center">
                             <tr>
@@ -619,7 +619,7 @@ const ChatRoom = () => {
                     </table>
                 </div>
 
-                <div className="col-md-6 table-emp">
+                <div className="col-md-6 table-emp chat-goods">
                     <table className="table">
                         <thead className="text-center">
                             <tr>
