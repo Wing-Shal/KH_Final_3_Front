@@ -19,6 +19,7 @@ const BoardNoticeEdit = () => {
         const loadNoticeData = async () => {
             const resp = await axios.get(`/boardNotice/${noticeNo}`);
             setInput({
+                noticeNo: noticeNo, 
                 noticeTitle: resp.data.noticeTitle,
                 noticeContent: resp.data.noticeContent,
             });
@@ -60,8 +61,8 @@ const BoardNoticeEdit = () => {
         if (choice === false) return;
         const resp = await axios.patch("/boardNotice/", input);
 
-        
-        
+        navigate(`/company/notice/${noticeNo}`);
+        console.log(resp.data);
     }, [input]);
 
     return (

@@ -59,7 +59,7 @@ const BoardNotice = () => {
                                 <tr key={notice.noticeNo}>
                                     <td>{notice.noticeNo}</td>
                                     <td>
-                                        <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
+                                        <Link to={`/company/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
                                     </td>
                                     <td>{notice.noticeWtimeWithMinute}</td>
                                 </tr>
