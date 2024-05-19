@@ -718,7 +718,7 @@ const ChatRoom = () => {
                             <div className="modal-footer">
                                 <textarea
                                     className="form-control"
-                                    placeholder="할 말 입력하셈"
+                                    placeholder="메세지를 입력하세요."
                                     ref={textAreaRef}
                                     value={messageInput}
                                     onChange={handleInputChange}
@@ -738,7 +738,7 @@ const ChatRoom = () => {
                 <div className="modal-dialog modal-dialog-scrollable">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h1 className="modal-title fs-5" id="staticBackdropLabel">사원사원</h1>
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">사원정보</h1>
                             <button type="button" className="btn-close" aria-label="Close" onClick={closeEmpModal}></button>
                         </div>
                         <div className="modal-body">
@@ -792,7 +792,7 @@ const ChatRoom = () => {
                 <div className="modal-dialog modal-dialog-scrollable">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h5 className="modal-title">☆ㅋㅋ사원 초대ㅋㅋ☆</h5>
+                            <h5 className="modal-title">☆사원 초대☆</h5>
                             <span className="magnifyingGlass ms-2 clickable" onClick={toggleInviteSearch}>
                                 <HiMagnifyingGlass />
                             </span>
