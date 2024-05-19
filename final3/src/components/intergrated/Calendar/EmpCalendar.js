@@ -54,6 +54,17 @@ const EmpCalendar = () => {
     const token = axios.defaults.headers.common['Authorization'];
     if (!token) return;
 
+    if (input.calendarTitle.length > 33) {
+      window.alert("제목의 제한 글자수를 초과했습니다. 최대 33글자까지 입력 가능합니다.");
+      return;
+    }
+
+    if (input.calendarContent.length > 300) {
+      window.alert("내용의 제한 글자수를 초과했습니다. 최대 300자까지 입력 가능합니다.");
+      return;
+    }
+  
+
     const formattedInput = {
       ...input,
       calendarStart: formatDate(new Date(input.calendarStart)),
@@ -137,6 +148,16 @@ const EmpCalendar = () => {
 
   //수정하기
   const editCalendar = useCallback(async () => {
+    if (input.calendarTitle.length > 33) {
+      window.alert("제목의 제한 글자수를 초과했습니다. 최대 33글자까지 입력 가능합니다.");
+      return;
+    }
+
+    if (input.calendarContent.length > 300) {
+      window.alert("내용의 제한 글자수를 초과했습니다. 최대 300자까지 입력 가능합니다.");
+      return;
+    }
+    
     const formattedInput = {
       ...input,
       calendarStart: formatDate(new Date(input.calendarStart)),

@@ -82,17 +82,19 @@
   background-color: rgba(50, 50, 50, 0.15);
 }
 
-/* 텍스트입력창 */
-textarea {
+.modal-footer textarea {
+  /* flex: 1;
+  margin-right: 10px; */
   resize: none;
   overflow: hidden;
 }
 
 /* 채팅 디자인 */
-
 .chat-container {
-  display: flex; /* 채팅 컨테이너를 flex container로 만듭니다. */
-  flex-direction: column; /* 세로 방향으로 아이템들을 배치합니다. */
+  display: flex;
+  /* 채팅 컨테이너를 flex container로 만듭니다. */
+  flex-direction: column;
+  /* 세로 방향으로 아이템들을 배치합니다. */
 }
 
 .chat-bubble {
@@ -109,7 +111,7 @@ textarea {
 .chat-bubble.mine {
   align-self: flex-end;
   font-size: 13px;
-  background-color: #FFC0CB; 
+  background-color: #FFC0CB;
 }
 
 
@@ -120,13 +122,15 @@ textarea {
   background-color: #f7d7dc;
 }
 
-.sender-info, .message-time {
+.sender-info,
+.message-time {
   color: #000;
 }
 
 .message-content {
   margin-top: 5px;
-  color: #000;  /* 메시지 텍스트 색상 */
+  color: #000;
+  /* 메시지 텍스트 색상 */
 }
 
 .message-time {
@@ -143,34 +147,30 @@ textarea {
   height: auto;
   background: white;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  z-index: 1050; /* 모달보다 높은 z-index */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1050;
   overflow-y: auto;
-}
-
-/* 참여자 목록 내부 스타일링 */
-.participants-sidebar {
-  /* padding: 20px; */
   list-style: none;
   margin: 0;
-}
-
-.participants-sidebar {
   padding: 10px 20px;
   margin: 0;
-  background-color: #f8f9fa;
+  background-color: #faf4f8;
   border-bottom: 1px solid #dee2e6;
-}
-
-.participants-sidebar {
-  width: 200px;
-  overflow-y: auto; /* 참여자 목록 부분만 스크롤 */
+  width: 150px;
+  overflow-y: auto;
+  /* 참여자 목록 부분만 스크롤 */
   /* margin-right: 100px;  */
-  display: none; 
+  display: none;
+  margin-top: 50px;
 }
 
 .participants-sidebar.expanded {
-  display: block; /* 확장됐을 때 보임 */
+  display: block;
+  /* 확장됐을 때 보임 */
+}
+
+.chat-tbody {
+  cursor: pointer;
 }
 
 .clickable {
@@ -188,4 +188,126 @@ textarea {
 
 .btn-pink {
   background-color: #f7d7dc;
+}
+
+.btn-pink:hover {
+  background-color: #fab5c9;
+}
+
+.modal-header>div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 65%;
+}
+
+.modal-title {
+  margin-right: 10px;
+  /* 채팅방 이름과 설정 아이콘 사이의 간격 조정 */
+}
+
+.btn-close {
+  margin-left: 10px;
+  /* 닫기 버튼과 설정 아이콘 사이의 간격 조정 */
+}
+
+.gear {
+  color: #d68b98;
+  align-items: center;
+}
+
+.magnifyingGlass{
+  color: #d68b98;
+  align-items: center;
+}
+
+.chatroom-name {
+  width: 300px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.manageChatroom-sidebar {
+  position: fixed;
+  right: 10px;
+  top: 10px;
+  width: 200px;
+  height: auto;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1050;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 10px 20px;
+  margin: 0;
+  background-color: #faf4f8;
+  border-bottom: 1px solid #dee2e6;
+  width: 200px;
+  overflow-y: auto;
+  /* 참여자 목록 부분만 스크롤 */
+  /* margin-right: 100px;  */
+  display: none;
+  margin-top: 50px;
+}
+
+.manageChatroom-sidebar.expanded {
+  display: block;
+  /* 확장됐을 때 보임 */
+}
+
+.last-message {
+  font-size: 0.9em;
+  color: #888;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block; 
+  text-align: left;
+  width: 300px;
+}
+
+.last-message-time {
+  font-size: 0.9em;
+  color: #aaa;
+  display: block; 
+  text-align: right;
+}
+
+.chatroom-name{
+  font-size: 15px;
+}
+
+.chatroom-search-wrapper.show {
+  display: block;
+}
+
+.highlight {
+  background-color: #fcd6dc;
+}
+
+.table-emp{
+  max-width: 300px;
+}
+
+.invite-search-wrapper {
+  display: none;
+  margin-bottom: 10px;
+  margin-left: 15px;
+  margin-right: 15px;
+}
+
+.invite-search-wrapper.show {
+  display: block;
+}
+
+/* 채팅방 테두리 스타일 */
+.chat-goods table {
+  border-radius: 15px;
+  border: 3px solid #FFC0CB;
+  background: transparent;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+  margin: 10px;
 }

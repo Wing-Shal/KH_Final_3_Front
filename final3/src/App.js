@@ -11,6 +11,9 @@ import SidebarSelector from './components/sidebar/SidebarSelector';
 import AdminRoute from './components/CustomRoute/AdminRoute';
 import LoginRoute from './components/CustomRoute/LoginRoute';
 import CompanyRoute from './components/CustomRoute/CompanyRoute';
+import { BsSend } from "react-icons/bs";
+import { PiGearSixDuotone } from "react-icons/pi";
+import { HiMagnifyingGlass } from "react-icons/hi2";
 import BGI from './assets/bgImage.jpg';
 
 //토스티파이 알림용
@@ -107,18 +110,72 @@ const App = () => {
   const [messageInput, setMessageInput] = useState("");
   const [chatroomName, setChatroomName] = useState("");
   const [chatroomNo, setChatroomNo] = useState("");
+  const [emps, setEmps] = useState([]);
   const [empInChatroom, setEmpInChatroom] = useState([]);
+  const [newChatroomName, setNewChatroomName] = useState(""); //채팅방 이름 변경
   const bsModal = useRef();
-  const textAreaRef = useRef(null);
+  const bsEmpListModal = useRef();
+  const bsOutChatroomModal = useRef();
+  const bsChatroomNameChangeModal = useRef();
   const [messages, setMessages] = useState([]);
-  const [chatrooms, setChatrooms] = useState([]);
   const scrollRef = useRef();
+  const [chatrooms, setChatrooms] = useState([]);
+  const textAreaRef = useRef(null);
 
   const [showParticipants, setShowParticipants] = useState(false);
+  const [showChatroomInfo, setChatroomInfo] = useState(false);
 
+  //사원 초대 검색
+  const [inviteSearchInput, setInviteSearchInput] = useState("");
+  const [inviteSearchResults, setInviteSearchResults] = useState([]);
+  const [showInviteSearch, setShowInviteSearch] = useState(false);
+
+  //검색결과 하이라이팅
+  const highlightText = (text, highlight) => {
+    const parts = text.split(new RegExp(`(${highlight})`, 'gi'));
+    return parts.map((part, index) =>
+      part.toLowerCase() === highlight.toLowerCase() ? (
+        <span key={index} className="highlight">{part}</span>
+      ) : (
+        part
+      )
+    );
+  };
+
+  //사원 초대 검색 토글
+  const toggleInviteSearch = () => {
+    setShowInviteSearch(prev => !prev);
+    setInviteSearchInput("");
+    setInviteSearchResults([]);
+  };
+
+  //초대 검색 입력 핸들러
+  const handleInviteSearchInput = (e) => {
+    const value = e.target.value;
+    setInviteSearchInput(value);
+
+    if (value.trim() !== "") {
+      const results = emps.filter(emp =>
+        emp.empName.toLowerCase().includes(value.toLowerCase())
+      );
+      setInviteSearchResults(results);
+    } else {
+      setInviteSearchResults([]);
+    }
+  };
+
+  //참여자 토글
   const toggleParticipants = () => {
     setShowParticipants(prev => {
       // console.log('현재 상태:', prev, '바뀔 상태:', !prev); //상태 변화
+      return !prev;
+    });
+  };
+
+  //채팅방 관리(채팅방 나가기, 채팅방 이름 변경 등등..)
+  const manageChatroom = () => {
+    setChatroomInfo(prev => {
+      // console.log('현재 상태:', prev, '바뀔 상태:', !prev);
       return !prev;
     });
   };
@@ -199,7 +256,34 @@ const App = () => {
         console.error("저요");
       }
     };
-  }, [setSocket, loginId]);
+  }, [userChatroomNos, setSocket, loginId]);
+
+  //채팅룸 불러오는 함수
+  useEffect(() => {
+    loadChatroomData();
+  }, []);
+
+  const loadChatroomData = useCallback(async () => {
+
+    const resp = await axios.get("/chat/list");
+    if (resp.data) {
+      const chatroomsWithMessages = await Promise.all(
+        resp.data.map(async (chatroom) => {
+          try {
+            const messageResp = await axios.get(`/chat/recentMessageList/${chatroom.chatroomNo}`);
+            const lastMessage = messageResp.data.length > 0 ? messageResp.data[0].messageContent : "";
+            const lastMessageTime = messageResp.data.length > 0 ? messageResp.data[0].messageTimeMinute : "";
+            return { ...chatroom, recentMessage: lastMessage, recentMessageTime: lastMessageTime };
+          }
+          catch (error) {
+            return { ...chatroom, recentMessage: "", recentMessageTime: "" };
+          }
+        })
+      );
+      setChatrooms(chatroomsWithMessages);
+    }
+
+  }, []);
 
 
 
@@ -214,6 +298,83 @@ const App = () => {
     setEmpInChatroom(resp.data);
   }, [chatroomNo])
 
+  const loadCompanyEmpData = useCallback(async () => {
+    const resp = await axios.get("/emp/list");
+    setEmps(resp.data);
+  }, []);
+
+  //사원 초대하는 함수
+  const openEmpListModal = useCallback(() => {
+    loadCompanyEmpData();
+    const modal = new Modal(bsEmpListModal.current);
+    modal.show();
+  }, [loadCompanyEmpData, bsEmpListModal]);
+
+  const closeEmpListModal = useCallback(() => {
+    const modal = Modal.getInstance(bsEmpListModal.current)
+    modal.hide();
+  }, [bsEmpListModal]);
+
+  useEffect(() => {
+    inviteEmp();
+  }, [])
+
+  const inviteEmp = useCallback(async (empNo) => {
+    if (!chatroomNo) return;
+    const resp = await axios.post(`/chat/inviteEmp/${chatroomNo}/${empNo}`);
+    // console.log(resp.data);
+    if (resp.data) {
+      const newChatroomNo = resp.data.chatroomNo;
+
+      closeChatModal();
+      closeEmpListModal();
+      loadChatroomData();
+
+      setTimeout(() => {
+        setChatroomNo(newChatroomNo);
+        openChatModal(newChatroomNo);
+      }, 300);
+    }
+  }, [chatroomNo]);
+
+  //채팅방 이름 수정 함수
+  const changeChatroomName = useCallback(async () => {
+    const chatroomDto = {
+      chatroomNo: chatroomNo,
+      chatroomName: newChatroomName
+    };
+
+    const resp = await axios.patch(`/chat/`, chatroomDto);
+    if (resp.status === 200) {
+      setChatrooms(prevChatrooms =>
+        prevChatrooms.map(chatroom =>
+          chatroom.chatroomNo === chatroomNo
+            ? { ...chatroom, chatroomName: newChatroomName }
+            : chatroom
+        )
+      );
+      setChatroomName(newChatroomName);
+      closeChatroomNameChangeModal();
+    }
+
+  }, [chatroomNo, newChatroomName]);
+
+  //채팅방 이름 수정 모달
+  const openChatroomNameChangeModal = useCallback((chatroomNo) => {
+    if (!chatroomNo) return;
+    const selectedChatroom = chatrooms.find(chatroom => chatroom.chatroomNo === chatroomNo);
+    if (selectedChatroom) {
+      setNewChatroomName(selectedChatroom.chatroomName);
+    }
+    const modal = new Modal(bsChatroomNameChangeModal.current);
+    modal.show();
+  }, [bsChatroomNameChangeModal, chatrooms]);
+
+  const closeChatroomNameChangeModal = useCallback(() => {
+    const modal = Modal.getInstance(bsChatroomNameChangeModal.current)
+    modal.hide();
+  }, [bsChatroomNameChangeModal]);
+
   //메세지 불러오는 함수
   const loadMessageData = useCallback(async () => {
     try {
@@ -224,10 +385,23 @@ const App = () => {
       setMessages(prevMessages => [...resp.data.list, ...prevMessages]);
       setLast(resp.data.last);
 
-      setTimeout(() => {
-        const newScrollHeight = modalContent.scrollHeight; // 데이터 로드 후 스크롤 높이 측정
-        modalContent.scrollTop = newScrollHeight - oldScrollHeight; // 이전 스크롤 위치 복원
-      }, 0);
+      //최초에 불러온 경우는 스크롤을 아래로 이동
+      //console.log(resp.data.list.length, messages.length);
+      if (messages.length === 0 || resp.data.list.length === messages.length) {
+        //console.log("처음 불러왔어요");
+        setTimeout(() => {
+          // console.log(scrollRef.current, scrollRef.current.scrollTop, scrollRef.current.scrollHeight);
+          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }, 200);
+      }
+      //최초가 아니라 나중에 추가한 경우 스크롤을 기존위치로 이동
+      else {
+        setTimeout(() => {
+          //console.log("무한스크롤로 불러왔어요");
+          const newScrollHeight = modalContent.scrollHeight;
+          modalContent.scrollTop = newScrollHeight - oldScrollHeight;
+        }, 10);
+      }
     }
     catch (error) {
       console.error("에러임", error);
@@ -248,11 +422,12 @@ const App = () => {
         newSocket.onmessage = (e) => {
           const newMessage = JSON.parse(e.data);
           setMessages(prevMessages => [...prevMessages, newMessage]);
+          loadChatroomData();
         };
         loadMessageData();
       };
-
       connectWebSocket();
+
       return () => {
         if (socketRef.current) {
           socketRef.current.close();
@@ -308,6 +483,17 @@ const App = () => {
     }
     setChatroomNo("");
     setMessages([]);
+    setShowParticipants(false);
+    setChatroomInfo(false);
+    setMessageInput("");
+    setInviteSearchInput("");
+    setShowInviteSearch(false);
+    if (bsEmpListModal.current) {
+      const empListModal = Modal.getInstance(bsEmpListModal.current);
+      if (empListModal) {
+        empListModal.hide();
+      }
+    }
   }, []);
 
   const modalScrollListener = useCallback(throttle(() => {
@@ -324,51 +510,93 @@ const App = () => {
     }
   }, 300), [last]);
 
+  const closeOutChatroomModal = useCallback(() => {
+    if (bsOutChatroomModal.current) {
+      const modal = Modal.getInstance(bsOutChatroomModal.current);
+      if (modal) {
+        modal.hide();
+      }
+    }
+  }, [bsOutChatroomModal]);
+
+  const outChatroom = useCallback(async (chatroomNo) => {
+    if (!chatroomNo) return;
+
+    try {
+      const resp = await axios.delete(`/chat/outChatroom/${chatroomNo}`);
+      if (resp.status === 200) {
+        setChatrooms(chatrooms => chatrooms.filter(c => c.chatroomNo !== chatroomNo));
+        closeOutChatroomModal();
+        closeChatModal();
+        loadEmpInChatroomData();
+        loadChatroomData();
+      }
+    }
+    catch (error) {
+      if (error.response && error.response.status === 404) {
+        //채팅방이 이미 삭제된 경우
+        setChatrooms(chatrooms => chatrooms.filter(c => c.chatroomNo !== chatroomNo));
+        closeOutChatroomModal();
+        closeChatModal();
+        loadEmpInChatroomData();
+      } else {
+        console.error("Error leaving chatroom:", error);
+      }
+    }
+  }, [setChatrooms, closeOutChatroomModal, closeChatModal, loadEmpInChatroomData, loadChatroomData]);
+
+  const openOutChatroomModal = useCallback((chatroomNo) => {
+    if (!chatroomNo) return;
+    if (bsOutChatroomModal.current) {
+      const modal = new Modal(bsOutChatroomModal.current);
+      modal.show();
+    }
+  }, [bsOutChatroomModal]);
+
 
   //모달오픈
   const openChatModal = useCallback((chatroomNo) => {
-    const modal = new Modal(bsModal.current);
-    modal.show();
-    setChatroomNo(chatroomNo);
+    if (bsModal.current) {
+      const modal = new Modal(bsModal.current);
+      setChatroomNo(chatroomNo);
 
-    setPage(1);
+      if (chatroomNo) {
+        setChatroomName(chatroomNo.chatroomName);
+        modal.show();
+        setPage(1);
+        loadMessageData();
+      }
+    }
+  }, [bsModal, loadMessageData]);
 
-    loadMessageData();
+  useEffect(() => {
+    const modalContent = bsModal.current ? bsModal.current.querySelector('.modal-body') : null;
 
-
-
-    const modalContent = bsModal.current.querySelector('.modal-body');
     if (modalContent) {
       modalContent.addEventListener("scroll", modalScrollListener);
 
-      const handleOutsideModalClick = (event) => {
-        if (bsModal.current && !bsModal.current.contains(event.target)) {
-          closeChatModal();
-        }
-      };
-
-      //모달 오픈 시 스크롤 맨 밑으로 내리는거
-      setTimeout(() => {
-        if (scrollRef.current) {
-          scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-      }, 400);
-
       const handleEscKeyPress = (event) => {
-        if (event.key === 'Escape') {
-          closeChatModal();
+        try {
+          if (event.key === 'Escape') {
+            closeChatModal();
+            closeChatroomNameChangeModal();
+            closeOutChatroomModal();
+          }
+        } catch (error) {
+          console.error('Error handling Escape key press:', error);
         }
+
       };
 
-      document.addEventListener('mousedown', handleOutsideModalClick);
+      // document.addEventListener('mousedown', handleOutsideModalClick);
       document.addEventListener('keydown', handleEscKeyPress);
 
       return () => {
-        document.removeEventListener('mousedown', handleOutsideModalClick);
+        modalContent.removeEventListener("scroll", modalScrollListener);
         document.removeEventListener('keydown', handleEscKeyPress);
       };
     }
-  }, [bsModal, closeChatModal, loadMessageData, modalScrollListener]);
+  }, [bsModal, closeChatModal, closeChatroomNameChangeModal, closeOutChatroomModal, loadMessageData, modalScrollListener]);
 
   //모달 스크롤 이벤트제어
   useEffect(() => {
@@ -384,7 +612,7 @@ const App = () => {
 
 
   const moveChatroom = (chatroomNo) => {
-    console.log(chatroomNo);
+    // console.log(chatroomNo);
     openChatModal(chatroomNo);
   };
 
@@ -423,7 +651,7 @@ const App = () => {
                     <Route path='/emp/CompInfo' element={<CompInfo />} />
                     <Route path="/board/notice" element={<BoardNotice />} />
                     <Route path="/board/notice/:noticeNo" element={<BoardNoticeDetail />} />
-                    <Route path="/kakaopay/purchase" element={<Purchase/>} />
+                    <Route path="/kakaopay/purchase" element={<Purchase />} />
                     <Route path="/kakaopay/purchaseSuccess" element={<PurchaseSuccess />} />
                     <Route path="/kakaopay/subscriptionInactive" element={<SubScriptionInactive />} />
                     <Route path="/company" element={<CompanyRoute refreshLogin={refreshLogin} />} >
@@ -453,26 +681,35 @@ const App = () => {
         </div>
       </div>
 
-      <div ref={bsModal} className="modal fade" id="staticBackdrop" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div ref={bsModal} className="modal fade" id="chatModal" data-bs-backdrop="static" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
         <Draggable cancel=".form-control, .chat-container">
           <div className="modal-dialog modal-dialog-scrollable">
             <div className="modal-content">
               <div className="modal-header">
                 <div className='col-3'>
-                  <button className="btn btn-primary clickable" onClick={toggleParticipants}>참여자</button>
+                  <button className="btn btn-secondary clickable" onClick={toggleParticipants}>참여자</button>
                   <ul className={`participants-sidebar ${showParticipants ? 'expanded' : ''}`}>
-                    <button className="btn btn-primary clickable" onClick={toggleParticipants}>닫기</button>
                     {empInChatroom.map(emp => (
                       <div key={emp.empNo} className="participant-list">{emp.empName} ({emp.empGrade})</div>
                     ))}
+                    <button className="mt-2 btn btn-secondary" onClick={() => openEmpListModal(chatroomNo)}>사원초대</button>
                   </ul>
                 </div>
                 <p className="modal-title chatroom-name" id="staticBackdropLabel">
                   {chatroomName}
                 </p>
+                <p className="modal-title gear clickable" onClick={manageChatroom}>
+                  <PiGearSixDuotone />
+                </p>
+                <ul className={`manageChatroom-sidebar ${showChatroomInfo ? 'expanded' : ''}`}>
+                  {chatroomName}<br />
+                  <button className="mt-2 btn btn-secondary" onClick={() => openChatroomNameChangeModal(chatroomNo)}>채팅방이름수정</button>
+                  <button className="mt-2 btn btn-danger" onClick={() => openOutChatroomModal(chatroomNo)}>채팅방나가기</button>
+                </ul>
                 <button type="button" className="btn-close" onClick={closeChatModal}></button>
               </div>
-              <div className="modal-body">
+
+              <div className="modal-body" ref={scrollRef}>
                 <div className="chat-container">
                   {messages.map(message => (
                     <div key={message.messageNo} className={`chat-bubble ${message.messageSender === loginId ? 'mine' : 'others'}`}>
@@ -481,28 +718,115 @@ const App = () => {
                           {message.messageSenderName} ({message.messageSenderGrade})
                         </div>
                       )}
-                      <div className="message-content">{message.messageContent}</div>
+                      <div className="message-content">
+                        <div dangerouslySetInnerHTML={{ __html: message.messageContent.replace(/\n/g, '<br />') }} />
+                      </div>
                       <div className="message-time">{message.messageTimeMinute}</div>
+                      {/* <div>{message.readCountForChatroom > 0 ? message.readCountForChatroom : ''}</div> */}
                     </div>
                   ))}
                 </div>
               </div>
+
               <div className="modal-footer">
                 <textarea
                   className="form-control"
-                  placeholder="할 말 입력하셈"
+                  placeholder="메세지를 입력하세요."
                   ref={textAreaRef}
                   value={messageInput}
                   onChange={handleInputChange}
                   onKeyDown={handleKeyDown}
                 />
-                <button className="btn btn-success" onClick={sendMessage}>
-                  전송
+                <button className="btn btn-pink" onClick={sendMessage}>
+                  <BsSend />
                 </button>
               </div>
             </div>
           </div>
         </Draggable>
+      </div>
+
+      <div ref={bsEmpListModal} id="empListModal" className="modal fade" tabIndex="-1">
+        <div className="modal-dialog modal-dialog-scrollable">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">☆사원 초대☆</h5>
+              <span className="magnifyingGlass ms-2 clickable" onClick={toggleInviteSearch}>
+                <HiMagnifyingGlass />
+              </span>
+              <button type="button" className="btn-close" onClick={e => closeEmpListModal()}></button>
+            </div>
+            <div className={`invite-search-wrapper ${showInviteSearch ? 'show' : ''}`}>
+              {showInviteSearch && (
+                <input
+                  type="text"
+                  className="form-control mt-2"
+                  placeholder="사원 이름 검색"
+                  value={inviteSearchInput}
+                  onChange={handleInviteSearchInput}
+                />
+              )}
+            </div>
+            <div className="modal-body">
+              <table className="table">
+                <tbody>
+                  {(inviteSearchResults.length > 0 ? inviteSearchResults : emps).filter(emp => !empInChatroom.some(e => e.empNo === emp.empNo)).map(emp => (
+                    <tr key={emp.empNo}>
+                      <td onClick={() => inviteEmp(emp.empNo)}>
+                        {inviteSearchInput ? highlightText(emp.empName, inviteSearchInput) : emp.empName} ({emp.empGrade})
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div ref={bsChatroomNameChangeModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="staticBackdropLabel">♡채팅방 이름 변경 ^___^♡</h1>
+              <button type="button" className="btn-close" aria-label="Close" onClick={e => closeChatroomNameChangeModal()}></button>
+            </div>
+            <div className="modal-body">
+              <div className="form-group">
+                <input
+                  type="text"
+                  className="form-control"
+                  id="newChatroomName"
+                  placeholder="변경할 채팅방 이름을 입력하세요."
+                  value={newChatroomName}
+                  onChange={e => setNewChatroomName(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-pink" onClick={changeChatroomName}>이름 변경</button>
+              <button type="button" className="btn btn-secondary" onClick={closeChatroomNameChangeModal}>닫기</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div ref={bsOutChatroomModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h1 className="modal-title fs-5" id="staticBackdropLabel">ㄹㅇ 나가실건가요 ..? ..</h1>
+              <button type="button" className="btn-close" aria-label="Close" onClick={e => closeOutChatroomModal()}></button>
+            </div>
+            <div className="modal-body">
+              나가기버튼 눌렀을때 나오는거
+            </div>
+            <div className="modal-footer">
+              <button type="button" className="btn btn-danger" onClick={() => outChatroom(chatroomNo)}>나가기</button>
+              <button type="button" className="btn btn-pink" onClick={closeOutChatroomModal}>안나가기</button>
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
