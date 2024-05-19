@@ -534,15 +534,15 @@ function EmpMypage() {
               <form>
                 <div className="mb-3">
                   <label htmlFor="empName" className="form-label">사원명</label>
-                  <input type="text" className="form-control" id="empName" name="empName" value={editableInfo?.empName || ''} onChange={handleChange} />
+                  <input type="text" className="form-control" id="empName" name="empName" value={editableInfo?.empName || ''} readOnly />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="empNo" className="form-label">사원번호</label>
-                  <input type="text" className="form-control" id="empNo" name="empNo" value={editableInfo?.empNo || ''} onChange={handleChange} disabled />
+                  <input type="text" className="form-control" id="empNo" name="empNo" value={editableInfo?.empNo || ''} readOnly />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="empDept" className="form-label">소속부서</label>
-                  <input type="text" className="form-control" id="empDept" name="empDept" value={editableInfo?.empDept || ''} onChange={handleChange} />
+                  <input type="text" className="form-control" id="empDept" name="empDept" value={editableInfo?.empDept || ''} readOnly />
                 </div>
                 <div className="mb-3">
                   <label htmlFor="empContact" className="form-label">연락처</label>

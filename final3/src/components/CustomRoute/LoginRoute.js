@@ -10,6 +10,11 @@
         const isPurchasePath = location.pathname.includes("purchase");
         const isJoinPath = location.pathname.includes("join");
         const isInvalidPath = location.pathname.includes("invalid");
+        const isNELPath = location.pathname.includes("NEL");
+        const isEmpPath = location.pathname.includes("/emp/");
+        const isBoardPath = location.pathname.includes("board");
+        const isProjectPath = location.pathname.includes("project");
+        const isChatPath = location.pathname.includes("chat");
 
         const [loginLevel, setLoginLevel] = useRecoilState(loginLevelState);
         const [isPaid, setIsPaid] = useRecoilState(isPaidState);
@@ -29,6 +34,9 @@
             return isChecked === 'UnChecked';
         }, [isChecked]);
 
+        const isAdmin = useMemo(()=> {
+            return loginLevel === '운영자'
+        }, [loginLevel]);
 
         useEffect(() => {
             const load = async () => {
@@ -59,6 +67,13 @@
                         )
                     )
                 ): (
+                   isAdmin ? (
+                    isAdminPath || isNELPath ? (
+                        <Outlet />
+                    ) : (
+                        <Navigate to="/NEL" />
+                    )
+                   ) : (
                     isInValid ? (
                         isInvalidPath ? (
                             <Outlet />
@@ -67,7 +82,15 @@
                         )
                     ) : (
                         checkPaid || isPurchasePath ? (
-                            <Outlet />
+                            (isCompany && (isBoardPath || isProjectPath || isChatPath || isEmpPath)) ? (
+                                isNELPath ? (
+                                    <Outlet />
+                                ) : (
+                                    <Navigate to="/NEL" />
+                                )
+                            ) : (
+                                <Outlet />
+                            )
                         ) : (
                             isCompany ? (
                                 <Navigate to="/kakaopay/purchase" />
@@ -76,6 +99,7 @@
                             )
                         )
                     )
+                   )
                 )
         )
     )
