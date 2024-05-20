@@ -361,7 +361,7 @@ const ChatRoom = () => {
                 if (socketRef.current) {
                     socketRef.current.close();
                 }
-                const newSocket = new SockJS(`${process.env.REACT_APP_BASE_URL}/ws/emp`);
+                const newSocket = new SockJS("http://192.168.30.6:8080/ws/emp");
                 newSocket.onopen = () => {
                     socketRef.current = newSocket;
                 };
