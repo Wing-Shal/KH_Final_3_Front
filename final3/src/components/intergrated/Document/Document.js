@@ -12,6 +12,9 @@ import { Modal } from "bootstrap";
 import { Link, useParams } from 'react-router-dom';
 import { FaSearch } from "react-icons/fa";
 import { FaCalendarAlt } from "react-icons/fa";
+import { IoPeopleSharp } from "react-icons/io5";
+import { FaXmark } from "react-icons/fa6";
+import '@radix-ui/themes/styles.css';
 
 const Document = () => {
     const { projectNo } = useParams();
@@ -39,6 +42,7 @@ const Document = () => {
         projectNo: projectNo,
         documentApprover: "",
         empNo: "",
+        documentStatus:""
     });
 
     const [empInput, setEmpInput] = useState({
@@ -51,6 +55,9 @@ const Document = () => {
 
     //결재자 사원 목록
     const [selectedApprover, setSelectedApprover] = useState("");
+    const removeSelectedEmp = useCallback((empName) => {
+        setSelectedEmps(prev => prev.filter(name => name !== empName));
+    }, []);
 
     const [backup, setBackup] = useState(null);//수정 시 복원을 위한 백업
 
@@ -319,8 +326,63 @@ const Document = () => {
 
     return (
         <>
-            <Jumbotron title={`${projectNo} 번 프로젝트`} style={{ backgroundColor: 'rgb(255, 192, 203)' }} />
-            <label>프로젝트 참여자: {selectedEmps.join(", ")}</label>
+            <Jumbotron title={`${projectNo} 번 프로젝트`} style={{ backgroundColor: 'rgb(240, 174, 203)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '20px', width: '100%' }}>
+                <div style={{ display: 'flex', alignItems: 'center' }}>
+                    <IoPeopleSharp style={{ fontSize: '2.5em', marginRight: '8px', color: 'hotpink' }} />
+                    <div style={{ padding: '10px 12px', borderRadius: '15px', backgroundColor: 'rgb(240, 211, 52)', display: 'inline-block', marginBottom: '10px', fontWeight: 'bold' ,fontSize:'15px', color: '#007bff'}}>
+                          프로젝트 참여자 :
+
+
+                        {selectedEmps.map((emp, index) => (
+                            <span key={index} style={{ marginLeft: '10px', display: 'inline-flex', alignItems: 'center' }}>
+                                {emp}
+                                <FaXmark
+                                    style={{ marginLeft: '5px', cursor: 'pointer', color: 'red', fontSize: '1em' }}
+                                    onClick={() => removeSelectedEmp(emp)}
+                                />
+                            </span>
+                        ))}
+                    </div>
+                </div>
+                <div>
+                    {invitations ? (
+                        <>
+                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={uploadSelected}>
+                                등록
+                            </button>
+                            &nbsp; &nbsp;
+                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(false)}>
+                                취소
+                            </button>
+                        </>
+                    ) : (
+                        <button
+                        className="btn btn-primary"
+                        style={{
+                            width:'160px',height:'40px',
+                            color:'white',
+                            fontSize:'16px',
+                            backgroundColor: 'pink',
+                            border: 'none',
+                            transition: 'background-color 0.3s, color 0.3s', 
+                            cursor: 'pointer', 
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                        }}
+                        onMouseEnter={(e) => { e.target.style.backgroundColor = 'hotpink'; e.target.style.color = 'white'; }}
+                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'pink'; e.target.style.color = 'white'; }} // 호버하기 전에도 폰트색을 화이트로 유지
+                        onClick={() => setInvitations(true)}
+                    >
+                        프로젝트 초대하기
+                    </button>
+                    
+                    )}
+                </div>
+            </div>
+     
+    
+
 
             <div className="row mt-4 justify-content-center">
                 <div className="col-8 col-md-9 d-flex align-items-center">
@@ -338,191 +400,208 @@ const Document = () => {
                     </button>
                 </div>
                 <div className="col-md-3 text-end">
-                    <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={e => openModal()}>
+                    <button className="btn btn-primary"
+                        style={{
+                            width:'160px',height:'40px',
+                            color:'white',
+                            fontSize:'16px',
+                            backgroundColor: 'pink',
+                            border: 'none',
+                            transition: 'background-color 0.3s, color 0.3s', 
+                            cursor: 'pointer', 
+                            padding: '5px 10px',
+                            borderRadius: '5px',
+                        }}
+                        onMouseEnter={(e) => { e.target.style.backgroundColor = 'hotpink'; e.target.style.color = 'white'; }}
+                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'pink'; e.target.style.color = 'white'; }}  onClick={e => openModal()}>
                         <IoMdAdd />
                         새 문서
                     </button>
                 </div>
             </div>
 
-            <div className="row mt-4">
-                <div className="col-md-3 text-end">
-                    {invitations ? (
-                        <>
-                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={uploadSelected}>
-                                등록
-                            </button>
-                            &nbsp; &nbsp;
-                            <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(false)}>
-                                취소
-                            </button>
-                        </>
-                    ) : (
-                        <button className="btn btn-primary" style={{ backgroundColor: 'pink', border: 'none' }} onClick={() => setInvitations(true)}>
-                            프로젝트 초대하기
-                        </button>
-                    )}
-                </div>
-            </div>
             {invitations && (
                 <div className="row mt-4">
                     <div className="col-md-3 text-end"></div>
                     <div className="row">
                         <div className="col">
                             <table className="table">
-                                <thead className="text-center">
-                                    <tr>
-                                        <th><input type="checkbox" checked={allChecked} onChange={handleCheckAll} /></th>
-                                        <th>이름</th>
-                                        <th>부서</th>
-                                        <th>직급</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {emps.map((emp, index) => (
-                                        <tr key={emp.empNo} className='align-items-center'>
-                                            <td><input type="checkbox" checked={checkedState[index] || false} onChange={() => handleCheck(index)} /></td>
-                                            <td>{emp.empName}</td>
-                                            <td>{emp.deptName}</td>
-                                            <td>{emp.gradeName}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
+                            <thead>
+    <tr>
+        <th>
+            <input
+                type="checkbox"
+                checked={allChecked}
+                onChange={handleCheckAll}
+            />
+        </th>
+        <th>이름</th>
+        <th>부서</th>
+        <th>직급</th>
+      
+    </tr>
+</thead>
+<tbody>
+    {emps.map((emp, index) => (
+        <tr key={emp.empNo}>
+            <td>
+                <input
+                    type="checkbox"
+                    checked={checkedState[index] || false}
+                    onChange={() => handleCheck(index)}
+                />
+            </td>
+            <td>{emp.empName}</td>
+            <td>{emp.deptName}</td>
+            <td>{emp.gradeName}</td>
+          
+        </tr>
+    ))}
+</tbody>
                             </table>
                         </div>
                     </div>
                 </div>
             )}
 
-            {filteredDocuments.map(document => (
-                <div key={document.documentNo} className="row mt-4">
-                    <div className="col">
-                        <div className="card mb-3" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                            <div className="card-body" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                                <div className="card-body d-flex flex-wrap justify-content-between">
-                                    <div className="d-flex justify-content-between" style={{ marginBottom: "10px" }} >
-                                        <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)', border: 'none' }}>플젝 번호: {document.projectNo}</div>
-                                        <div className="rounded border p-2 shadow-sm" style={{ width: "150px", marginRight: "10px", backgroundColor: 'rgb(255,192,203,0.5)' }}>문서 번호: {document.documentNo}</div>
-                                        <div className="rounded border p-2 shadow-sm bg-light" style={{ width: "150px" }}>상태: {document.documentStatus}</div>
-                                    </div>
-                                    <div className="d-flex justify-content-between">
-                                        <div className="d-flex align-items-center">
-                                            <FaCalendarAlt style={{ fontSize: '20px', marginRight: '5px' }} />
-                                            <div className="rounded border p-2 mb-2 shadow-sm pink-border" >시작일: {document.edit ? <input type="date" name="documentWriteTime" value={document.documentWriteTime} onChange={(e) => changeDocument(e, document)} /> : document.documentWriteTime}</div>
-                                        </div>
-                                        <div className="d-flex align-items-center">
-                                            <FaCalendarAlt style={{ fontSize: '20px', marginRight: '5px' }} />
-                                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="card-title">
-                                    <div className="card-text" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                                        {document.edit ? (
-                                            <input
-                                                type="text"
-                                                value={document.documentTitle}
-                                                name="documentTitle"
-                                                onChange={(e) => changeDocument(e, document)}
-                                                className="form-control"
-                                            />
-                                        ) : (
-                                            <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                                제목: {document.documentTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                                    <span>
-                                                        {document.documentTitle.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                            ) : (
-                                                                <span key={index}>{text}</span>
-                                                            )
-                                                        ))}
-                                                    </span>
-                                                ) : (
-                                                    document.documentTitle
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="card-text" style={{ border: '3px solid pink', boxShadow: '0 px 6px rgba(0, 0, 0.1, 0.2)' }}>
-                                    {document.edit ? (
-                                        <textarea
-                                            value={document.documentContent}
-                                            name="documentContent"
-                                            onChange={(e) => changeDocument(e, document)}
-                                            className="form-control"
-                                            rows={7}
-                                        />
+{filteredDocuments.map(document => (
+    <div key={document.documentNo} className="row mt-4">
+        <div className="col">
+            <div className="card mb-3" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)', borderRadius: '10px' }}>
+                <div className="card-body" style={{ border: '2px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}>
+                    <div className="card-body d-flex flex-wrap justify-content-between">
+                        <div className="d-flex justify-content-center" style={{ marginBottom: "10px" }}>
+                        <div className="rounded  p-2 mb-2 shadow-sm bg-danger-subtle  border-danger-subtle" style={{ width: "160px", marginRight: "20px", backgroundColor: 'rgb(255,192,203,0.5)', border: 'none' }}>프로젝트 번호: {document.projectNo}</div>
+                        <div className="rounded  p-2 mb-2 shadow-sm bg-danger-subtle  border-danger-subtle" style={{ width: "130px", marginRight: "2px", backgroundColor: 'rgb(255,192,203,0.5)' }}>문서 번호: {document.documentNo}</div>
+                        </div>
+                        <div className={`rounded border border bg-${document.documentStatus === '요청' ? 'primary-subtle' : document.documentStatus === '진행' ? 'success-subtle' : document.documentStatus === '보류' ? 'warning' : document.documentStatus === '반려' ? 'danger' : 'success'} p-2 d-flex justify-content-center align-items-center`} style={{ width: "80px", height: "40px", color: document.documentStatus === '반려' || document.documentStatus === '승인' ? 'white' : 'initial' }}>
+
+                            {document.edit ? (
+                                <select
+                                    value={document.documentStatus}
+                                    name="documentStatus"
+                                    onChange={(e) => changeDocument(e, document)}
+                                    className="documentStatus"
+                                    style={{ textAlign: 'center' }}
+                                >
+                                    <option value="요청">요청</option>
+                                    <option value="진행">진행</option>
+                                    <option value="보류">보류</option>
+                                    <option value="반려">반려</option>
+                                    <option value="승인">승인</option>
+                                </select>
+                            ) : (
+                                <div style={{ textAlign: 'center' }}>{document.documentStatus}</div>
+                            )}
+                        </div>
+
+                        <div className="d-flex justify-content-between">
+                        <div className="d-flex align-items-center">
+    <FaCalendarAlt style={{ fontSize: '1.9em', marginRight: '8px', color: '#A99AB8' }} />
+    <div className="rounded p-2 mb-2 shadow-sm bg-warning-subtle">시작일: {document.edit ? <input type="date" name="documentWriteTime" value={document.documentWriteTime} onChange={(e) => changeDocument(e, document)} /> : document.documentWriteTime}</div>
+</div> &nbsp;&nbsp;&nbsp;&nbsp;
+<div className="d-flex align-items-center">
+    <FaCalendarAlt style={{ fontSize: '1.9em', marginRight: '8px', color: '#A99AB8' }} />
+    <div className="rounded p-2 mb-2 shadow-sm bg-warning-subtle">마감일: {document.edit ? <input type="date" name="documentLimitTime" value={document.documentLimitTime} onChange={(e) => changeDocument(e, document)} /> : document.documentLimitTime}</div>
+</div>
+                        </div>
+                    </div>
+                    <div style={{ borderBottom: '2px solid pink', marginBottom: '20px', marginTop:'20px' }}>
+                        {document.documentTitle.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                            <span>
+                                {document.documentTitle.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                                    text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                        <span key={index} style={{ backgroundColor: 'yellow' }}>{text}</span>
                                     ) : (
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light" style={{ height: "200px" }}>
-                                            {document.documentContent.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                                <span>
-                                                    {document.documentContent.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                        text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                            <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                        ) : (
-                                                            <span key={index}>{text}</span>
-                                                        )
-                                                    ))}
-                                                </span>
-                                            ) : (
-                                                document.documentContent
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                                <div className="card-title">
-                                    <div className="card-text d-flex justify-content-between">
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                            결재자: {document.documentApprover ? (
-                                                document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                                    <span>
-                                                        {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                            ) : (
-                                                                <span key={index}>{text}</span>
-                                                            )
-                                                        ))}
-                                                    </span>
-                                                ) : (
-                                                    document.documentApprover
-                                                )
-                                            ) : null}
-                                        </div>
-                                        <div className="rounded border p-2 mb-2 shadow-sm bg-light">
-                                            작성자: {document.documentWriter ? (
-                                                document.documentWriter.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
-                                                    <span>
-                                                        {document.documentWriter.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
-                                                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
-                                                                <span key={index} style={{ backgroundColor: 'pink' }}>{text}</span>
-                                                            ) : (
-                                                                <span key={index}>{text}</span>
-                                                            )
-                                                        ))}
-                                                    </span>
-                                                ) : (
-                                                    document.documentWriter
-                                                )
-                                            ) : null}
-                                        </div>
-                                        <div className="text-end">
-                                            {document.edit ? (
-                                                <>
-                                                    <FaCheck className="text-success me-2" onClick={() => saveEditDocument(document)} style={{ fontSize: "40px" }} />
-                                                    <TbPencilCancel className="text-danger" onClick={() => cancelEditDocument(document)} style={{ fontSize: "40px" }} />
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <FaEdit className="text-warning me-2" onClick={() => editDocument(document)} style={{ fontSize: "40px" }} />
-                                                    <FaSquareXmark className="text-danger" onClick={() => deleteDocument(document)} style={{ fontSize: "40px" }} />
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                        <span key={index}>{text}</span>
+                                    )
+                                ))}
+                            </span>
+                        ) : (
+                            document.documentTitle
+                        )}
+                    </div>
+                    <div className="card-text" style={{ border: '2px solid pink', borderRadius: '10px', marginBottom: '20px', marginTop: '20px' }}>
+    {document.edit ? (
+        <textarea
+            value={document.documentContent}
+            name="documentContent"
+            onChange={(e) => changeDocument(e, document)}
+            className="form-control"
+            rows={7}
+        />
+    ) : (
+        <div className="rounded border p-2 bg-white" style={{ borderRadius: '10px', height: "200px" }}>
+            {document.documentContent.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                <span>
+                    {document.documentContent.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                        text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                            <span key={index} style={{ backgroundColor: 'yellow', borderRadius: '10px' }}>{text}</span>
+                        ) : (
+                            <span key={index}>{text}</span>
+                        )
+                    ))}
+                </span>
+            ) : (
+                document.documentContent
+            )}
+        </div>
+    )}
+</div>
+
+                  {/*  */}
+<div className="card-title">
+    <div className="card-text d-flex justify-content-between">
+        <div className="rounded  p-2 mb-2 shadow-sm bg-danger-subtle  border-danger-subtle" style={{ borderRadius: '10px', boderColor: 'pink' }}>
+            결재자: {document.documentApprover ? (
+                document.documentApprover.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                    <span>
+                        {document.documentApprover.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                <span key={index} style={{ backgroundColor: 'yellow', borderRadius: '10px' }}>{text}</span>
+                            ) : (
+                                <span key={index}>{text}</span>
+                            )
+                        ))}
+                    </span>
+                ) : (
+                    document.documentApprover
+                )
+            ) : null}
+        </div>
+        <div className="rounded  p-2 mb-2 shadow-sm bg-danger-subtle  border-danger-subtle" style={{ borderRadius: '10px', borderColor: 'pink' }}>
+            작성자: {document.documentWriter ? (
+                document.documentWriter.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
+                    <span>
+                        {document.documentWriter.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
+                            text.toLowerCase() === searchKeyword.toLowerCase() ? (
+                                <span key={index} style={{ backgroundColor: 'yellow', borderRadius: '10px' }}>{text}</span>
+                            ) : (
+                                <span key={index}>{text}</span>
+                            )
+                        ))}
+                    </span>
+                ) : (
+                    document.documentWriter
+                )
+            ) : null}
+        </div>
+        <div className="text-end">
+            {document.edit ? (
+                <>
+                    <FaCheck className="text-success me-2" onClick={() => saveEditDocument(document)} style={{ fontSize: "40px" }} />
+                    <TbPencilCancel className="text-danger" onClick={() => cancelEditDocument(document)} style={{ fontSize: "40px" }} />
+                </>
+            ) : (
+                <>
+                    <FaEdit className="text-warning me-2" onClick={() => editDocument(document)} style={{ fontSize: "40px" }} />
+                    <FaSquareXmark className="text-danger" onClick={() => deleteDocument(document)} style={{ fontSize: "40px" }}/>
+                </>
+            )}
+        </div>
+    </div>
+</div>
+
                             </div>
                         </div>
                     </div>
@@ -533,7 +612,7 @@ const Document = () => {
                 <div className="modal-dialog">
                     <div className="modal-content">
                         <div className="modal-header">
-                            <h1 className="modal-title fs-5" id="staticBackdropLabel">내문서</h1>
+                            <h1 className="modal-title fs-5" id="staticBackdropLabel">새문서</h1>
                             <button type="button" className="btn-close" aria-label="Close" onClick={cancelInput}></button>
                         </div>
                         <div className="modal-body">

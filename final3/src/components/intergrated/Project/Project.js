@@ -193,77 +193,83 @@ const Project = () => {
     }, [bsModal]);
     //view
 
- return (
-    <>
-        <Jumbotron title="내 프로젝트" />
-        <div className="row mt-4">
-            <div className="col text-end">
-                <button className="btn btn-primary" onClick={openModal} style={{ backgroundColor: 'pink', border: 'none' }}>
-                    <IoMdAdd /> 새 프로젝트
-                </button>
+    return (
+        <>
+            <Jumbotron title="내 프로젝트" />
+            <div className="row mt-4">
+                <div className="col text-end">
+                    <button 
+                        className="btn btn-primary" 
+                        onClick={openModal} 
+                        style={{ 
+                            backgroundColor: 'pink', 
+                            border: 'none', 
+                            transition: 'background-color 0.3s, color 0.3s', // Smooth transition
+                            cursor: 'pointer', // Show pointer cursor on hover
+                        }}
+                        onMouseEnter={(e) => { e.target.style.backgroundColor = 'hotpink'; e.target.style.color = 'white'; }}
+                        onMouseLeave={(e) => { e.target.style.backgroundColor = 'pink'; e.target.style.color = 'inherit'; }}
+                    >
+                        <IoMdAdd /> 새 프로젝트
+                    </button>
+                </div>
             </div>
-        </div>
-
-        {projects.map(project => (
-            <div key={project.projectNo} className="row mt-4">
-                <div className="col">
-                    <div className="card mb-3">
-                        <div className="card-body">
-                            <div className="card-title d-flex align-items-center">
-                                <FcOpenedFolder style={{ color: '#007bff', fontSize: '1.5em', marginRight: '0.5em' }} />
-                                {project.edit ? (
-                                    <input type="text" value={project.projectName} name="projectName" onChange={(e) => changeProject(e, project)} className="form-control" />
-                                ) : (
-                                    <Link to={`/document/project/${project.projectNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                                        <span
-                                            style={{
-                                                backgroundColor: 'pink',
-                                                padding: '5px 10px',
-                                                borderRadius: '5px',
-                                                transition: 'background-color 0.3s, color 0.3s', // Smooth transition
-                                                cursor: 'pointer', // Show pointer cursor on hover
-                                            }}
-                                            onMouseEnter={(e) => { e.target.style.backgroundColor = 'hotpink'; e.target.style.color = 'white'; }}
-                                            onMouseLeave={(e) => { e.target.style.backgroundColor = 'pink'; e.target.style.color = 'inherit'; }}
-                                        >
-                                            {project.projectName}
-                                        </span>
-                                    </Link>
-                                )}
-                            </div>
-                            <div className="card-text">프로젝트 번호: 
-                                <div
-                                    style={{
-                                        borderBottom: '2px solid pink',
-                                        display: 'inline-block',
-                                        marginLeft: '5px', // Adjust margin as needed
-                                    }}
-                                >
-                                    {project.projectNo}
+    
+            {projects.map(project => (
+                <div key={project.projectNo} className="row mt-4">
+                    <div className="col">
+                        <div className="card mb-3" style={{ border: '2px solid pink' }}>
+                            <div className="card-body" style={{ borderBottom: '2px solid pink' }}>
+                                <div className="card-title d-flex align-items-center">
+                                    <FcOpenedFolder style={{ color: '#007bff', fontSize: '1.5em', marginRight: '0.5em' }} />
+                                    {project.edit ? (
+                                        <input type="text" value={project.projectName} name="projectName" onChange={(e) => changeProject(e, project)} className="form-control" />
+                                    ) : (
+                                        <Link to={`/document/project/${project.projectNo}`} style={{ textDecoration: 'none', color: 'inherit' }}>
+                                            <span
+                                                style={{
+                                                    backgroundColor: 'pink',
+                                                    padding: '5px 10px',
+                                                    borderRadius: '5px',
+                                                    transition: 'background-color 0.3s, color 0.3s',
+                                                    cursor: 'pointer',
+                                                }}
+                                                onMouseEnter={(e) => { e.target.style.backgroundColor = 'hotpink'; e.target.style.color = 'white'; }}
+                                                onMouseLeave={(e) => { e.target.style.backgroundColor = 'pink'; e.target.style.color = 'inherit'; }}
+                                            >
+                                                {project.projectName}
+                                            </span>
+                                        </Link>
+                                    )}
                                 </div>
-                            </div>
-                            <div className="card-text">작성자: {project.projectWriter}</div>
-                            <div className="card-date-picker">시작일: {project.edit ? <input type="date" name="projectStartTime" value={project.projectStartTime} onChange={(e) => changeProject(e, project)} /> : project.projectStartTime}</div>
-                            <div className="card-date-picker">마감일: {project.edit ? <input type="date" name="projectLimitTime" value={project.projectLimitTime} onChange={(e) => changeProject(e, project)} /> : project.projectLimitTime}</div>
-                            <div className="text-end">
-                                {project.edit ? (
-                                    <>
-                                        <FaCheck className="text-success me-2" onClick={() => saveEditProject(project)} />
-                                        <TbPencilCancel className="text-danger" onClick={() => cancelEditProject(project)} />
-                                    </>
-                                ) : (
-                                    <>
-                                      
-                                    </>
-                                )}
+                               
+                                <div className="card-text" style={{ marginLeft: '5px', borderBottom: '2px solid pink', marginBottom: '5px', padding: '10px 0' }}>프로젝트 번호: {project.projectNo}</div>
+
+            
+                                <div className="card-text" style={{ marginLeft: '5px', borderBottom: '2px solid pink', marginBottom: '5px', padding: '10px 0' }} >작성자: {project.projectWriter}</div>
+                                <div className="card-date-picker" style={{ marginLeft: '5px', borderBottom: '2px solid pink', marginBottom: '5px', padding: '10px 0' }}>시작일: {project.edit ? <input type="date" name="projectStartTime" value={project.projectStartTime} onChange={(e) => changeProject(e, project)} /> : project.projectStartTime}</div>
+                                <div className="card-date-picker" style={{ marginLeft: '5px', borderBottom: '2px solid pink', marginBottom: '5px', padding: '10px 0' }}>마감일: {project.edit ? <input type="date" name="projectLimitTime" value={project.projectLimitTime} onChange={(e) => changeProject(e, project)} /> : project.projectLimitTime}</div>
+                                <div className="text-end">
+                                    {project.edit ? (
+                                        <>
+                                            <FaCheck className="text-success me-2" onClick={() => saveEditProject(project)} />
+                                            <TbPencilCancel className="text-danger" onClick={() => cancelEditProject(project)} />
+                                        </>
+                                    ) : (
+                                        <>
+                                          
+                                        </>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-
-
             ))}
+    
+    
+
+    
 
 
             {/* Modal */}
@@ -296,31 +302,7 @@ const Project = () => {
                                     <input type="date" name="projectLimitTime" value={input.projectLimitTime} onChange={changeInput} className="form-control" />
                                 </div>
                             </div>
-                         
-                            <div className="row mt-4">
-                                <div className="col">
-                                    <table className="table">
-                                        <thead className="text-center">
-                                            <tr>
-                                                <th>사번</th>
-                                                <th>이름</th>
-
-                                            </tr>
-                                        </thead>
-                                        <tbody className="text-center">
-                                            {emps.map((emp, Index) => (
-                                                <tr key={Index} className='align-items-center'>
-                                                    <td>{emp.empNo}</td>
-                                                    <td>{emp.empName}</td>
-
-
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
+                                        
                         </div>
                         <div className="modal-footer">
                             <button className="btn btn-success me-2" onClick={saveInput}>등록</button>
