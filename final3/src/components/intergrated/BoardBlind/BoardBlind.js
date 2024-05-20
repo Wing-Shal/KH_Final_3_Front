@@ -13,6 +13,8 @@ import { FaXmark } from "react-icons/fa6";
 import { FaSearch } from 'react-icons/fa';
 import throttle from "lodash/throttle";
 import debounce from "lodash/debounce";
+import InputEmoji from "react-input-emoji";
+import '@radix-ui/themes/styles.css';
 
 
 
@@ -47,6 +49,14 @@ function BoardBlind() {
     const handleSearchChange = useCallback((e) => {
         setSearchKeyword(e.target.value); // 입력이 변경될 때 searchKeyword 상태를 업데이트합니다.
     }, []);
+
+    // 댓글 입력창에서 입력이 발생할 때 실행할 함수
+    const handleEmojiChange = (text) => {
+        setReplyBlindInput({
+            ...replyBlindInput,
+            replyBlindContent: text
+        });
+    };
 
     // 문서 필터링 함수 정의
     const filterBoardBlinds = useCallback(() => {
@@ -114,7 +124,7 @@ function BoardBlind() {
     }, [blindWriterCompany]);
 
     // blind_emp
-    
+
     const loadData = useCallback(async () => {
         const blindEmpNo = loginId;
         const blindWriterCompany = companyInfo;
@@ -125,9 +135,9 @@ function BoardBlind() {
         setLast(resp.data.last);
     }, [loginId, companyInfo, boardBlinds, page]);
 
-//effect
+    //effect
     // - 페이지 번호가 증가하면 loadData를 부르도록 연결
-    useEffect(()=>{
+    useEffect(() => {
         loading.current = true;//로딩이 시작했음을 기록
         console.log("로딩 시작");
         loadData();
@@ -146,8 +156,8 @@ function BoardBlind() {
     //      - debounce - 지정한 시간동안 작업이 이어지지 않으면 이벤트가 실행
     //              - debounce(함수, 간격)
     ////////////////////////////////////////////////////////////////
-    const listener = useCallback(throttle((e)=>{
-        if(loading.current === true) {//로딩이 진행중이라면
+    const listener = useCallback(throttle((e) => {
+        if (loading.current === true) {//로딩이 진행중이라면
             return;//스크롤 감지고 뭐고 때려쳐!
         }
 
@@ -160,17 +170,17 @@ function BoardBlind() {
         //조건 
         // - 마지막 데이터가 아닐 것 (last === false)
         // - 스크롤이 75% 이상 내려갔1을 것 (scrollPercent >= 75)
-        if(last === false && scrollPercent >= 75) {
+        if (last === false && scrollPercent >= 75) {
             console.log("더보기 작업을 시작합니다");
-            setPage(page+1);//페이지1증가 --> effect 발생 --> loadData 실행
+            setPage(page + 1);//페이지1증가 --> effect 발생 --> loadData 실행
         }
     }, 750), [page]);
 
     //useEffect를 사용해서 필요한 순간에 이벤트를 설정 또는 제거
     //- loading에 저장된 값을 활용
     //- useEffect에 항목을 제거하면 화면이 갱신될 때마다 실행된다(모든 state 변화에 반응)
-    useEffect(()=>{
-        if(loading.current === true) {//로딩이 진행중이라면
+    useEffect(() => {
+        if (loading.current === true) {//로딩이 진행중이라면
             return;//이벤트 설정이고 뭐고 때려쳐!
         }
 
@@ -179,7 +189,7 @@ function BoardBlind() {
         console.log("스크롤 이벤트 설정 완료!");
 
         //화면 해제 시 진행할 작업
-        return ()=>{
+        return () => {
             window.removeEventListener("scroll", listener);//이벤트 제거
             console.log("스크롤 이벤트 제거 완료!");
         };
@@ -422,6 +432,14 @@ function BoardBlind() {
         setReplyBlinds(updatedReplyBlinds);
     }, [replyBlinds, setReplyBlinds]);
 
+
+    const [text, setText] = useState("");
+
+    function handleOnEnter(text) {
+        console.log("enter", text);
+    }
+
+
     return (
         <div className="ListItem">
 
@@ -610,14 +628,13 @@ function BoardBlind() {
 
                                         <div className="row">
                                             <div className="col">
-                                                <label>댓글</label>
-                                                <input
-                                                    type="text"
-                                                    name="replyBlindContent"
-                                                    value={replyBlindInput.replyBlindContent}
-                                                    onChange={(e) => changeReply(e)}
-                                                    className="form-control"
-                                                />
+                                                {/* 기존의 input 요소를 InputEmoji 컴포넌트로 대체 */}
+                                                
+                <InputEmoji
+                    value={replyBlindInput.replyBlindContent}
+                    onChange={handleEmojiChange}
+                    placeholder="댓글을 입력하세요"
+                />
                                             </div>
                                         </div>
 
@@ -634,7 +651,7 @@ function BoardBlind() {
                 </Row>
             </Container>
 
-           
+
 
             {boardBlinds.map(boardBlind => (
                 <div key={boardBlind.blindNo} ref={bsModal} className="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabIndex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
