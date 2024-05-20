@@ -445,7 +445,7 @@ function BoardBlind() {
 
             <Jumbotron title="블라인드 게시판"></Jumbotron>
 
-            <div className="col-8 col-md-9 d-flex align-items-center">
+            {/* <div className="col-8 col-md-9 d-flex align-items-center">
                 <input
                     style={{ border: '2.5px solid pink', boxShadow: '0 4px 6px rgba(0, 0, 0.1, 0.2)' }}
                     type="text"
@@ -458,7 +458,7 @@ function BoardBlind() {
                     style={{ backgroundColor: 'rgb(255,192,203,0.5)' }}>
                     <FaSearch />
                 </button>
-            </div>
+            </div> */}
 
             <div className="row mt-4">
                 <div className="col text-end">
@@ -720,6 +720,7 @@ function BoardBlind() {
                                                 value={input.blindWriterNick}
                                                 onChange={e => changeInput(e)}
                                                 className="form-control"
+                                                placeholder="6글자만 가능합니다 / 입력을 원치 않을 경우 'ㅇㅇ'으로 자동 입력"
                                             />
                                         </div>
                                     </div>
