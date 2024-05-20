@@ -15,8 +15,7 @@ const AddEmp = () => {
     const [input, setInput] = useState({});
     const [allChecked, setAllChecked] = useState(false);
     const [checkedState, setCheckedState] = useState({});
-    const baseURL = process.env.REACT_APP_BASE_URL;
-    const tempNo = process.env.REACT_APP_EXCEL_TEMP_NO;
+    
 
     useEffect(() => {
         loadData();
@@ -179,7 +178,7 @@ const AddEmp = () => {
                             <IoIosSave />
                             선택한 사원 업로드
                         </button>
-                        <a href={`${baseURL}/download/${tempNo}`} className="btn btn-secondary my-3">
+                        <a href={`${process.env.REACT_APP_BASE_URL}/download/${process.env.REACT_APP_EXCEL_TEMP_NO}`} className="btn btn-secondary my-3">
                             양식 다운로드
                         </a>
                         <button className='btn btn-primary my-3' onClick={handleUpload}>
