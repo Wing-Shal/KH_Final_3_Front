@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import axios from "../../utils/CustomAxios";
 import { MdCancel } from "react-icons/md";
 import { IoSaveOutline } from "react-icons/io5";
+import './BoardNoticeEditAdd.css'
 
 const BoardNoticeEdit = () => {
 
