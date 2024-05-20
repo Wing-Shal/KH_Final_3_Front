@@ -125,6 +125,13 @@ const App = () => {
   const [showParticipants, setShowParticipants] = useState(false);
   const [showChatroomInfo, setChatroomInfo] = useState(false);
 
+  const lastAreaRef = useRef(null);
+  useEffect(() => {
+      if (lastAreaRef.current) {
+          lastAreaRef.current.scrollIntoView();
+      }
+  }, [messages]);
+
   //사원 초대 검색
   const [inviteSearchInput, setInviteSearchInput] = useState("");
   const [inviteSearchResults, setInviteSearchResults] = useState([]);
@@ -725,6 +732,7 @@ const App = () => {
                       {/* <div>{message.readCountForChatroom > 0 ? message.readCountForChatroom : ''}</div> */}
                     </div>
                   ))}
+                  <div className="last-area" ref={lastAreaRef}></div>
                 </div>
               </div>
 
