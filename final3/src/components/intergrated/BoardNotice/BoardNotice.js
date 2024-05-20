@@ -53,10 +53,21 @@ const BoardNotice = () => {
                         {notices.map(notice => (
                             <tr key={notice.noticeNo}>
                                 <td>{notice.noticeNo}</td>
-                                <td>
-                                    <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
-                                </td>
-                                <td>{notice.noticeWtimeWithMinute}</td>
+                                {notice.noticeEtime ? (
+                                    <>
+                                        <td>
+                                            <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle+"(수정됨)"}</Link>
+                                        </td>
+                                        <td>{notice.noticeEtime}</td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td>
+                                            <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
+                                        </td>
+                                        <td>{notice.noticeWtime}</td>
+                                    </>
+                                )}
                             </tr>
                         ))}
                     </tbody>
@@ -69,7 +80,7 @@ const BoardNotice = () => {
                                     value={column}
                                     onChange={(e) => setColumn(e.target.value)}
                                     className="form-select"
-                                    style={{width: "20%"}}
+                                    style={{ width: "20%" }}
                                 >
                                     <option value="notice_title">제목</option>
                                     <option value="notice_content">내용</option>

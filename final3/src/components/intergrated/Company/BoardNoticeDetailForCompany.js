@@ -25,19 +25,29 @@ const BoardNoticeDetailForCompany = () => {
         <>
             <div className="row mt-4">
                 <div className="col">
-                    <table className='table'>
-                        <tr>
-                            <td>제목</td>
-                            <td>{notice.noticeTitle}</td>
-                        </tr>
-                        <tr>
-                            <td>내용</td>
-                            <td>{notice.noticeContent}</td>
-                        </tr>
-                        <tr>
-                            <td>작성시간</td>
-                            <td>{notice.noticeWtimeWithMinute}</td>
-                        </tr>
+                <table className='table'>
+                        <tbody>
+                            <tr>
+                                <td>제목</td>
+                                <td>{notice.noticeTitle}{notice.noticeEtime && " (수정됨)"}</td>
+                            </tr>
+                            <tr>
+                                <td>내용</td>
+                                <td>{notice.noticeContent}</td>
+                            </tr>
+                            <tr>
+                                <td>작성시간</td>
+                                <td>
+                                    {notice.noticeWtimeWithMinute}
+                                </td>
+                            </tr>
+                            {notice.noticeEtime && (
+                                <tr>
+                                    <td>수정시간</td>   
+                                    <td>{notice.noticeEtimeWithMinute}</td>
+                                </tr>
+                            )}
+                        </tbody>
                     </table>
                 </div>
             </div>

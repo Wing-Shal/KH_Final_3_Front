@@ -46,26 +46,37 @@ const BoardNotice = () => {
             </div>
             <div className="row mt-4">
                 <div className="col">
-                    <table className='table'>
-                        <thead>
-                            <tr>
-                                <th>번호</th>
-                                <th>제목</th>
-                                <th>작성시간</th>
+                <table className='table'>
+                    <thead>
+                        <tr>
+                            <th>번호</th>
+                            <th>제목</th>
+                            <th>작성시간</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {notices.map(notice => (
+                            <tr key={notice.noticeNo}>
+                                <td>{notice.noticeNo}</td>
+                                {notice.noticeEtime ? (
+                                    <>
+                                        <td>
+                                            <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle+"(수정됨)"}</Link>
+                                        </td>
+                                        <td>{notice.noticeEtime}</td>
+                                    </>
+                                ) : (
+                                    <>
+                                        <td>
+                                            <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
+                                        </td>
+                                        <td>{notice.noticeWtime}</td>
+                                    </>
+                                )}
                             </tr>
-                        </thead>
-                        <tbody>
-                            {notices.map(notice => (
-                                <tr key={notice.noticeNo}>
-                                    <td>{notice.noticeNo}</td>
-                                    <td>
-                                        <Link to={`/company/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
-                                    </td>
-                                    <td>{notice.noticeWtimeWithMinute}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                        ))}
+                    </tbody>
+                </table>
                     <div className="row mt-4">
                         <div className="col">
                             <form onSubmit={handleSearch}>
