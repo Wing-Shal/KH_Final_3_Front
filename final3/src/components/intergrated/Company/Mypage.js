@@ -41,7 +41,7 @@ function CompanyMypage() {
   const handleSaveInfo = async () => {
     try {
       const dataToSend = { ...editableInfo };
-      const response = await axios.patch("company/edit", dataToSend);
+      const response = await axios.patch("/company/edit", dataToSend);
       loadCompanyData();
 
       // 모달 닫기
