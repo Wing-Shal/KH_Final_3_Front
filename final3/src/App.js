@@ -264,7 +264,7 @@ const App = () => {
   }, []);
 
   const loadChatroomData = useCallback(async () => {
-
+    if(!isLogin) return;
     const resp = await axios.get("/chat/list");
     if (resp.data) {
       const chatroomsWithMessages = await Promise.all(

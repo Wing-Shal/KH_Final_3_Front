@@ -49,12 +49,13 @@ function CompInfo() {
 
   useEffect(() => {
     loadCompanyData();
-    loadAttachNo(); // 이미지 불러오기
+    loadAttachNo();
+    loadNoticeData();
   }, []);
 
   return (
     <>
-      <h1>마이페이지</h1>
+      <h1>회사 정보</h1>
       <div className="container-sm border border-5 rounded p-3 mb-3">
         <div className="row align-items-center">
           <div className="col-md-3">
@@ -115,7 +116,7 @@ function CompInfo() {
               </thead>
               <tbody className="text-center">
                 {notices.map(notice => (
-                  <tr key={notices.noticeNo}>
+                  <tr key={notice.noticeNo}>
                     <td>
                       <Link className='notice-link' to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
                     </td>
