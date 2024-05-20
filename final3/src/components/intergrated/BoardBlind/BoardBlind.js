@@ -133,7 +133,7 @@ function BoardBlind() {
         setBoardBlinds([...boardBlinds, ...resp.data.list]);
         setCount(resp.data.count);
         setLast(resp.data.last);
-    }, [loginId, companyInfo, boardBlinds, page]);
+    }, [loginId, companyInfo, setBoardBlinds, page]);
 
     //effect
     // - 페이지 번호가 증가하면 loadData를 부르도록 연결
@@ -471,7 +471,7 @@ function BoardBlind() {
 
             <Container className="d-flex" style={{ height: "500px", backgroundSize: "cover" }} fluid>
                 <Row xs={1} className="g-4 mt-4">
-                    {searchResults.map((boardBlind) => (
+                    {boardBlinds.map((boardBlind) => (
                         <Col key={boardBlind.blindNo}>
                             <Card style={{ overflowY: "auto" }}>
                                 <Card.Body style={{ display: "flex", flexDirection: "column" }}>
@@ -568,7 +568,7 @@ function BoardBlind() {
 
                                             <hr />
 
-                                            <div style={{ height: "300px", border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px" }}>
+                                            <div style={{ minHeight: "150px", maxHeight:"450px", border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px" }}>
                                                 내용: {boardBlind.blindContent.toLowerCase().includes(searchKeyword.toLowerCase()) ? (
                                                     <span>
                                                         {boardBlind.blindContent.split(new RegExp(`(${searchKeyword})`, 'ig')).map((text, index) => (
@@ -587,63 +587,81 @@ function BoardBlind() {
                                     )}
 
                                     {/* 댓글 섹션 */}
-                                    <div style={{ height: "300px", border: "1px solid rgb(210, 210, 210)", borderRadius: "10px", padding: "10px", marginBottom: "10px", overflowY: "auto" }}>
-                                        {replyBlinds.map((replyBlind, index) => {
-                                            if (replyBlind.blindNo === boardBlind.blindNo) {
-                                                return (
-                                                    <div key={`${replyBlind.blindNo}_${replyBlind.replyBlindTime}_${index}`} style={{ marginBottom: "10px" }}>
-                                                        <div style={{ fontWeight: "bold" }}>작성자: {replyBlind.replyBlindNick ? replyBlind.replyBlindNick : 'ㅇㅇ'}
-                                                            {loginId === replyBlind.replyEmpNo && (
-                                                                <button
-                                                                    className="btn btn-danger btn-sm"
-                                                                    onClick={(e) => deleteReplyBlind(replyBlind)}
-                                                                ><FaXmark />
+                                    <div style={{ minHeight: "50px", border: "none", maxHeight:"500px", borderRadius: "10px", padding: "10px", marginBottom: "10px", overflowY: "auto" }}>
+    {replyBlinds.map((replyBlind, index) => {
+        if (replyBlind.blindNo === boardBlind.blindNo) {
+            return (
+                <div key={`${replyBlind.blindNo}_${replyBlind.replyBlindTime}_${index}`} style={{ marginBottom: "10px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ fontWeight: "bold" }}>
+                            {replyBlind.replyBlindNick ? replyBlind.replyBlindNick : 'ㅇㅇ'}
+                            <span style={{ marginLeft: "10px", fontWeight: "normal", color: "gray" }}>
+                                {` | ${replyBlind.replyBlindCompany} | ${new Date(replyBlind.replyBlindTime).getFullYear()}-${(new Date(replyBlind.replyBlindTime).getMonth() + 1).toString().padStart(2, '0')}-${new Date(replyBlind.replyBlindTime).getDate().toString().padStart(2, '0')} / ${new Date(replyBlind.replyBlindTime).getHours().toString().padStart(2, '0')}:${new Date(replyBlind.replyBlindTime).getMinutes().toString().padStart(2, '0')}`}
+                            </span>
+                        </div>
+                        {loginId === replyBlind.replyEmpNo && (
+                            <button
+                                className="btn btn-danger btn-sm"
+                                onClick={(e) => deleteReplyBlind(replyBlind)}
+                                style={{
+                                    fontSize: '12px', 
+                                    padding: '4px 8px', 
+                                    transition: 'background-color 0.3s, border-color 0.3s',
+                                }}
+                                onMouseEnter={(e) => {
+                                    e.target.style.backgroundColor = '#ff6666';
+                                    e.target.style.borderColor = '#ff6666';
+                                }}
+                                onMouseLeave={(e) => {
+                                    e.target.style.backgroundColor = '';
+                                    e.target.style.borderColor = '';
+                                }}
+                            >
+                                <FaXmark />
+                            </button>
+                        )}
+                    </div>
+                    <div>{replyBlind.replyBlindContent}</div>
+                    <hr></hr>
+                </div>
+            );
+        }
+        return null;
+    })}
+</div>
+<form>
+    <div className="row">
+        <div className="col-8">
+            {/* 댓글 입력창을 앞에 두기 위해 순서를 변경 */}
+            <label>댓글</label>
+            <InputEmoji
+                value={replyBlindInput.replyBlindContent}
+                onChange={handleEmojiChange}
+                placeholder="댓글을 입력하세요"
+                className="form-control"
+            />
+        </div>
+        <div className="col-4">
+            <label>닉네임</label>
+            <input
+                type="text"
+                name="replyBlindNick"
+                value={replyBlindInput.replyBlindNick}
+                onChange={(e) => changeReply(e)}
+                className="form-control"
+                placeholder="'ㅇㅇ' 으로 자동 입력됩니다"
+                style={{borderRadius: '30px'}}
+            />
+        </div>
+    </div>
 
-                                                                </button>
-                                                            )}
-                                                        </div>
-                                                        <div>내용: {replyBlind.replyBlindContent}</div>
-                                                        <div>작성 시각: {replyBlind.replyBlindTime}</div>
-                                                        <div>회사명: {replyBlind.replyBlindCompany}</div>
-                                                    </div>
-                                                );
-                                            }
-                                            return null;
-                                        })}
-                                    </div>
-                                    <form>
-                                        <div className="row">
-                                            <div className="col">
-                                                <label>닉네임</label>
-                                                <input
-                                                    type="text"
-                                                    name="replyBlindNick"
-                                                    value={replyBlindInput.replyBlindNick}
-                                                    onChange={(e) => changeReply(e)}
-                                                    className="form-control"
-                                                    placeholder="닉네임을 입력하지 않으면 'ㅇㅇ' 으로 자동 입력됩니다"
-                                                />
-                                            </div>
-                                        </div>
+    <div className="text-end mt-2">
+        <button className='btn btn-success me-2' onClick={(e) => saveReplyInput(boardBlind.blindNo)}>
+            댓글등록
+        </button>
+    </div>
+</form>
 
-                                        <div className="row">
-                                            <div className="col">
-                                                {/* 기존의 input 요소를 InputEmoji 컴포넌트로 대체 */}
-                                                
-                <InputEmoji
-                    value={replyBlindInput.replyBlindContent}
-                    onChange={handleEmojiChange}
-                    placeholder="댓글을 입력하세요"
-                />
-                                            </div>
-                                        </div>
-
-                                        <div className="text-end">
-                                            <button className='btn btn-success me-2' onClick={(e) => saveReplyInput(boardBlind.blindNo)}>
-                                                댓글등록
-                                            </button>
-                                        </div>
-                                    </form>
                                 </Card.Body>
                             </Card>
                         </Col>
@@ -706,7 +724,7 @@ function BoardBlind() {
                                         </div>
                                     </div>
 
-                                    <div className="row">
+                                    {/* <div className="row">
                                         <div className="col">
                                             <label>비밀번호</label>
                                             <input
@@ -717,7 +735,7 @@ function BoardBlind() {
                                                 className="form-control"
                                             />
                                         </div>
-                                    </div>
+                                    </div> */}
                                 </form>
                             </div>
 
