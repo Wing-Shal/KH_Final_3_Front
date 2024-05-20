@@ -1,6 +1,7 @@
 import axios from "../../utils/CustomAxios";
 import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import './BoardNoticeForCompany.css'; // CSS 파일 추가
 
 const BoardNotice = () => {
     // state
@@ -46,80 +47,63 @@ const BoardNotice = () => {
             </div>
             <div className="row mt-4">
                 <div className="col">
-                <table className='table'>
-                    <thead>
-                        <tr>
-                            <th>번호</th>
-                            <th>제목</th>
-                            <th>작성시간</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+                    <div className="notice-list">
                         {notices.map(notice => (
-                            <tr key={notice.noticeNo}>
-                                <td>{notice.noticeNo}</td>
-                                {notice.noticeEtime ? (
-                                    <>
-                                        <td>
-                                            <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle+"(수정됨)"}</Link>
-                                        </td>
-                                        <td>{notice.noticeEtime}</td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <td>
-                                            <Link to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
-                                        </td>
-                                        <td>{notice.noticeWtime}</td>
-                                    </>
-                                )}
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-                    <div className="row mt-4">
-                        <div className="col">
-                            <form onSubmit={handleSearch}>
-                                <div className="input-group mb-3">
-                                    <select
-                                        value={column}
-                                        onChange={(e) => setColumn(e.target.value)}
-                                        className="form-select"
-                                    >
-                                        <option value="notice_title">제목</option>
-                                        <option value="notice_content">내용</option>
-                                    </select>
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        placeholder="검색어를 입력하세요"
-                                        value={keyword}
-                                        onChange={(e) => setKeyword(e.target.value)}
-                                    />
-                                    <button className="btn btn-outline-secondary" type="submit">검색</button>
+                            <div className="notice-item" key={notice.noticeNo}>
+                                <div className="notice-content">
+                                    <h5>
+                                        <Link to={`/company/notice/${notice.noticeNo}`}>
+                                            {notice.noticeTitle}
+                                        </Link>
+                                    </h5>
+                                    <p>{notice.noticeEtime ? `수정됨: ${notice.noticeEtimeWithMinute}` : `작성시간: ${notice.noticeWtimeWithMinute}`}</p>
                                 </div>
-                            </form>
-                        </div>
+                            </div>
+                        ))}
                     </div>
-                    <div className="row mt-4">
-                        <div className="col">
-                            <nav aria-label="Page navigation">
-                                <ul className="pagination">
-                                    <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
-                                        <button className="page-link" onClick={() => setPage(page - 1)}>이전</button>
-                                    </li>
-                                    {[...Array(totalPages).keys()].map(num => (
-                                        <li key={num + 1} className={`page-item ${page === num + 1 ? 'active' : ''}`}>
-                                            <button className="page-link" onClick={() => setPage(num + 1)}>{num + 1}</button>
-                                        </li>
-                                    ))}
-                                    <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
-                                        <button className="page-link" onClick={() => setPage(page + 1)}>다음</button>
-                                    </li>
-                                </ul>
-                            </nav>
+                </div>
+            </div>
+            <div className="row mt-4">
+                <div className="col-8 offset-2">
+                    <form onSubmit={handleSearch}>
+                        <div className="input-group mb-3">
+                            <select
+                                value={column}
+                                onChange={(e) => setColumn(e.target.value)}
+                                className="form-select"
+                            >
+                                <option value="notice_title">제목</option>
+                                <option value="notice_content">내용</option>
+                            </select>
+                            <input
+                                type="text"
+                                className="form-control w-75"
+                                placeholder="검색어를 입력하세요"
+                                value={keyword}
+                                onChange={(e) => setKeyword(e.target.value)}
+                            />
+                            <button className="btn btn-outline-secondary" type="submit">검색</button>
                         </div>
-                    </div>
+                    </form>
+                </div>
+            </div>
+            <div className="row mt-4 justify-content-center">
+                <div className="col-auto">
+                    <nav aria-label="Page navigation">
+                        <ul className="pagination">
+                            <li className={`page-item ${page === 1 ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => setPage(page - 1)}>이전</button>
+                            </li>
+                            {[...Array(totalPages).keys()].map(num => (
+                                <li key={num + 1} className={`page-item ${page === num + 1 ? 'active' : ''}`}>
+                                    <button className="page-link" onClick={() => setPage(num + 1)}>{num + 1}</button>
+                                </li>
+                            ))}
+                            <li className={`page-item ${page === totalPages ? 'disabled' : ''}`}>
+                                <button className="page-link" onClick={() => setPage(page + 1)}>다음</button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </>
