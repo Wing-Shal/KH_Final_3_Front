@@ -29,7 +29,7 @@ const BoardNoticeAdd = () => {
 
     //신규등록
     const saveInput = useCallback(async () => {
-        const choice = window.confirm("등록하면 삭제 못하니까 좀 신중하게 하셈 ㅇㅋ?ㄹㅇㅋㅋ");
+        const choice = window.confirm("공지를 등록하시겠습니까?");
         if (choice === false) return;
         const resp = await axios.post("/boardNotice/", input);
         clearInput();
@@ -39,7 +39,7 @@ const BoardNoticeAdd = () => {
 
     //등록 취소
     const cancelInput = useCallback(() => {
-        const choice = window.confirm("ㄹㅇ작성 취소?");
+        const choice = window.confirm("작성된 내용이 삭제됩니다.");
         if (choice === false) return;
         clearInput();
         navigate("/company/notice");
@@ -55,7 +55,7 @@ const BoardNoticeAdd = () => {
 
     return (
         <>
-            <h1>★공지등록★</h1>
+            <h1>공지등록</h1>
             <div className="row mt-4">
                 <div className="col">
                     <label>제목</label>
