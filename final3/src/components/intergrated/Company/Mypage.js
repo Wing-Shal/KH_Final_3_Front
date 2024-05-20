@@ -204,7 +204,7 @@ function CompanyMypage() {
                 {notices.map(notice => (
                   <tr key={notices.noticeNo}>
                     <td>
-                      <Link className='notice-link' to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
+                      <Link className='notice-link' to={`/company/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
                     </td>
                     <td>{notice.noticeWtime}</td>
                   </tr>
