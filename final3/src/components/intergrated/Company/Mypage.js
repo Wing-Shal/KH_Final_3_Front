@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from "../../utils/CustomAxios";
 import { loginIdState } from '../../utils/RecoilData';
 import { useRecoilState } from 'recoil';
-import calender from "../../../assets/calender.png";
 import defaultImage from "../../../assets/CompanyLogo.jpg"; // 기본 이미지 경로를 추가해주세요
 import './Mypage.css';
 import { Modal } from 'bootstrap';

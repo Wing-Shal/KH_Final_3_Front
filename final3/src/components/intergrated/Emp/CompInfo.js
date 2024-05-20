@@ -2,14 +2,17 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from "../../utils/CustomAxios";
 import { loginIdState } from '../../utils/RecoilData';
 import { useRecoilState } from 'recoil';
-import calender from "../../../assets/calender.png";
 import defaultImage from "../../../assets/CompanyLogo.jpg"; // 기본 이미지 경로를 추가해주세요
 import '../Company/Mypage.css';
+import { Link } from 'react-router-dom';
 
 function CompInfo() {
   const [image, setImage] = useState(defaultImage); // 기본 이미지로 초기화
   const [loginId] = useRecoilState(loginIdState);
   const [companyInfo, setCompanyInfo] = useState();
+  const [notices, setNotices] = useState([]);
+  const [page, setPage] = useState(1);
+  const [size, setSize] = useState(6);
 
   const baseURL = process.env.REACT_APP_BASE_URL;
 
@@ -27,10 +30,22 @@ function CompInfo() {
       const resp = await axios.get('/emp/company/image');
       const attachNo = resp.data;
       setImage(`${baseURL}/download/${attachNo}`);
-    } catch(error) {
+    } catch (error) {
       setImage(defaultImage);
     }
   }, []);
+  const loadNoticeData = useCallback(async () => {
+    try {
+      const resp = await axios.get(`/boardNotice/page/${page}/size/${size}`);
+      setNotices(resp.data.list);
+    }
+    catch (error) {
+      if (error.response && error.response.status === 404) {
+        console.log("데이터 없음.");
+        setNotices([]);
+      }
+    }
+  }, [page, size]);
 
   useEffect(() => {
     loadCompanyData();
@@ -91,9 +106,24 @@ function CompInfo() {
             </div>
           )}
           <div className="col-md-4">
-            <div className="container-sm border border-5 rounded p-3 mb-3">
-              <img className='calender' src={calender} alt="달력" style={{ maxWidth: '100%', height: 'auto' }} />
-            </div>
+            <table className='table'>
+              <thead className="text-center">
+                <tr className='content-center'>
+                  <th>제목</th>
+                  <th>작성시간</th>
+                </tr>
+              </thead>
+              <tbody className="text-center">
+                {notices.map(notice => (
+                  <tr key={notices.noticeNo}>
+                    <td>
+                      <Link className='notice-link' to={`/board/notice/${notice.noticeNo}`}>{notice.noticeTitle}</Link>
+                    </td>
+                    <td>{notice.noticeWtime}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
