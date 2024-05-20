@@ -53,10 +53,10 @@ const BoardNotice = () => {
                                 <div className="notice-content">
                                     <h5>
                                         <Link to={`/company/notice/${notice.noticeNo}`}>
-                                            {notice.noticeTitle}
+                                            {notice.noticeTitle}<span style={{fontSize: "12px"}}>{notice.noticeEtime && " (수정됨)"}</span>
                                         </Link>
                                     </h5>
-                                    <p>{notice.noticeEtime ? `수정됨: ${notice.noticeEtimeWithMinute}` : `작성시간: ${notice.noticeWtimeWithMinute}`}</p>
+                                    <p>{notice.noticeEtime ? `수정시간: ${notice.noticeEtimeWithMinute}` : `작성시간: ${notice.noticeWtimeWithMinute}`}</p>
                                 </div>
                             </div>
                         ))}

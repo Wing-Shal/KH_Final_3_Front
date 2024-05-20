@@ -64,7 +64,7 @@ function CompInfo() {
                 <img
                   src={image}
                   alt="사진 미리보기"
-                  style={{ width: '230px', height: '300px', marginBottom: '10px' }}
+                  style={{ width: '230px', height: '300px', marginBottom: '10px', objectFit: "cover" }}
                   onError={(e) => { e.target.src = defaultImage; }} // 이미지 로드 실패 시 기본 이미지로 대체
                 />
               )}
