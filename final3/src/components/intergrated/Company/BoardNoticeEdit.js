@@ -41,7 +41,7 @@ const BoardNoticeEdit = () => {
 
     //수정 취소
     const cancelInput = useCallback(() => {
-        const choice = window.confirm("ㄹㅇ작성 취소?");
+        const choice = window.confirm("작성된 내용이 삭제됩니다.");
         if (choice === false) return;
         clearInput();
         navigate(`/company/notice/${noticeNo}`);
@@ -57,7 +57,7 @@ const BoardNoticeEdit = () => {
 
     //수정하기
     const editNotice = useCallback(async () => {
-        const choice = window.confirm("ㄹㅇ수정 완료????");
+        const choice = window.confirm("공지를 수정하시겠습니까?");
         if (choice === false) return;
         const resp = await axios.patch("/boardNotice/", input);
 

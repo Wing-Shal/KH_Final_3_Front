@@ -67,6 +67,12 @@
   background-color: #f7f4cdb6 !important;  /* 오늘 날짜 배경색 */
 }
 
+/* 일요일 스타일 */
+.fc .fc-col-header-cell.fc-day-sun .fc-col-header-cell-cushion,
+.fc-daygrid-day.fc-day-sun .fc-daygrid-day-number {
+  color: rgb(252, 49, 49) !important;
+}
+
 /* 날짜 칸 스타일 */
 .fc-daygrid-day-number {
   color: black; 

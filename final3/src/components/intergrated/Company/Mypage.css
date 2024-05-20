@@ -12,3 +12,8 @@
   .custom-file-upload:hover {
     background-color: #e0e0e0;
   }
+  
+  .notice-link {
+    text-decoration: none;
+    color: #2D3436;
+  }
