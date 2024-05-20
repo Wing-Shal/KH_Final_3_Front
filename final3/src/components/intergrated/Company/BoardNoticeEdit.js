@@ -39,6 +39,16 @@ const BoardNoticeEdit = () => {
         });
     }), [input])
 
+    if (input.noticeTitle.length > 30) {
+        window.alert("제목의 제한 글자수를 초과했습니다.");
+        return;
+      }
+  
+      if (input.noticeContent.length > 1333) {
+        window.alert("내용의 제한 글자수를 초과했습니다.");
+        return;
+      }
+
 
     //수정 취소
     const cancelInput = useCallback(() => {
