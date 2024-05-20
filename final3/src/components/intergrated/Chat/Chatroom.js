@@ -391,6 +391,11 @@ const ChatRoom = () => {
 
     //메세지 보내는 부분
     const sendMessage = () => {
+        if (messageInput.length > 300) {
+            alert('메시지는 300자 이하여야 합니다.');
+            return;
+          }
+
         if (!messageInput.trim() || !socketRef.current) return;
         const message = {
             token: axios.defaults.headers.common['Authorization'],
